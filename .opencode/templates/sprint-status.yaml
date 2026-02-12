@@ -1,0 +1,29 @@
+# Sprint Status
+# Managed by the forge-scrum agent via /forge-sprint and /forge-status
+
+project: "[Project Name]"
+
+current_sprint:
+  number: 1
+  goal: "[Sprint goal]"
+  start_date: "YYYY-MM-DD"
+  end_date: "YYYY-MM-DD"
+
+  stories:
+    # - id: "E01-S001"
+    #   title: "Story title"
+    #   status: pending        # pending | in_progress | done | blocked
+    #   points: 5
+    #   blocked_reason: ""     # Only if status is blocked
+
+  velocity:
+    planned: 0
+    completed: 0
+
+previous_sprints:
+  # - number: 0
+  #   goal: ""
+  #   velocity:
+  #     planned: 0
+  #     completed: 0
+  #   retro: ".forge/sprints/retrospectives/sprint-00-retro.md"

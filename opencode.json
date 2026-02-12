@@ -1,0 +1,67 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // FORGE - Framework for Orchestrated Requirements, Governance & Engineering
+  // Full project configuration for OpenCode
+
+  // Default model for all agents unless overridden
+  "model": "github-copilot/claude-sonnet-4.5",
+
+  // Provider configuration with thinking budgets
+  "provider": {
+    "github-copilot": {
+      "models": {
+        "claude-opus-4.6": {
+          "options": {
+            "thinking": { "budgetTokens": 16000 }
+          }
+        },
+        "claude-sonnet-4.5": {
+          "options": {
+            "thinking": { "budgetTokens": 8000 }
+          }
+        }
+      }
+    }
+  },
+
+  // Agent model overrides - Opus for deep reasoning, Sonnet for speed
+  "agent": {
+    "forge-pm": {
+      "model": "github-copilot/claude-opus-4.6"
+    },
+    "forge-architect": {
+      "model": "github-copilot/claude-opus-4.6"
+    },
+    "forge-reviewer": {
+      "model": "github-copilot/claude-opus-4.6"
+    }
+  },
+
+  // Global tool permissions
+  "permission": {
+    "bash": {
+      "git *": "allow",
+      "npm test": "allow",
+      "npm run *": "allow",
+      "npx *": "allow",
+      "*": "ask"
+    }
+  },
+
+  // Constitution and knowledge base always loaded as context
+  "instructions": [
+    ".forge/constitution.md",
+    ".forge/knowledge/decision-log.md"
+  ],
+
+  // MCP server integrations
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+      }
+    }
+  }
+}
