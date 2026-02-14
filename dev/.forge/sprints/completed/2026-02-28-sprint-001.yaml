@@ -1,0 +1,37 @@
+version: 1
+sprint:
+  number: 1
+  goal: "Multi-Sprint Support Implementation"
+  start_date: "2026-02-14"
+  end_date: "2026-02-28"
+  closed_date: "2026-02-28"
+  story_count: 5
+  stories_completed: 3
+  stories_carried_over: 2
+  
+  stories:
+    - id: "001-S001"
+      title: "Implement sprint-status tool rewrite"
+      status: done
+      points: 13
+    - id: "001-S002"
+      title: "Update forge-sprint command"
+      status: done
+      points: 8
+    - id: "001-S003"
+      title: "Update forge-scrum agent"
+      status: done
+      points: 5
+    - id: "001-S004"
+      title: "Update documentation"
+      status: carried_over
+      points: 5
+    - id: "001-S005"
+      title: "Testing and validation"
+      status: carried_over
+      points: 8
+  
+  velocity:
+    planned: 39
+    completed: 26
+  retro: ".forge/sprints/retrospectives/sprint-001-retro.md"

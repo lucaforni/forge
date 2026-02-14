@@ -730,7 +730,7 @@ Sprint 1 loaded with stories E01-S001 through E01-S004 (18 points).
 ```
 
 **Output**: `.forge/epics/epic-01-core-payments/epic.md`, story files,
-`.forge/sprints/sprint-status.yaml`
+`.forge/sprints/active/sprint-NNN.yaml`
 
 **Phase 6: Story Implementation (repeat per story)**
 
@@ -883,7 +883,7 @@ The rest follows the Epic track workflow.
 | `/forge-plan` | `[spec-id]` | Create a technical plan for a spec. Defaults to most recent spec. |
 | `/forge-analyze` | `[spec-id]` | Cross-validate spec vs plan vs architecture vs constitution. |
 | `/forge-tasks` | `[spec-id]` | Generate dependency-ordered task breakdown from a spec + plan. |
-| `/forge-sprint` | none | Initialize or advance sprint planning. |
+| `/forge-sprint` | `[start \| close [id] \| list \| update [id]]` | Manage sprints. No args shows dashboard or starts new sprint. |
 | `/forge-story` | `[story-id]` | Prepare the next story for implementation. |
 | `/forge-implement` | `[spec-id \| story-id]` | Implement from a spec, story, or task list. |
 
@@ -946,7 +946,8 @@ Developer C: Epic 3, Stories S001-S003 (Webhooks)
 - `.forge/constitution.md` -- All developers follow the same principles
 - `.forge/architecture/architecture.md` -- Consistent technical decisions
 - `.forge/knowledge/adr/` -- All architects see all decisions
-- `.forge/sprints/sprint-status.yaml` -- Scrum master updates centrally
+- `.forge/sprints/active/` -- Scrum master updates sprint files centrally
+- `.forge/sprints/completed/` -- Archived sprint history for velocity tracking
 
 **Per-developer workflow**:
 1. Pull latest `.forge/` artifacts
@@ -954,7 +955,7 @@ Developer C: Epic 3, Stories S001-S003 (Webhooks)
 3. Run `/forge-implement` to build it
 4. Run `/forge-review` for AI adversarial review
 5. Create PR for human review
-6. After merge, update `sprint-status.yaml`
+6. After merge, update active sprint file via `/forge-sprint update`
 
 **Conflict prevention**:
 - The architecture document defines module boundaries. Developer A's payment
@@ -967,11 +968,11 @@ Developer C: Epic 3, Stories S001-S003 (Webhooks)
 
 **Sprint Planning** (start of sprint):
 ```
-Scrum Master: /forge-sprint
-  -> Review velocity from previous sprint
+Scrum Master: /forge-sprint start
+  -> Review velocity from completed sprints
   -> Select stories from backlog
   -> Assign to developers
-  -> Update sprint-status.yaml
+  -> Creates active/sprint-NNN.yaml
   -> Commit and push
 ```
 
@@ -1582,8 +1583,9 @@ Quick overview:
 - **Commit .forge/ artifacts early and often**. These are shared project
   resources, just like code.
 
-- **One person updates sprint-status.yaml**. Concurrent edits to YAML
-  cause merge conflicts. The scrum master should be the single writer.
+- **One person updates sprint files**. Concurrent edits to sprint YAML files
+  in `.forge/sprints/active/` can cause merge conflicts. The scrum master
+  should typically be the single writer, or coordinate sprint file updates.
 
 - **Use feature branches for specs too**. When developing a feature, the
   spec and plan should be on the same branch as the code.
@@ -1654,10 +1656,10 @@ Different FORGE commands leverage GitHub tools at specific workflow stages:
 The scrum master agent can create GitHub issues from sprint stories:
 
 ```
-/forge-sprint
+/forge-sprint start
 
 > The agent will:
-> 1. Read sprint-status.yaml for planned stories
+> 1. Read active sprint files from .forge/sprints/active/
 > 2. Create GitHub issues for each story (with labels, assignees)
 > 3. Link issues to the epic milestone (if applicable)
 ```
@@ -1683,7 +1685,7 @@ The scrum master can read CI/CD check status from GitHub:
 /forge-status
 
 > The agent will:
-> 1. Read sprint-status.yaml for current sprint state
+> 1. Read active sprint files from .forge/sprints/active/
 > 2. Check GitHub CI status for the current branch
 > 3. List any open PRs and their review status
 > 4. Render a combined dashboard
@@ -1789,11 +1791,13 @@ else needs updating. FORGE tracks cross-references but cannot auto-fix them.
 
 ### 10.5 "Sprint status YAML has merge conflicts"
 
-**Cause**: Multiple people edited the sprint status file on different branches.
+**Cause**: Multiple people edited sprint files in `.forge/sprints/active/`
+on different branches.
 
-**Fix**: Designate one person (scrum master) as the sole editor of
-`sprint-status.yaml`. Others read it via `/forge-status` but don't edit
-directly.
+**Fix**: Designate one person (scrum master) as the sole editor of sprint
+files. Others read sprint status via `/forge-status` but don't edit directly.
+With multi-sprint support, consider assigning different people to manage
+different sprints if needed.
 
 ### 10.6 "The knowledge base has too much noise"
 
@@ -1847,5 +1851,5 @@ Knowledge:       /forge-adr      Create decision record
 Key Files:       .forge/constitution.md         Governance
                  .forge/specs/NNN-*/spec.md     Feature specs
                  .forge/knowledge/adr/*.md      Decisions
-                 .forge/sprints/sprint-status.yaml  Progress
+                 .forge/sprints/active/*.yaml   Active sprints
 ```

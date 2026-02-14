@@ -102,27 +102,36 @@ When generating tasks from a spec and plan:
 
 ### 2. Sprint Planning (`/forge-sprint`)
 
-When managing sprints:
+When managing sprints in the multi-sprint directory architecture:
 
 **New sprint:**
-1. Review previous sprint velocity (if exists).
-2. Present the backlog of unassigned stories.
-3. Help the user select stories and estimate points.
-4. Warn if overcommitted (> 120% of average velocity).
-5. Read the template from `.opencode/templates/sprint-status.yaml`.
-6. Write/update `.forge/sprints/sprint-status.yaml`.
+1. Read `.forge/sprints/sprint-sequence.yaml` to get next sprint number.
+2. If sequence file missing, invoke `rebuildSequenceFile()` (scans active/ and completed/).
+3. Review previous sprint velocity from `.forge/sprints/completed/` (last 5 sprints).
+4. Present the backlog of unassigned stories.
+5. Help the user select stories and estimate points.
+6. Warn if overcommitted (> 120% of average velocity).
+7. Read the template from `.opencode/templates/sprint-status.yaml`.
+8. Write `.forge/sprints/active/sprint-NNN.yaml` (where NNN is from sequence file).
+9. Increment `next_sprint_number` in sprint-sequence.yaml.
 
 **Close sprint:**
-1. Verify story completion status.
-2. Calculate actual velocity.
-3. Handle incomplete stories (carry over or return to backlog).
-4. Update sprint history.
-5. Suggest `/forge-retro`.
+1. Read target sprint from `.forge/sprints/active/sprint-NNN.yaml`.
+2. Verify story completion status.
+3. Calculate actual velocity.
+4. Mark incomplete stories as `carried_over` (for archival tracking only).
+5. **Important**: Carried-over stories are NOT automatically added to next sprint.
+6. Write to `.forge/sprints/completed/YYYY-MM-DD-sprint-NNN.yaml`.
+7. Delete from active/ directory.
+8. Check for retrospective file, warn if missing.
+9. Suggest `/forge-retro NNN`.
 
 **Update sprint:**
-1. Present current story statuses.
-2. Help user update statuses.
-3. Update sprint-status.yaml.
+1. Read all active sprints from `.forge/sprints/active/`.
+2. If multiple active sprints and no sprint-id specified, prompt user to select.
+3. Present current story statuses.
+4. Help user update statuses (pending, in_progress, done, blocked).
+5. Update target sprint file in active/ directory.
 
 ### 3. Story Management (`/forge-story`)
 
@@ -140,11 +149,14 @@ When preparing stories for implementation:
 ### 4. Sprint Status (`/forge-status`)
 
 When reporting status:
-1. Read sprint-status.yaml.
-2. Scan spec directories for task completion.
-3. Scan epic directories for story status.
-4. Present a clear dashboard with progress bars and metrics.
-5. For velocity reports, analyze sprint history trends.
+1. Read all active sprints from `.forge/sprints/active/` directory.
+2. Read recent completed sprints from `.forge/sprints/completed/` (last 5).
+3. Scan spec directories for task completion.
+4. Scan epic directories for story status.
+5. Present aggregate dashboard with progress for all active sprints.
+6. Include velocity trend from completed sprint history.
+7. If multiple active sprints (>5), show warning about context complexity.
+8. For list view, show compact table of all active + last 5 completed.
 
 ### 5. Retrospectives (`/forge-retro`)
 

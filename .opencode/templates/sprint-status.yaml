@@ -1,29 +1,23 @@
-# Sprint Status
-# Managed by the forge-scrum agent via /forge-sprint and /forge-status
+# Sprint File (Per-Sprint Format)
+# Managed by the forge-scrum agent via /forge-sprint
+#
+# This template is used to create individual sprint files in .forge/sprints/active/
+# Format version 1: supports multiple concurrent sprints with automatic archiving
 
-project: "[Project Name]"
-
-current_sprint:
-  number: 1
-  goal: "[Sprint goal]"
-  start_date: "YYYY-MM-DD"
-  end_date: "YYYY-MM-DD"
+version: 1
+sprint:
+  number: 1                    # Sprint number (matches filename sprint-NNN.yaml)
+  goal: "[Sprint goal]"        # Clear, concise sprint objective
+  start_date: "YYYY-MM-DD"    # ISO 8601 date format
+  end_date: "YYYY-MM-DD"      # ISO 8601 date format
 
   stories:
-    # - id: "E01-S001"
-    #   title: "Story title"
-    #   status: pending        # pending | in_progress | done | blocked
-    #   points: 5
-    #   blocked_reason: ""     # Only if status is blocked
+    # - id: "E01-S001"           # Story ID (ENN-SNNN format)
+    #   title: "Story title"     # Brief story description
+    #   status: pending          # pending | in_progress | done | blocked | carried_over
+    #   points: 5                # Story points (≥ 0)
+    #   blocked_reason: ""       # Only if status is blocked
 
   velocity:
-    planned: 0
-    completed: 0
-
-previous_sprints:
-  # - number: 0
-  #   goal: ""
-  #   velocity:
-  #     planned: 0
-  #     completed: 0
-  #   retro: ".forge/sprints/retrospectives/sprint-00-retro.md"
+    planned: 0                   # Sum of all story points
+    completed: 0                 # Sum of done story points

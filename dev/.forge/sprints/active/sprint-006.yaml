@@ -1,0 +1,11 @@
+version: 1
+sprint:
+  number: 006
+  goal: "Test Sprint 006"
+  start_date: "2026-02-14"
+  end_date: "2026-02-28"
+  story_count: 0
+  stories: []
+  velocity:
+    planned: 0
+    completed: 0

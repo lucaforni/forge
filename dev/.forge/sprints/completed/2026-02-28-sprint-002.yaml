@@ -1,0 +1,20 @@
+version: 1
+sprint:
+  number: 2
+  goal: "Second sprint closed same day"
+  start_date: "2026-02-20"
+  end_date: "2026-02-28"
+  closed_date: "2026-02-28"
+  story_count: 1
+  stories_completed: 1
+  stories_carried_over: 0
+  
+  stories:
+    - id: "002-S001"
+      title: "Test story"
+      status: done
+      points: 5
+  
+  velocity:
+    planned: 5
+    completed: 5

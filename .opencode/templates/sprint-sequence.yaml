@@ -1,0 +1,10 @@
+# Sprint Sequence Tracker
+# Auto-managed by forge-scrum agent. Do not edit manually.
+#
+# This file tracks the next sprint number for sprint creation.
+# If this file is missing or corrupt, FORGE will rebuild it by scanning
+# the active/ and completed/ directories.
+
+version: 1
+next_sprint_number: 1
+project: "[Project Name]"

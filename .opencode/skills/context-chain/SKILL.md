@@ -28,11 +28,11 @@ Use this table to determine which documents to load:
 | Clarify            | specs/NNN/spec.md, constitution.md                    | specs/NNN/plan.md                     |
 | Analyze            | specs/NNN/spec.md, specs/NNN/plan.md, constitution.md | architecture.md                       |
 | Tasks              | specs/NNN/spec.md, specs/NNN/plan.md                  | constitution.md                       |
-| Sprint Planning    | architecture.md, sprints/sprint-status.yaml           | epics/*, product/prd.md               |
-| Story Creation     | epics/epic-NN/epic.md, architecture.md                | product/prd.md, sprint-status.yaml    |
+| Sprint Planning    | architecture.md, sprints/active/*.yaml                | epics/*, product/prd.md               |
+| Story Creation     | epics/epic-NN/epic.md, architecture.md                | product/prd.md, sprints/active/*.yaml |
 | Implementation     | spec.md OR story file, constitution.md                | plan.md OR architecture.md, ADRs      |
 | Code Review        | spec.md OR story file, constitution.md                | architecture.md, plan.md              |
-| Retrospective      | sprints/sprint-status.yaml                            | decision-log.md, lessons-learned.md   |
+| Retrospective      | sprints/active/*.yaml, sprints/completed/*.yaml       | decision-log.md, lessons-learned.md   |
 | ADR Creation       | constitution.md, knowledge/adr/*.md                   | architecture.md, decision-log.md      |
 
 ## Document Resolution
@@ -83,7 +83,8 @@ To avoid exhausting the context window, follow these guidelines:
 | decision-log.md         | Last 10 entries (~100 lines) |
 | lessons-learned.md      | Last 5 entries (~50 lines) |
 | prd.md                  | ~150 lines (key sections) |
-| sprint-status.yaml      | Full (typically small)  |
+| sprints/active/*.yaml   | Full all files (typically small) |
+| sprints/completed/*.yaml| Last 5 files (velocity history) |
 
 ### Large Document Handling
 
@@ -109,6 +110,5 @@ When starting a new session that continues previous work:
    recent decisions.
 2. Read `.forge/knowledge/lessons-learned.md` (last 5 entries) to avoid
    repeating mistakes.
-3. Check `.forge/sprints/sprint-status.yaml` to understand current sprint
-   state.
+3. Check `.forge/sprints/active/*.yaml` to understand current active sprints.
 4. These provide continuity across session boundaries.

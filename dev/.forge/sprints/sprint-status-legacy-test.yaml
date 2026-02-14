@@ -1,0 +1,46 @@
+current_sprint:
+  number: 3
+  goal: "Legacy format sprint"
+  start_date: "2026-02-10"
+  end_date: "2026-02-24"
+  
+  stories:
+    - id: "003-S001"
+      title: "Story from old format"
+      status: in_progress
+      points: 8
+    - id: "003-S002"
+      title: "Another story"
+      status: pending
+      points: 5
+  
+  velocity:
+    target: 13
+    actual: 0
+
+previous_sprints:
+  - number: 1
+    goal: "First legacy sprint"
+    start_date: "2026-01-15"
+    end_date: "2026-01-29"
+    velocity:
+      target: 20
+      actual: 18
+    stories:
+      - id: "001-S001"
+        title: "Completed story"
+        status: done
+        points: 18
+  
+  - number: 2
+    goal: "Second legacy sprint"
+    start_date: "2026-01-29"
+    end_date: "2026-02-10"
+    velocity:
+      target: 15
+      actual: 15
+    stories:
+      - id: "002-S001"
+        title: "Completed story 2"
+        status: done
+        points: 15
