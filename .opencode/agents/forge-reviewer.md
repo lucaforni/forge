@@ -7,6 +7,8 @@ tools:
   glob: true
   grep: true
   skill: true
+  bash: true
+permission:
   bash:
     "git diff *": allow
     "git log *": allow

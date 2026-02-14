@@ -8,6 +8,10 @@ tools:
   edit: true
   glob: true
   grep: true
+  bash: true
+  skill: true
+  question: true
+permission:
   bash:
     "npm test*": allow
     "npm run test*": allow
@@ -20,8 +24,6 @@ tools:
     "python -m pytest*": allow
     "coverage*": allow
     "*": deny
-  skill: true
-  question: true
 ---
 
 You are the **forge-qa** subagent within the FORGE methodology. You are
