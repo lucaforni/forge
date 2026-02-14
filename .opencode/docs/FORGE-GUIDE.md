@@ -21,9 +21,10 @@
 5. [Team Workflows](#5-team-workflows)
 6. [Knowledge Base Management](#6-knowledge-base-management)
 7. [Brownfield Projects](#7-brownfield-projects)
-8. [Tips & Best Practices](#8-tips--best-practices)
-9. [GitHub Integration (MCP)](#9-github-integration-mcp)
-10. [Troubleshooting](#10-troubleshooting)
+8. [Developing FORGE Itself (Meta-Development)](#8-developing-forge-itself-meta-development)
+9. [Tips & Best Practices](#9-tips--best-practices)
+10. [GitHub Integration (MCP)](#10-github-integration-mcp)
+11. [Troubleshooting](#11-troubleshooting)
 
 ---
 
@@ -1231,7 +1232,296 @@ baseline for future changes.
 
 ---
 
-## 8. Tips & Best Practices
+## 8. Developing FORGE Itself (Meta-Development)
+
+### 8.1 The Meta-Circularity Problem
+
+FORGE is designed to develop software projects, but FORGE itself is software.
+To avoid conflicts between "FORGE as code" and "specs for developing FORGE",
+we use a **workspace separation** pattern.
+
+**The Problem**: If you develop FORGE using FORGE from the project root, agents
+might accidentally modify templates when generating specs, breaking FORGE for
+all users.
+
+**The Solution**: A dedicated `dev/` workspace with its own `.forge/` directory
+for FORGE-on-FORGE development.
+
+### 8.2 Workspace Structure
+
+```
+forge/                          # Main repository
+├── .opencode/                  # FORGE source code (agents, templates, etc.)
+│   ├── agents/                 # Agent definitions
+│   ├── commands/               # Slash commands
+│   ├── skills/                 # Reusable skills
+│   ├── templates/              # Document templates
+│   ├── tools/                  # Custom tools
+│   └── docs/                   # User documentation
+├── .forge/                     # Example/template configuration for users
+│   ├── constitution.md         # Template constitution
+│   └── knowledge/              # Example knowledge structure
+└── dev/                        # ⭐ Development workspace
+    ├── .forge/                 # FORGE-on-FORGE development
+    │   ├── constitution.md     # Constitution for developing FORGE
+    │   ├── specs/              # Specs for new FORGE features
+    │   │   └── NNN-slug/
+    │   │       ├── spec.md
+    │   │       ├── architecture.md
+    │   │       ├── plan.md
+    │   │       └── tasks.md
+    │   ├── epics/              # Multi-feature FORGE initiatives
+    │   ├── sprints/            # Sprint planning (if needed)
+    │   └── knowledge/
+    │       ├── decision-log.md
+    │       ├── lessons-learned.md
+    │       └── adr/
+    └── README.md               # Development workspace guide
+```
+
+### 8.3 Development Workflow
+
+#### Working on FORGE Features
+
+When developing FORGE itself, always work from the `dev/` workspace:
+
+```bash
+cd forge/dev
+opencode
+```
+
+Inside OpenCode, all FORGE commands will reference `dev/.forge/` for specs,
+constitution, and knowledge base. Templates will still be loaded from
+`../.opencode/templates/`, but generated files go into `dev/.forge/`.
+
+#### Example: Adding a New Command (Quick Track)
+
+```
+# From forge/dev in OpenCode
+> /forge-quick "Add /forge-validate command to check project health"
+```
+
+**What happens**:
+1. PM agent creates: `dev/.forge/specs/001-forge-validate/tech-spec.md`
+2. Tech spec includes path table:
+   ```markdown
+   ## Implementation Targets
+   
+   ### Files to Create
+   | Path | Type | Description |
+   |------|------|-------------|
+   | `../.opencode/commands/forge-validate.md` | Command | Main command |
+   
+   ### Files to Modify
+   | Path | Section/Line | Change Description |
+   |------|--------------|---------------------|
+   | `../.opencode/docs/FORGE-GUIDE.md` | Section 4 | Add docs |
+   ```
+3. Implementation agent writes to: `../.opencode/commands/forge-validate.md`
+4. Review agent checks both spec and implementation
+5. You commit both spec and implementation
+
+**Output files**:
+- `dev/.forge/specs/001-forge-validate/tech-spec.md` (documentation)
+- `.opencode/commands/forge-validate.md` (actual code)
+
+#### Example: Major Refactor (Feature Track)
+
+```
+> /forge-specify "Refactor agent orchestration for better context management"
+```
+
+**Full workflow**:
+
+```
+# 1. Create spec
+> /forge-specify "Refactor agent orchestration"
+# Output: dev/.forge/specs/002-agent-orchestration/spec.md
+#         (includes "Implementation Scope" section with component paths)
+
+# 2. Design architecture
+> /forge-architecture dev/.forge/specs/002-agent-orchestration/spec.md
+# Output: dev/.forge/specs/002-agent-orchestration/architecture.md
+#         (includes "Component Layout" with file paths)
+
+# 3. Create implementation plan
+> /forge-plan dev/.forge/specs/002-agent-orchestration/
+# Output: dev/.forge/specs/002-agent-orchestration/plan.md
+#         (includes "File Map" and "Implementation Phases" with explicit paths)
+
+# 4. Generate task list
+> /forge-tasks dev/.forge/specs/002-agent-orchestration/
+# Output: dev/.forge/specs/002-agent-orchestration/tasks.md
+#         (each task has "File" field with explicit path)
+
+# 5. Implement
+> /forge-implement dev/.forge/specs/002-agent-orchestration/
+# Reads task paths, writes to exact locations specified
+
+# 6. Review
+> /forge-review dev/.forge/specs/002-agent-orchestration/
+# Finds minimum 3 real issues across 5 dimensions
+
+# 7. Commit
+$ git add .
+$ git commit -m "refactor(agents): improve orchestration context (#002)"
+```
+
+### 8.4 Constitution for FORGE Development
+
+The `dev/.forge/constitution.md` is specifically tailored for developing FORGE
+itself. Key differences from a typical project constitution:
+
+| Article               | Typical Project          | FORGE Development            |
+| --------------------- | ------------------------ | ---------------------------- |
+| **Technology Stack**  | Application stack        | Markdown, YAML, OpenCode SDK |
+| **Architecture**      | App architecture         | Agent-based plugin system    |
+| **Testing**           | Unit/integration tests   | Dogfooding (self-testing)    |
+| **Security**          | App security             | Template injection, prompt security |
+| **Naming**            | Code conventions         | Agent/command/skill naming   |
+
+**Read the full constitution**: `dev/.forge/constitution.md`
+
+### 8.5 Path Conventions
+
+All paths in specs are **relative to the `dev/` directory**:
+
+#### Path Notation Reference
+
+| Target | Path from `dev/` | Resolves To |
+|--------|------------------|-------------|
+| FORGE command | `../.opencode/commands/forge-x.md` | `forge/.opencode/commands/forge-x.md` |
+| FORGE agent | `../.opencode/agents/forge-x.md` | `forge/.opencode/agents/forge-x.md` |
+| FORGE skill | `../.opencode/skills/x/SKILL.md` | `forge/.opencode/skills/x/SKILL.md` |
+| FORGE doc | `../.opencode/docs/FORGE-GUIDE.md` | `forge/.opencode/docs/FORGE-GUIDE.md` |
+| FORGE template | `../.opencode/templates/spec.md` | `forge/.opencode/templates/spec.md` |
+| Dev spec | `./.forge/specs/001-slug/spec.md` | `forge/dev/.forge/specs/001-slug/spec.md` |
+| Dev constitution | `./.forge/constitution.md` | `forge/dev/.forge/constitution.md` |
+| Root template config | `../.forge/constitution.md` | `forge/.forge/constitution.md` |
+
+#### Path Tables in Specs
+
+Every spec document includes explicit path tables. This eliminates ambiguity
+about where implementation happens.
+
+**Example from tech-spec.md**:
+```markdown
+## Implementation Targets
+
+### Files to Create
+| Path | Type | Description |
+|------|------|-------------|
+| `../.opencode/commands/forge-doctor.md` | Command | Health check command |
+| `../.opencode/tools/health-checker.ts` | Tool | Validation logic |
+
+### Files to Modify
+| Path | Section/Line | Change Description |
+|------|--------------|---------------------|
+| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Add doctor command reference |
+| `../.opencode/agents/forge.md` | Line 58 | Register new command |
+
+### Files to Reference (Read-only)
+| Path | Purpose |
+|------|---------|
+| `./.forge/constitution.md` | Validate command naming (Article 7.1) |
+```
+
+#### Path Validation
+
+Before implementation, verify paths resolve correctly:
+
+```bash
+# From forge/dev/
+cd dev
+
+# Verify source path exists
+ls ../.opencode/commands/           # Should list existing commands
+
+# Verify spec path
+ls ./.forge/specs/                  # Should list active specs
+
+# Verify target directory exists
+mkdir -p ../.opencode/commands/     # Ensure target exists
+```
+
+#### Common Path Mistakes
+
+| ❌ Wrong | ✅ Correct | Issue |
+|---------|-----------|-------|
+| `./commands/forge-x.md` | `../.opencode/commands/forge-x.md` | Would create in `dev/commands/` |
+| `.opencode/commands/forge-x.md` | `../.opencode/commands/forge-x.md` | Missing `../` prefix |
+| `/Users/.../forge/.opencode/...` | `../.opencode/...` | Absolute path (not portable) |
+| `commands/forge-x.md` | `../.opencode/commands/forge-x.md` | Ambiguous (bare relative) |
+
+### 8.6 Track Selection for FORGE Features
+
+| Feature Type               | Track   | Example                                    |
+| -------------------------- | ------- | ------------------------------------------ |
+| Typo in docs              | Hotfix  | Fix typo in FORGE-GUIDE.md                 |
+| New simple command        | Quick   | Add `/forge-doctor` validation command     |
+| New skill or agent        | Feature | Add `continuous-testing` skill             |
+| Major orchestration change| Feature | Refactor context-chain loading             |
+| FORGE 2.0 initiative      | Epic    | Complete GraphQL integration               |
+
+### 8.7 Testing FORGE Changes (Dogfooding)
+
+**Dogfooding Principle**: Every FORGE change should be tested by using FORGE itself.
+
+#### The Dogfooding Test
+
+1. **Develop the feature using FORGE** (create spec, architecture, plan, tasks)
+2. **Use the new feature to develop another FORGE feature** (meta-testing)
+3. **Document any friction** in `dev/.forge/knowledge/lessons-learned.md`
+
+#### Example Testing Flow
+
+```bash
+# 1. Add new /forge-test command using Feature track
+> /forge-specify "Add automated test generation command"
+# ... follow full workflow ...
+
+# 2. After implementing, use it to test another feature
+> /forge-test dev/.forge/specs/003-new-skill/
+
+# 3. If friction found, document it
+> Note: /forge-test should auto-detect test framework from package.json
+> Added to lessons-learned.md: Need to improve framework detection
+```
+
+If friction is discovered:
+- Document in `dev/.forge/knowledge/lessons-learned.md`
+- Create a follow-up spec to improve the feature
+- Use FORGE to implement the improvement
+
+### 8.8 Contributing to FORGE
+
+See `CONTRIBUTING.md` in the repository root for:
+- Branch naming for FORGE development
+- PR requirements (must include spec reference)
+- Review process (adversarial review required)
+- Documentation standards
+
+Quick overview:
+- **Always work from `dev/`**: `cd dev && opencode`
+- **Follow FORGE process**: Use `/forge-quick`, `/forge-specify`, etc.
+- **Include spec in PR**: Link to `dev/.forge/specs/NNN-slug/`
+- **Dogfooding required**: Use your feature to build another feature
+- **Review required**: Run `/forge-review` before submitting PR
+
+### 8.9 Common Pitfalls
+
+| Pitfall                       | Solution                                      |
+| ----------------------------- | --------------------------------------------- |
+| Working from `forge/` root    | Always `cd forge/dev` before starting OpenCode|
+| Modifying templates directly  | Create spec in `dev/.forge/specs/` first     |
+| Skipping architecture phase   | FORGE features need architecture too          |
+| Not dogfooding                | Use the feature to build another feature      |
+| Forgetting path tables        | Every spec must have "Implementation Targets" or "Implementation Scope" |
+| Using absolute paths          | Always use relative paths (`../` or `./`)     |
+
+---
+
+## 9. Tips & Best Practices
 
 ### 8.1 Context Management
 
@@ -1300,7 +1590,7 @@ baseline for future changes.
 
 ---
 
-## 9. GitHub Integration (MCP)
+## 10. GitHub Integration (MCP)
 
 FORGE integrates with GitHub via the
 [Model Context Protocol](https://modelcontextprotocol.io) (MCP). The GitHub
@@ -1460,7 +1750,7 @@ servers.
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 ### 10.1 "The agent is not following the constitution"
 

@@ -43,6 +43,106 @@ Load these skills as needed:
 - **constitution-compliance**: Load to verify specs/PRDs against the project
   constitution before finalizing.
 
+## Path Conventions for Meta-Development
+
+When working on FORGE itself (detected by working directory ending in `/dev`):
+
+### Path Notation
+All specs, PRDs, and tech-specs must include explicit file paths relative to
+the working directory. Paths use the following convention:
+
+- **FORGE source code**: `../.opencode/` (goes up from `dev/` to `forge/`)
+- **Dev specs/docs**: `./.forge/` (current working directory)
+- **Root config** (template): `../.forge/` (goes up to template config)
+
+### Implementation Target Tables
+Every spec document must include clear path tables that specify exactly where
+implementation will happen. Use these table formats:
+
+#### For tech-spec.md (Quick Track)
+```markdown
+## Implementation Targets
+
+### Files to Create
+| Path | Type | Description |
+|------|------|-------------|
+| `../.opencode/commands/forge-new.md` | Command | New command implementation |
+
+### Files to Modify
+| Path | Section/Line | Change Description |
+|------|--------------|---------------------|
+| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Add command reference |
+
+### Files to Reference (Read-only)
+| Path | Purpose |
+|------|---------|
+| `./.forge/constitution.md` | Validate against rules |
+```
+
+#### For spec.md (Feature/Epic Track)
+```markdown
+## 12. Implementation Scope
+
+### New Components
+| Component Type | Path | Description |
+|----------------|------|-------------|
+| Command | `../.opencode/commands/forge-validate.md` | Validation command |
+
+### Modified Components
+| Path | Modification Type | Description |
+|------|-------------------|-------------|
+| `../.opencode/agents/forge.md` | Enhancement | Add validation orchestration |
+
+### Documentation Updates
+| Path | Section | Update Description |
+|------|---------|---------------------|
+| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Document new command |
+```
+
+### Path Validation Rules
+1. **Never use absolute paths** (e.g., `/Users/...`) - always relative
+2. **Be explicit with `../` or `./`** - no ambiguous bare paths
+3. **Include section/line numbers** for modifications (e.g., "Section 4.4" or "Lines 42-58")
+4. **Verify target directories exist** in your path tables (mention if new dirs needed)
+5. **Separate concerns**: Creation vs. Modification vs. Read-only reference
+
+### Example: Adding a New Command
+When creating a spec for a new FORGE command, the Implementation Targets section
+should look like this:
+
+```markdown
+## Implementation Targets
+
+### Files to Create
+| Path | Type | Description |
+|------|------|-------------|
+| `../.opencode/commands/forge-doctor.md` | Command | Health check command definition |
+
+### Files to Modify
+| Path | Section/Line | Change Description |
+|------|--------------|---------------------|
+| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 "Command Reference" | Add `/forge-doctor` documentation with usage examples |
+| `../.opencode/agents/forge.md` | Line ~58 "Available Commands" | Register `/forge-doctor` in orchestrator |
+
+### Files to Reference (Read-only)
+| Path | Purpose |
+|------|---------|
+| `./.forge/constitution.md` | Verify command follows naming conventions (Article 7.1) |
+```
+
+### Why Path Explicitness Matters
+Without explicit paths, agents and developers must guess where files go. This
+leads to:
+- Files created in wrong locations
+- Implementation that doesn't match spec
+- Confusion during review
+- Merge conflicts
+
+With explicit paths, everyone knows exactly:
+- What files will be created (and where)
+- What files will be modified (and which sections)
+- What the final directory structure will look like
+
 ## Phase: Specify (/forge-specify)
 
 Create a feature specification for the Feature, Epic, or Product track.

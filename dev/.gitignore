@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Dependencies (if any tools added later)
+node_modules/
+
+# Keep all .forge/ content for historical record
+# (specs are documentation of FORGE development)
+!.forge/**
+
+# Temporary files
+*.tmp
+*.temp

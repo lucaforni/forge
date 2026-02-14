@@ -93,11 +93,35 @@
 
 ## 5. File Map
 
-| Path                                    | Action   | Purpose                        |
-| --------------------------------------- | -------- | ------------------------------ |
-| `src/...`                               | Create   |                                |
-| `src/...`                               | Modify   |                                |
-| `test/...`                              | Create   |                                |
+> **Note**: All paths are relative to the working directory (typically project root or `dev/` for FORGE meta-development).
+
+### Files to Create
+
+| Path | Purpose | Estimated Size |
+|------|---------|----------------|
+| `path/to/new/file.ext` | [Purpose of this file] | [S/M/L] |
+| <!-- Add more files as needed --> | | |
+
+### Files to Modify
+
+| Path | Section/Lines | Change Description | Estimated Effort |
+|------|---------------|---------------------|------------------|
+| `path/to/existing/file.ext` | Lines XXX-YYY or Section N.N | [What needs to change and why] | [S/M/L] |
+| <!-- Add more files as needed --> | | | |
+
+### Files to Delete (if any)
+
+| Path | Reason | Migration Notes |
+|------|--------|-----------------|
+| `path/to/deprecated/file.ext` | [Why removing] | [How to migrate users] |
+| <!-- Add more files as needed --> | | |
+
+### Files to Reference (Read-only)
+
+| Path | Purpose |
+|------|---------|
+| `.forge/constitution.md` | Validate architectural decisions |
+| <!-- Add more files as needed --> | |
 
 ## 6. Dependencies
 
@@ -113,27 +137,73 @@
 
 - 
 
-## 7. Testing Strategy
+## 7. Implementation Phases
 
-### 7.1 Unit Tests
+> **Note**: Phases define the order of implementation. Each phase lists specific files to create/modify with explicit paths.
+
+### Phase 1: [Phase Name]
+
+**Objective**: [What this phase accomplishes]
+
+**Files to Create**:
+- `path/to/file1.ext`
+  - Purpose: [Brief description]
+  - Dependencies: [None / Phase X completion]
+  - Estimated effort: [Time estimate]
+
+**Files to Modify**:
+- `path/to/existing/file.ext`
+  - Section/Lines: [Section N.N or Lines XXX-YYY]
+  - Change: [What needs to change]
+  - Estimated effort: [Time estimate]
+
+**Tasks**:
+1. [ ] [Specific task description with file reference]
+2. [ ] [Specific task description with file reference]
+
+### Phase 2: [Phase Name]
+
+**Objective**: [What this phase accomplishes]
+
+**Files to Create**:
+- `path/to/file2.ext`
+  - Purpose: [Brief description]
+  - Dependencies: [Phase 1 completion]
+  - Estimated effort: [Time estimate]
+
+**Files to Modify**:
+- `path/to/existing/file2.ext`
+  - Section/Lines: [Section N.N or Lines XXX-YYY]
+  - Change: [What needs to change]
+  - Estimated effort: [Time estimate]
+
+**Tasks**:
+1. [ ] [Specific task description with file reference]
+2. [ ] [Specific task description with file reference]
+
+<!-- Add more phases as needed -->
+
+## 8. Testing Strategy
+
+### 8.1 Unit Tests
 
 | Component            | Test Focus                           |
 | -------------------- | ------------------------------------ |
 |                      |                                      |
 
-### 7.2 Integration Tests
+### 8.2 Integration Tests
 
 | Scenario             | Dependencies                         |
 | -------------------- | ------------------------------------ |
 |                      |                                      |
 
-## 8. Architectural Decisions
+## 9. Architectural Decisions
 
 | ADR     | Decision                             | Status    |
 | ------- | ------------------------------------ | --------- |
 |         |                                      |           |
 
-## 9. Requirement Traceability
+## 10. Requirement Traceability
 
 | Requirement | Plan Section           | Implementation Path          |
 | ----------- | ---------------------- | ---------------------------- |
@@ -141,7 +211,7 @@
 | FR-002      |                        |                              |
 | NFR-001     |                        |                              |
 
-## 10. Constitution Compliance
+## 11. Constitution Compliance
 
 | Article | Status | Notes                                     |
 | ------- | ------ | ----------------------------------------- |

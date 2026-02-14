@@ -95,7 +95,32 @@
 
 - [NEEDS CLARIFICATION] <!-- Question here -->
 
-## 12. Constitution Compliance
+## 12. Implementation Scope
+
+> **Note**: All paths are relative to the working directory (typically project root or `dev/` for FORGE meta-development).
+
+### New Components
+
+| Component Type | Path | Description |
+|----------------|------|-------------|
+| [Type] | `path/to/component` | [Purpose and responsibilities] |
+| <!-- Add more components as needed --> | | |
+
+### Modified Components
+
+| Path | Modification Type | Description |
+|------|-------------------|-------------|
+| `path/to/existing/component` | [Enhancement/Refactor/Fix] | [What changes and why] |
+| <!-- Add more components as needed --> | | |
+
+### Documentation Updates
+
+| Path | Section | Update Description |
+|------|---------|---------------------|
+| `docs/file.md` | Section X.Y | [What documentation needs updating] |
+| <!-- Add more files as needed --> | | |
+
+## 13. Constitution Compliance
 
 | Article | Status | Notes                                     |
 | ------- | ------ | ----------------------------------------- |
