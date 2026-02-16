@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
   // FORGE - Framework for Orchestrated Requirements, Governance & Engineering
-  // Full project configuration for OpenCode
+  // Project configuration template
 
   // Default model for all agents unless overridden
   "model": "github-copilot/claude-sonnet-4.5",
@@ -25,19 +25,12 @@
   },
 
   // Agent model overrides - Opus for deep reasoning, Sonnet for speed
-  // NOTE: For FORGE meta-development, we override agent paths to use meta versions
   "agent": {
     "forge-pm": {
-      "model": "github-copilot/claude-opus-4.6",
-      "path": ".opencode-meta/agents/forge-pm-meta.md"
+      "model": "github-copilot/claude-opus-4.6"
     },
     "forge-architect": {
-      "model": "github-copilot/claude-opus-4.6",
-      "path": ".opencode-meta/agents/forge-architect-meta.md"
-    },
-    "forge-scrum": {
-      "model": "github-copilot/claude-sonnet-4.5",
-      "path": ".opencode-meta/agents/forge-scrum-meta.md"
+      "model": "github-copilot/claude-opus-4.6"
     },
     "forge-reviewer": {
       "model": "github-copilot/claude-opus-4.6"
@@ -92,10 +85,10 @@
     "grep": "allow"
   },
 
-  // Constitution and knowledge base for FORGE meta-development
+  // Constitution and knowledge base always loaded as context
   "instructions": [
-    ".forge-meta/constitution.md",
-    ".forge-meta/knowledge/decision-log.md"
+    ".forge/constitution.md",
+    ".forge/knowledge/decision-log.md"
   ],
 
   // MCP server integrations

@@ -30,6 +30,59 @@ and implementation by organizing work into manageable, trackable units.
 5. **Keep artifacts up to date.** Task statuses, sprint status, and story
    progress should always reflect reality.
 
+## Task Path Specification
+
+When breaking down work into tasks, every task must include an explicit file
+path to eliminate ambiguity about where work happens.
+
+### Task Format with Paths
+Each task in `tasks.md` must specify:
+
+- **File**: Explicit relative path (e.g., `../.opencode/commands/forge-x.md`)
+- **Type**: `Create new file` or `Modify existing` or `Delete`
+- **Location**: For modifications, specify section name or line numbers
+- **Description**: What needs to be done
+- **Spec Reference**: Which section of the spec defines this
+- **Dependencies**: Task IDs this depends on
+- **Estimated**: Time estimate (S/M/L/XL)
+
+### Example Task Entry
+```markdown
+- [ ] **1.1** `[FR-001]` Create command definition
+  - **File**: `../.opencode/commands/forge-doctor.md`
+  - **Type**: Create new file
+  - **Description**: Define command frontmatter, description, usage, and examples
+  - **Spec Reference**: Section 3.2 "Command Interface"
+  - **Dependencies**: None
+  - **Estimated**: S (30 min)
+
+- [ ] **1.2** `[FR-001]` Register command in orchestrator
+  - **File**: `../.opencode/agents/forge.md`
+  - **Type**: Modify existing
+  - **Location**: Line ~58, "Available Commands" section
+  - **Description**: Add forge-doctor to command routing logic
+  - **Spec Reference**: Section 3.3 "Integration"
+  - **Dependencies**: Task 1.1
+  - **Estimated**: S (10 min)
+```
+
+### Path Notation Rules
+- Use relative paths from working directory (typically `dev/` for meta-development)
+- FORGE source: `../.opencode/[type]/[file]`
+- Dev workspace: `./.forge/[type]/[file]`
+- No absolute paths
+- Include file extension
+
+### Validation Before Finalizing Tasks
+Before writing `tasks.md`, verify:
+
+- [ ] Every task has a `File` field with explicit path
+- [ ] Modification tasks specify `Location` (section or lines)
+- [ ] Creation tasks verify parent directory exists (or note it needs creation)
+- [ ] Paths follow FORGE conventions (see constitution Article 7)
+- [ ] Dependencies between tasks are clear
+- [ ] No task estimates exceed 4 hours (split if needed)
+
 ## Primary Responsibilities
 
 ### 1. Task Breakdown (`/forge-tasks`)

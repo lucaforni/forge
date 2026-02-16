@@ -53,10 +53,8 @@ const FILES_TO_COPY = [
   { source: '.opencode/package.json', target: '.opencode/package.json' },
 ];
 
-/** Files that require smart merging during updates */
-const FILES_TO_MERGE = [
-  { source: 'opencode.json', target: 'opencode.json' },
-];
+/** Template opencode.json to copy (NOT the repo's opencode.json) */
+const OPENCODE_JSON_TEMPLATE = '.opencode/templates/opencode.json';
 
 /** Template files (copied only on fresh install, not updates) */
 const TEMPLATE_FILES = [
@@ -352,13 +350,16 @@ async function install(targetPath: string, isUpdate: boolean) {
   }
   console.log('');
   
-  // Step 2b: Merge JSON configuration files
-  log('Merging configuration files...', 'info');
-  for (const { source, target } of FILES_TO_MERGE) {
-    const sourcePath = path.join(FORGE_SOURCE, source);
-    const targetFilePath = path.join(targetPath, target);
-    
-    mergeJsonFile(sourcePath, targetFilePath, isUpdate);
+  // Step 2b: Merge opencode.json from template (NOT from repo root)
+  log('Merging opencode.json configuration...', 'info');
+  const opencodeJsonSource = path.join(FORGE_SOURCE, OPENCODE_JSON_TEMPLATE);
+  const opencodeJsonTarget = path.join(targetPath, 'opencode.json');
+  
+  if (!fs.existsSync(opencodeJsonSource)) {
+    log(`Warning: Template opencode.json not found at ${OPENCODE_JSON_TEMPLATE}`, 'warn');
+    log('Skipping opencode.json merge. You may need to create it manually.', 'warn');
+  } else {
+    mergeJsonFile(opencodeJsonSource, opencodeJsonTarget, isUpdate);
   }
   console.log('');
   
