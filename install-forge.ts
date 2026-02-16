@@ -48,10 +48,14 @@ const DIRECTORIES_TO_COPY = [
   { source: '.opencode/docs', target: '.opencode/docs' },
 ];
 
-/** Individual files to copy */
+/** Individual files to copy (simple copy, no merge) */
 const FILES_TO_COPY = [
   { source: '.opencode/package.json', target: '.opencode/package.json' },
-  { source: 'opencode.json', target: 'opencode.json', optional: true },
+];
+
+/** Files that require smart merging during updates */
+const FILES_TO_MERGE = [
+  { source: 'opencode.json', target: 'opencode.json' },
 ];
 
 /** Template files (copied only on fresh install, not updates) */
@@ -150,6 +154,162 @@ function copyFile(source: string, target: string, isUpdate: boolean, optional = 
   fs.copyFileSync(source, target);
 }
 
+/**
+ * Merge JSON files intelligently during updates
+ * - Preserves user customizations
+ * - Adds new keys from template
+ * - Logs what was merged
+ */
+function mergeJsonFile(source: string, target: string, isUpdate: boolean) {
+  const relativeTarget = path.relative(process.cwd(), target);
+  
+  // Check if source exists
+  if (!fs.existsSync(source)) {
+    log(`Source file not found: ${source}`, 'error');
+    process.exit(1);
+  }
+  
+  // Fresh install: just copy
+  if (!isUpdate || !fs.existsSync(target)) {
+    log(`  → ${relativeTarget} (fresh copy)`, 'info');
+    ensureDir(path.dirname(target));
+    fs.copyFileSync(source, target);
+    return;
+  }
+  
+  // Update: merge intelligently
+  log(`  → ${relativeTarget} (merging with existing)`, 'info');
+  
+  try {
+    // Create backup FIRST (using absolute path)
+    createBackup(target);
+    
+    // Read and parse both files (strip comments for parsing)
+    const stripJsonComments = (content: string) => {
+      // Remove single-line // comments but only when they're not inside strings
+      const lines = content.split('\n');
+      const result = lines.map(line => {
+        // Find // that's not inside a string
+        let inString = false;
+        let escaped = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          
+          if (escaped) {
+            escaped = false;
+            continue;
+          }
+          
+          if (char === '\\') {
+            escaped = true;
+            continue;
+          }
+          
+          if (char === '"') {
+            inString = !inString;
+            continue;
+          }
+          
+          // If we find // outside of a string, remove from here to end
+          if (!inString && char === '/' && line[i + 1] === '/') {
+            return line.substring(0, i);
+          }
+        }
+        return line;
+      }).join('\n');
+      
+      // Remove trailing commas before } or ]
+      return result.replace(/,(\s*[}\]])/g, '$1');
+    };
+    
+    const sourceContent = fs.readFileSync(source, 'utf-8');
+    const targetContent = fs.readFileSync(target, 'utf-8');
+    
+    const templateConfig = JSON.parse(stripJsonComments(sourceContent));
+    const userConfig = JSON.parse(stripJsonComments(targetContent));
+    
+    // Deep merge function that preserves user values but adds new keys
+    function deepMerge(template: any, user: any, path = ''): any {
+      if (typeof template !== 'object' || template === null) {
+        // If user has a value, keep it; otherwise use template
+        return user !== undefined ? user : template;
+      }
+      
+      if (Array.isArray(template)) {
+        // For arrays, prefer user's array if it exists
+        return user !== undefined ? user : template;
+      }
+      
+      // For objects, start with user's values
+      const result: any = {};
+      
+      // First, copy all user values
+      for (const key of Object.keys(user || {})) {
+        result[key] = user[key];
+      }
+      
+      // Then, add missing keys from template
+      for (const key of Object.keys(template)) {
+        const currentPath = path ? `${path}.${key}` : key;
+        
+        if (!(key in result)) {
+          // New key from template - add it
+          result[key] = template[key];
+          log(`    + Added: ${currentPath}`, 'success');
+        } else if (typeof template[key] === 'object' && !Array.isArray(template[key]) && template[key] !== null
+                   && typeof result[key] === 'object' && !Array.isArray(result[key]) && result[key] !== null) {
+          // Both are objects - decide how to merge
+          
+          // Special case: for permission.bash and similar maps, do shallow merge
+          // to preserve user's custom entries while adding new template entries
+          if (currentPath === 'permission.bash' || currentPath === 'agent' || currentPath === 'mcp') {
+            // Shallow merge: add template keys that user doesn't have
+            const userObj = result[key];
+            for (const subKey of Object.keys(template[key])) {
+              if (!(subKey in userObj)) {
+                userObj[subKey] = template[key][subKey];
+                log(`    + Added: ${currentPath}.${subKey}`, 'success');
+              }
+            }
+          } else {
+            // Recurse for other nested objects
+            result[key] = deepMerge(template[key], result[key], currentPath);
+          }
+        }
+        // else: user's value wins, keep it
+      }
+      
+      return result;
+    }
+    
+    const mergedConfig = deepMerge(templateConfig, userConfig);
+    
+    // Write merged config with pretty formatting
+    const mergedContent = JSON.stringify(mergedConfig, null, 2) + '\n';
+    
+    // Preserve comments if they exist in the original
+    let finalContent = mergedContent;
+    if (targetContent.includes('//')) {
+      // Try to preserve top comments
+      const topComments = targetContent.split('\n')
+        .filter(line => line.trim().startsWith('//') || line.trim().startsWith('{'))
+        .slice(0, 5); // Get first few lines including opening brace
+      
+      if (topComments.length > 1 && !topComments[0].includes('{')) {
+        log(`    ℹ Note: Comments may need manual adjustment`, 'warn');
+      }
+    }
+    
+    fs.writeFileSync(target, finalContent);
+    log(`    ✓ Merged successfully. Review changes and restore comments if needed.`, 'success');
+    
+  } catch (error: any) {
+    log(`Failed to merge JSON: ${error.message}`, 'error');
+    log(`Copying template as fallback. Check ${target}.backup-*`, 'warn');
+    fs.copyFileSync(source, target);
+  }
+}
+
 // ============================================================================
 // Main Installation Logic
 // ============================================================================
@@ -183,12 +343,22 @@ async function install(targetPath: string, isUpdate: boolean) {
   
   // Step 2: Copy individual files
   log('Copying configuration files...', 'info');
-  for (const { source, target, optional } of FILES_TO_COPY) {
+  for (const { source, target } of FILES_TO_COPY) {
     const sourcePath = path.join(FORGE_SOURCE, source);
     const targetFilePath = path.join(targetPath, target);
     
     log(`  → ${target}`, 'info');
-    copyFile(sourcePath, targetFilePath, isUpdate, optional);
+    copyFile(sourcePath, targetFilePath, isUpdate);
+  }
+  console.log('');
+  
+  // Step 2b: Merge JSON configuration files
+  log('Merging configuration files...', 'info');
+  for (const { source, target } of FILES_TO_MERGE) {
+    const sourcePath = path.join(FORGE_SOURCE, source);
+    const targetFilePath = path.join(targetPath, target);
+    
+    mergeJsonFile(sourcePath, targetFilePath, isUpdate);
   }
   console.log('');
   

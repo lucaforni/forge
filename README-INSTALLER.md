@@ -68,6 +68,28 @@ During an update, these are refreshed:
 - `.opencode/docs/` - Documentation
 - `.opencode/package.json` - Dependencies
 
+## Smart Configuration Merging
+
+**NEW:** `opencode.json` is now **intelligently merged** during updates!
+
+When you update FORGE, your customizations in `opencode.json` are preserved:
+- ✅ Your custom model selections are kept
+- ✅ Your agent overrides remain intact
+- ✅ Your custom permissions stay
+- ✅ New FORGE configuration keys are added automatically
+- ✅ A backup is created before merging
+
+Example merge output:
+```
+ℹ Merging configuration files...
+  → opencode.json (merging with existing)
+    + Added: agent.forge-qa
+    + Added: permission.bash.pytest *
+    ✓ Merged successfully
+```
+
+See `.opencode/docs/UPDATING-FORGE.md` for detailed merge behavior and examples.
+
 ## Backup System
 
 Before overwriting any existing file, a timestamped backup is created:

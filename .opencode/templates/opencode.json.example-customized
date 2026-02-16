@@ -1,0 +1,90 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // FORGE - Customized for My Project
+  
+  // User changed default model to Opus
+  "model": "github-copilot/claude-opus-4.6",
+
+  // User added custom thinking budgets
+  "provider": {
+    "github-copilot": {
+      "models": {
+        "claude-opus-4.6": {
+          "options": {
+            "thinking": { "budgetTokens": 20000 }  // User increased
+          }
+        },
+        "claude-sonnet-4.5": {
+          "options": {
+            "thinking": { "budgetTokens": 10000 }  // User increased
+          }
+        }
+      }
+    }
+  },
+
+  // User removed some agent overrides
+  "agent": {
+    "forge-reviewer": {
+      "model": "github-copilot/claude-opus-4.6"
+    }
+  },
+
+  // User added custom bash permissions
+  "permission": {
+    "bash": {
+      "git *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "node *": "allow",
+      "yarn *": "allow",
+      "ls *": "allow",
+      "pwd": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
+      "wc *": "allow",
+      "tree *": "allow",
+      "make *": "allow",
+      "mkdir *": "allow",
+      "touch *": "allow",
+      "cp *": "allow",
+      "mv *": "allow",
+      "rm -f *": "allow",
+      "echo *": "allow",
+      
+      // User added custom docker permissions
+      "docker ps": "allow",
+      "docker logs *": "allow",
+      "docker exec *": "allow",
+      
+      "*": "ask"
+    },
+    
+    "edit": "allow",
+    "write": "allow",
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow"
+  },
+
+  // User customized instructions
+  "instructions": [
+    ".forge/constitution.md",
+    ".forge/knowledge/decision-log.md",
+    "docs/STYLE_GUIDE.md"  // User added custom doc
+  ],
+
+  // User kept MCP config as-is
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+      }
+    }
+  }
+}
