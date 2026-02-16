@@ -5,7 +5,7 @@
 # This script downloads and installs FORGE from GitHub
 # 
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/YOUR_ORG/forge/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/lucaforni/forge/main/install.sh | bash
 #   
 # Or download and run locally:
 #   chmod +x install.sh
@@ -14,7 +14,7 @@
 set -e
 
 VERSION="1.0.0"
-FORGE_REPO="https://github.com/YOUR_ORG/forge.git"  # UPDATE THIS
+FORGE_REPO="https://github.com/lucaforni/forge.git"
 TEMP_DIR=$(mktemp -d)
 
 # Colors
