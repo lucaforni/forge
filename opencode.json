@@ -40,12 +40,49 @@
   // Global tool permissions
   "permission": {
     "bash": {
+      // Git operations
       "git *": "allow",
-      "npm test": "allow",
-      "npm run *": "allow",
+      
+      // NPM/Node operations
+      "npm *": "allow",
       "npx *": "allow",
+      "node *": "allow",
+      "yarn *": "allow",
+      
+      // Safe read operations
+      "ls *": "allow",
+      "pwd": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
+      "wc *": "allow",
+      "tree *": "allow",
+      
+      // Build and test operations
+      "make *": "allow",
+      
+      // Directory and file operations
+      "mkdir *": "allow",
+      "touch *": "allow",
+      "cp *": "allow",
+      "mv *": "allow",
+      "rm -f *": "allow",
+      
+      // Echo and output
+      "echo *": "allow",
+      
+      // Everything else asks
       "*": "ask"
-    }
+    },
+    
+    // File operation tool permissions
+    "edit": "allow",
+    "write": "allow",
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow"
   },
 
   // Constitution and knowledge base always loaded as context
