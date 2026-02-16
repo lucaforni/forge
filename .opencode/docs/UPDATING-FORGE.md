@@ -18,6 +18,23 @@ cd /path/to/forge
 npx tsx install-forge.ts /path/to/your-project --update
 ```
 
+### Backup Options
+
+By default, the installer will **ask you interactively** whether to create backup files:
+
+```bash
+npx tsx install-forge.ts /path/to/your-project --update
+# → Prompts: "Create backup files during update? [Y/n]:"
+```
+
+To skip the prompt and **disable backups** (not recommended):
+
+```bash
+npx tsx install-forge.ts /path/to/your-project --update --no-backup
+```
+
+Backups are created with timestamps: `file.json.backup-2026-02-16T12-30-00`
+
 ---
 
 ## What Gets Updated

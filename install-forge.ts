@@ -16,6 +16,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as readline from 'readline';
 import { execSync } from 'child_process';
 
 // ============================================================================
@@ -72,6 +73,31 @@ function log(message: string, level: 'info' | 'success' | 'warn' | 'error' = 'in
   console.log(`${colors[level]}${icons[level]} ${message}\x1b[0m`);
 }
 
+async function askYesNo(question: string, defaultYes: boolean = true): Promise<boolean> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    const defaultOption = defaultYes ? 'Y/n' : 'y/N';
+    rl.question(`${question} [${defaultOption}]: `, (answer) => {
+      rl.close();
+      
+      const normalized = answer.trim().toLowerCase();
+      if (normalized === '') {
+        resolve(defaultYes);
+      } else if (normalized === 'y' || normalized === 'yes') {
+        resolve(true);
+      } else if (normalized === 'n' || normalized === 'no') {
+        resolve(false);
+      } else {
+        resolve(defaultYes);
+      }
+    });
+  });
+}
+
 function isProtected(filePath: string): boolean {
   return PROTECTED_PATTERNS.some(pattern => {
     if (pattern.includes('**')) {
@@ -95,7 +121,7 @@ function ensureDir(dirPath: string) {
   }
 }
 
-function copyDirectory(source: string, target: string, isUpdate: boolean) {
+function copyDirectory(source: string, target: string, isUpdate: boolean, createBackups: boolean = true) {
   ensureDir(target);
   
   const entries = fs.readdirSync(source, { withFileTypes: true });
@@ -106,7 +132,7 @@ function copyDirectory(source: string, target: string, isUpdate: boolean) {
     const relativeTarget = path.relative(process.cwd(), targetPath);
     
     if (entry.isDirectory()) {
-      copyDirectory(sourcePath, targetPath, isUpdate);
+      copyDirectory(sourcePath, targetPath, isUpdate, createBackups);
     } else {
       // Check if file is protected
       if (isUpdate && isProtected(relativeTarget)) {
@@ -115,7 +141,7 @@ function copyDirectory(source: string, target: string, isUpdate: boolean) {
       }
       
       // Create backup if file exists and we're updating
-      if (isUpdate && fs.existsSync(targetPath)) {
+      if (isUpdate && createBackups && fs.existsSync(targetPath)) {
         createBackup(targetPath);
       }
       
@@ -124,7 +150,7 @@ function copyDirectory(source: string, target: string, isUpdate: boolean) {
   }
 }
 
-function copyFile(source: string, target: string, isUpdate: boolean, optional = false) {
+function copyFile(source: string, target: string, isUpdate: boolean, createBackups: boolean = true, optional = false) {
   const relativeTarget = path.relative(process.cwd(), target);
   
   // Check if source exists
@@ -144,7 +170,7 @@ function copyFile(source: string, target: string, isUpdate: boolean, optional = 
   }
   
   // Create backup if file exists and we're updating
-  if (isUpdate && fs.existsSync(target)) {
+  if (isUpdate && createBackups && fs.existsSync(target)) {
     createBackup(target);
   }
   
@@ -158,7 +184,7 @@ function copyFile(source: string, target: string, isUpdate: boolean, optional = 
  * - Adds new keys from template
  * - Logs what was merged
  */
-function mergeJsonFile(source: string, target: string, isUpdate: boolean) {
+function mergeJsonFile(source: string, target: string, isUpdate: boolean, createBackups: boolean = true) {
   const relativeTarget = path.relative(process.cwd(), target);
   
   // Check if source exists
@@ -180,7 +206,9 @@ function mergeJsonFile(source: string, target: string, isUpdate: boolean) {
   
   try {
     // Create backup FIRST (using absolute path)
-    createBackup(target);
+    if (createBackups) {
+      createBackup(target);
+    }
     
     // Read and parse both files (strip comments for parsing)
     const stripJsonComments = (content: string) => {
@@ -312,12 +340,16 @@ function mergeJsonFile(source: string, target: string, isUpdate: boolean) {
 // Main Installation Logic
 // ============================================================================
 
-async function install(targetPath: string, isUpdate: boolean) {
+async function install(targetPath: string, isUpdate: boolean, createBackups: boolean = true) {
   const startTime = Date.now();
   
   log(`${isUpdate ? 'Updating' : 'Installing'} FORGE v${VERSION}...`, 'info');
   log(`Target: ${targetPath}`, 'info');
   log(`Source: ${FORGE_SOURCE}`, 'info');
+  
+  if (isUpdate && !createBackups) {
+    log('Backup creation: DISABLED', 'warn');
+  }
   console.log('');
   
   // Change to target directory
@@ -335,7 +367,7 @@ async function install(targetPath: string, isUpdate: boolean) {
     }
     
     log(`  → ${target}`, 'info');
-    copyDirectory(sourcePath, targetFilePath, isUpdate);
+    copyDirectory(sourcePath, targetFilePath, isUpdate, createBackups);
   }
   console.log('');
   
@@ -346,7 +378,7 @@ async function install(targetPath: string, isUpdate: boolean) {
     const targetFilePath = path.join(targetPath, target);
     
     log(`  → ${target}`, 'info');
-    copyFile(sourcePath, targetFilePath, isUpdate);
+    copyFile(sourcePath, targetFilePath, isUpdate, createBackups);
   }
   console.log('');
   
@@ -359,7 +391,7 @@ async function install(targetPath: string, isUpdate: boolean) {
     log(`Warning: Template opencode.json not found at ${OPENCODE_JSON_TEMPLATE}`, 'warn');
     log('Skipping opencode.json merge. You may need to create it manually.', 'warn');
   } else {
-    mergeJsonFile(opencodeJsonSource, opencodeJsonTarget, isUpdate);
+    mergeJsonFile(opencodeJsonSource, opencodeJsonTarget, isUpdate, createBackups);
   }
   console.log('');
   
@@ -376,7 +408,7 @@ async function install(targetPath: string, isUpdate: boolean) {
       }
       
       log(`  → ${target}`, 'info');
-      copyFile(sourcePath, targetFilePath, false);
+      copyFile(sourcePath, targetFilePath, false, true);
     }
     console.log('');
     
@@ -476,7 +508,11 @@ async function install(targetPath: string, isUpdate: boolean) {
     console.log('Update complete. Your protected files were preserved:');
     PROTECTED_PATTERNS.forEach(p => console.log(`  • ${p}`));
     console.log('');
-    console.log('Backup files created for any overwritten files.');
+    if (createBackups) {
+      console.log('Backup files created for any overwritten files.');
+    } else {
+      console.log('No backup files created (--no-backup flag used).');
+    }
     console.log('Review changes with: git diff');
   }
 }
@@ -485,7 +521,7 @@ async function install(targetPath: string, isUpdate: boolean) {
 // CLI Entry Point
 // ============================================================================
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   
   // Show help
@@ -494,13 +530,14 @@ function main() {
 FORGE Installation & Update Script v${VERSION}
 
 Usage:
-  npx tsx install-forge.ts <target-directory> [--update]
+  npx tsx install-forge.ts <target-directory> [--update] [--no-backup]
   
 Arguments:
   <target-directory>  Path to the project where FORGE should be installed
   
 Options:
   --update           Update existing FORGE installation (preserves user files)
+  --no-backup        Skip creating backup files during update (not recommended)
   --help, -h         Show this help message
   
 Examples:
@@ -509,6 +546,9 @@ Examples:
   
   # Update existing installation
   npx tsx install-forge.ts /path/to/my-project --update
+  
+  # Update without creating backups
+  npx tsx install-forge.ts /path/to/my-project --update --no-backup
   
 Protected files (never overwritten during updates):
 ${PROTECTED_PATTERNS.map(p => `  • ${p}`).join('\n')}
@@ -519,6 +559,7 @@ ${PROTECTED_PATTERNS.map(p => `  • ${p}`).join('\n')}
   // Parse arguments
   const targetPath = args[0];
   const isUpdate = args.includes('--update');
+  const noBackupFlag = args.includes('--no-backup');
   
   if (!targetPath) {
     log('Error: Target directory required', 'error');
@@ -550,8 +591,25 @@ ${PROTECTED_PATTERNS.map(p => `  • ${p}`).join('\n')}
     process.exit(1);
   }
   
+  // Determine if we should create backups
+  let createBackups = true;
+  if (isUpdate) {
+    if (noBackupFlag) {
+      // User explicitly disabled backups
+      createBackups = false;
+    } else {
+      // Ask user interactively
+      console.log('');
+      log('During update, FORGE can create backup files before overwriting.', 'info');
+      log('Example: config.json → config.json.backup-2026-02-16T12-30-00', 'info');
+      console.log('');
+      createBackups = await askYesNo('Create backup files during update?', true);
+      console.log('');
+    }
+  }
+  
   // Run installation
-  install(resolvedTarget, isUpdate).catch(error => {
+  install(resolvedTarget, isUpdate, createBackups).catch(error => {
     log(`Installation failed: ${error.message}`, 'error');
     console.error(error);
     process.exit(1);
