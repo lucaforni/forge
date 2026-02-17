@@ -1,0 +1,220 @@
+# FORGE Configuration Example
+# Copy this to your project root as .forge/config.yml and customize
+
+# =============================================================================
+# KNOWLEDGE MANAGEMENT
+# =============================================================================
+
+knowledge:
+  decision_log:
+    # Archiviation Triggers
+    max_lines: 500                    # Trigger archiviation at this line count
+    max_tokens: 20000                 # Or at this estimated token count
+    auto_archive: true                # Auto-suggest archiviation when threshold hit
+    
+    # Retention Policy
+    keep_recent: 30                   # Always keep last N entries in active log
+    
+    # Critical Tags (never archive entries with these tags)
+    critical_tags:
+      - critical                      # Generic high-priority
+      - constitutional                # Constitution-level decisions
+      - breaking-change               # Breaking API/schema changes
+      - security-critical             # Security-sensitive decisions
+    
+    # Archive Location
+    archive_path: .forge/knowledge/archives
+    
+    # Validation Rules
+    validation:
+      require_status: true            # Enforce status field on all entries
+      require_tags: false             # Make tags required (default: optional)
+      require_context: false          # Make context section required
+      warn_stale_pending_days: 90     # Warn if pending status > N days
+      auto_fix_safe: true             # Allow safe auto-fixes during validation
+
+# =============================================================================
+# WORKFLOW CONFIGURATION
+# =============================================================================
+
+workflow:
+  # Scope Detection Thresholds
+  scope_detection:
+    hotfix:
+      max_files: 2
+      max_tasks: 1
+      max_duration_hours: 2
+    quick:
+      max_files: 5
+      max_tasks: 5
+      max_duration_hours: 8
+    feature:
+      max_files: 20
+      max_tasks: 20
+      max_duration_days: 5
+    epic:
+      max_files: 50
+      max_tasks: 50
+      max_duration_weeks: 4
+  
+  # Sprint Configuration
+  sprint:
+    default_duration_weeks: 2         # Default sprint length
+    velocity_calculation: average_3   # Options: average_3, average_5, last
+    story_point_scale: fibonacci      # Options: fibonacci, linear, tshirt
+    story_states:
+      - todo
+      - in_progress
+      - review
+      - done
+      - blocked
+
+# =============================================================================
+# CODE QUALITY
+# =============================================================================
+
+quality:
+  # Test Coverage Targets
+  testing:
+    coverage:
+      minimum_line: 70                # Minimum line coverage %
+      target_line: 85                 # Target line coverage %
+      minimum_branch: 60              # Minimum branch coverage %
+      target_branch: 80               # Target branch coverage %
+      critical_paths: 100             # Critical path coverage %
+    required_types:
+      - unit
+      - integration
+      - edge-cases
+      - error-paths
+  
+  # Review Requirements
+  review:
+    ai_review_required: true          # Require AI adversarial review
+    min_issues_to_find: 3             # AI must find at least N issues
+    human_review_required: true       # Require human review after AI
+    review_dimensions:
+      - correctness
+      - security
+      - performance
+      - maintainability
+      - constitution_compliance
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+documentation:
+  # ADR Settings
+  adr:
+    numbering_format: "ADR-{seq:04d}"     # e.g., ADR-0001, ADR-0042
+    auto_generate_id: true                # Auto-generate IDs
+    require_status: true                  # Require status field
+    valid_statuses:
+      - proposed
+      - accepted
+      - deprecated
+      - superseded
+  
+  # Spec Templates
+  specs:
+    numbering_format: "{seq:03d}-{slug}"  # e.g., 042-auth-system
+    require_acceptance_criteria: true     # Enforce AC in specs
+    require_nfr_metrics: true             # Enforce metrics in NFRs
+
+# =============================================================================
+# CONTEXT MANAGEMENT
+# =============================================================================
+
+context:
+  # Token Budget
+  token_budget:
+    max_per_phase: 50000              # Max tokens per workflow phase
+    decision_log: 20000               # Max tokens for decision log
+    constitution: 5000                # Max tokens for constitution
+    specs: 15000                      # Max tokens for specs per phase
+  
+  # Priority Loading (load order when under budget pressure)
+  priority_loading:
+    - constitution
+    - current_spec
+    - plan
+    - decision_log
+    - adr
+    - related_specs
+
+# =============================================================================
+# TEAM CONFIGURATION
+# =============================================================================
+
+team:
+  members:
+    - github: alice
+      role: tech_lead
+      focus:
+        - backend
+        - architecture
+    - github: bob
+      role: frontend_lead
+      focus:
+        - ui
+        - ux
+    - github: carol
+      role: devops
+      focus:
+        - infrastructure
+        - ci_cd
+  
+  notification:
+    decision_log_mentions: true       # Notify on @mentions
+    critical_decisions: true          # Notify on critical tag
+
+# =============================================================================
+# CI/CD INTEGRATION
+# =============================================================================
+
+ci:
+  pre_commit:
+    - validate_decisions              # Run /forge-validate-decisions
+    - check_todos                     # Fail if [TODO] in committed code
+  
+  pre_push:
+    - validate_spec_traceability      # Check spec refs are valid
+    - run_tests                       # Run test suite
+  
+  pr_checks:
+    - ai_adversarial_review           # Require /forge-review
+    - constitution_compliance         # Check against constitution
+    - coverage_thresholds             # Enforce coverage minimums
+
+# =============================================================================
+# CUSTOM SETTINGS
+# =============================================================================
+
+custom:
+  # Add your project-specific configuration here
+  feature_flags: {}
+  external_services: {}
+
+# =============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# =============================================================================
+
+environments:
+  development:
+    quality:
+      testing:
+        coverage:
+          minimum_line: 60            # Lower threshold in dev
+  
+  production:
+    quality:
+      testing:
+        coverage:
+          minimum_line: 85            # Strict in production
+    ci:
+      pr_checks:
+        - ai_adversarial_review
+        - constitution_compliance
+        - coverage_thresholds
+        - security_scan               # Extra check in prod

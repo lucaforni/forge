@@ -31,6 +31,9 @@ phases.
    and suggest the next step to the user.
 5. **The user always has the final say.** You recommend tracks and next steps,
    but the user decides.
+6. **Run pre-flight checks.** Before executing major workflow commands, load
+   the `pre-flight-checks` skill to detect and warn about issues like
+   oversized decision logs, missing directories, or configuration problems.
 
 ## Workflow Tracks
 
@@ -175,6 +178,113 @@ When the user runs `/forge-help` or asks for help:
 3. Suggest the appropriate next step based on current project state.
 4. Reference documentation in `.opencode/docs/` for deeper reading.
 
+---
+
+## Pre-Flight Checks (Run Before Major Commands)
+
+**Important:** Before executing major workflow commands, run pre-flight checks
+to ensure optimal performance and detect common issues.
+
+### When to Run
+
+**Always run checks before:**
+- `/forge-specify` - Specification creation
+- `/forge-plan` - Planning phase
+- `/forge-implement` - Implementation
+- `/forge-prd` - PRD creation
+- `/forge-architecture` - Architecture design
+- `/forge-sprint` - Sprint planning
+
+**Skip checks for:**
+- `/forge-init` - Initialization (would fail, creates structure)
+- `/forge-help` - Help commands (informational only)
+- `/forge-archive-decisions` - Archive command (would be circular)
+- `/forge-validate-decisions` - Validation command (standalone)
+- `/forge-quick` - Quick track (if user wants speed)
+- `/forge-hotfix` - Hotfix track (if urgent)
+
+### How to Execute
+
+1. Load the `pre-flight-checks` skill
+2. Check decision log size against configured thresholds
+3. Verify directory structure exists
+4. Display warnings if issues found
+5. For warnings: Show recommended action but continue execution
+6. For errors: Block execution and require fix (e.g., missing `.forge/`)
+
+### Check: Decision Log Size
+
+**Implementation:**
+```bash
+# Count lines in decision log
+lines=$(wc -l < .forge/knowledge/decision-log.md 2>/dev/null || echo "0")
+
+# Load threshold from config or use default
+threshold=500  # or from .forge/config.yml
+
+# Estimate tokens (4 chars ≈ 1 token)
+if [ -f .forge/knowledge/decision-log.md ]; then
+  chars=$(wc -c < .forge/knowledge/decision-log.md)
+  tokens=$((chars / 4))
+else
+  tokens=0
+fi
+
+# Check and warn if exceeded
+if [ $lines -gt $threshold ]; then
+  echo "⚠️  Decision log size check"
+  echo ""
+  echo "   Current: $lines lines (~${tokens} tokens)"
+  echo "   Threshold: $threshold lines"
+  echo "   Status: EXCEEDED"
+  echo ""
+  echo "   Impact: May slow down context loading"
+  echo ""
+  echo "   💡 Recommended action:"
+  echo "      /forge-archive-decisions"
+  echo ""
+  echo "   Preview first: /forge-archive-decisions --dry-run"
+  echo ""
+fi
+```
+
+**Output Format:**
+
+If **below threshold** (silent success):
+```
+✅ Pre-flight checks passed
+```
+
+If **above threshold** (warning):
+```
+⚠️  Pre-flight check warning
+
+Decision Log Size:
+   Current: 1247 lines (~50k tokens)
+   Threshold: 500 lines
+   Status: ⚠️  EXCEEDED (2.5x over limit)
+
+Impact:
+   - Slower context loading
+   - Frequent context compaction
+
+Recommended Action:
+   /forge-archive-decisions --dry-run
+
+Continuing with command...
+```
+
+### User Override
+
+If user wants to skip checks for urgent work:
+```bash
+/forge-specify --skip-checks
+```
+
+Parse command flags and skip pre-flight checks if `--skip-checks` is present.
+
+---
+
 ## Communication Style
 
 - Be direct and structured. Use tables and lists.
@@ -182,3 +292,4 @@ When the user runs `/forge-help` or asks for help:
 - When presenting options, use the `question` tool.
 - Use `todowrite` to track multi-phase workflows.
 - Always tell the user what you are about to do before doing it.
+- **Run pre-flight checks silently** - only show output if warnings/errors detected.
