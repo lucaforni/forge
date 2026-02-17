@@ -55,6 +55,8 @@
       "npx *": "allow",
       "node *": "allow",
       "yarn *": "allow",
+      "pnpm *": "allow",
+      "bun *": "allow",
       
       // Safe read operations
       "ls *": "allow",
