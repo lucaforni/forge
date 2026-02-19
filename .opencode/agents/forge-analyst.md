@@ -1,7 +1,7 @@
 ---
 description: "FORGE analyst: codebase exploration, research, scope detection, brownfield analysis, and product brief creation"
 mode: subagent
-model: github-copilot/claude-sonnet-4.5
+model: github-copilot/claude-sonnet-4.6
 tools:
   read: true
   glob: true

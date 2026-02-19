@@ -4,7 +4,7 @@
   // Project configuration template
 
   // Default model for all agents unless overridden
-  "model": "github-copilot/claude-sonnet-4.5",
+  "model": "github-copilot/claude-sonnet-4.6",
 
   // Provider configuration with thinking budgets
   "provider": {
@@ -15,7 +15,7 @@
             "thinking": { "budgetTokens": 16000 }
           }
         },
-        "claude-sonnet-4.5": {
+        "claude-sonnet-4.6": {
           "options": {
             "thinking": { "budgetTokens": 8000 }
           }

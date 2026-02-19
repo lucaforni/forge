@@ -1,6 +1,6 @@
 ---
 description: "FORGE orchestrator: assesses complexity, selects workflow track, routes to specialized subagents, and chains context between phases"
-model: github-copilot/claude-sonnet-4.5
+model: github-copilot/claude-sonnet-4.6
 tools:
   task: true
   skill: true

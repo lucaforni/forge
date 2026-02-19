@@ -309,15 +309,15 @@ Product Brief ──> PRD ──> Architecture ──> Epics ──> Stories ─
 
 | Agent            | Type      | Model                        | Role                                  |
 | ---------------- | --------- | ---------------------------- | ------------------------------------- |
-| Build            | primary   | github-copilot/claude-sonnet-4.5  | Default development agent (OpenCode built-in) |
-| Plan             | primary   | github-copilot/claude-sonnet-4.5  | Analysis/planning agent (OpenCode built-in)   |
-| Forge            | primary   | github-copilot/claude-sonnet-4.5  | FORGE orchestrator, workflow router           |
-| forge-analyst    | subagent  | github-copilot/claude-sonnet-4.5  | Exploration, research, scope detection        |
+| Build            | primary   | github-copilot/claude-sonnet-4.6  | Default development agent (OpenCode built-in) |
+| Plan             | primary   | github-copilot/claude-sonnet-4.6  | Analysis/planning agent (OpenCode built-in)   |
+| Forge            | primary   | github-copilot/claude-sonnet-4.6  | FORGE orchestrator, workflow router           |
+| forge-analyst    | subagent  | github-copilot/claude-sonnet-4.6  | Exploration, research, scope detection        |
 | forge-pm         | subagent  | github-copilot/claude-opus-4.6      | Requirements, specs, PRD, user stories        |
 | forge-architect  | subagent  | github-copilot/claude-opus-4.6      | Architecture, ADRs, technical planning        |
-| forge-scrum      | subagent  | github-copilot/claude-sonnet-4.5  | Sprint planning, story management, tracking   |
+| forge-scrum      | subagent  | github-copilot/claude-sonnet-4.6  | Sprint planning, story management, tracking   |
 | forge-reviewer   | subagent  | github-copilot/claude-opus-4.6      | Adversarial review, cross-artifact validation |
-| forge-qa         | subagent  | github-copilot/claude-sonnet-4.5  | Test strategy, test generation, coverage      |
+| forge-qa         | subagent  | github-copilot/claude-sonnet-4.6  | Test strategy, test generation, coverage      |
 
 ### 6.2 Skills (7 total)
 
@@ -589,7 +589,7 @@ behind the recommendation. The user always has the final say.
 ### 8.2 Agent: Forge (Orchestrator)
 
 **Mode**: Primary
-**Model**: github-copilot/claude-sonnet-4.5
+**Model**: github-copilot/claude-sonnet-4.6
 **Purpose**: Entry point for all FORGE workflows. Routes to the correct track,
 invokes the right subagents, and ensures context is properly chained.
 
@@ -604,7 +604,7 @@ invokes the right subagents, and ensures context is properly chained.
 ### 8.3 Agent: forge-analyst
 
 **Mode**: Subagent
-**Model**: github-copilot/claude-sonnet-4.5
+**Model**: github-copilot/claude-sonnet-4.6
 **Purpose**: Exploration, research, scope detection, brownfield analysis.
 
 **Key behaviors**:
@@ -648,7 +648,7 @@ invokes the right subagents, and ensures context is properly chained.
 ### 8.6 Agent: forge-scrum
 
 **Mode**: Subagent
-**Model**: github-copilot/claude-sonnet-4.5
+**Model**: github-copilot/claude-sonnet-4.6
 **Purpose**: Sprint planning, story management, progress tracking, retrospectives.
 
 **Key behaviors**:
@@ -678,7 +678,7 @@ invokes the right subagents, and ensures context is properly chained.
 ### 8.8 Agent: forge-qa
 
 **Mode**: Subagent
-**Model**: github-copilot/claude-sonnet-4.5
+**Model**: github-copilot/claude-sonnet-4.6
 **Purpose**: Test strategy definition, test generation, coverage analysis.
 
 **Key behaviors**:
@@ -1122,14 +1122,14 @@ agent's context, regardless of which agent or command is invoked.
 
 | Agent / Role        | Model                       | Rationale                               |
 | ------------------- | --------------------------- | --------------------------------------- |
-| Forge orchestrator  | github-copilot/claude-sonnet-4.5 | Fast routing, moderate reasoning        |
-| forge-analyst       | github-copilot/claude-sonnet-4.5 | Exploration speed, good synthesis        |
+| Forge orchestrator  | github-copilot/claude-sonnet-4.6 | Fast routing, moderate reasoning        |
+| forge-analyst       | github-copilot/claude-sonnet-4.6 | Exploration speed, good synthesis        |
 | forge-pm            | github-copilot/claude-opus-4.6     | Deep requirements analysis              |
 | forge-architect     | github-copilot/claude-opus-4.6     | Complex technical reasoning             |
-| forge-scrum         | github-copilot/claude-sonnet-4.5 | Structured breakdown, speed             |
+| forge-scrum         | github-copilot/claude-sonnet-4.6 | Structured breakdown, speed             |
 | forge-reviewer      | github-copilot/claude-opus-4.6     | Thorough adversarial analysis           |
-| forge-qa            | github-copilot/claude-sonnet-4.5 | Test generation, speed                  |
-| Build (default)     | github-copilot/claude-sonnet-4.5 | Implementation speed, cost efficiency   |
+| forge-qa            | github-copilot/claude-sonnet-4.6 | Test generation, speed                  |
+| Build (default)     | github-copilot/claude-sonnet-4.6 | Implementation speed, cost efficiency   |
 
 ### 16.2 Thinking Budget Configuration
 
@@ -1143,7 +1143,7 @@ agent's context, regardless of which agent or command is invoked.
             "thinking": { "budgetTokens": 16000 }
           }
         },
-        "claude-sonnet-4.5": {
+        "claude-sonnet-4.6": {
           "options": {
             "thinking": { "budgetTokens": 8000 }
           }

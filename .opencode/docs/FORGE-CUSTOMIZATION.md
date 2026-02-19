@@ -128,7 +128,7 @@ File: `.opencode/agents/forge-devops.md`
 ---
 description: "Infrastructure and DevOps specialist for FORGE workflows"
 mode: subagent
-model: github-copilot/claude-sonnet-4.5
+model: github-copilot/claude-sonnet-4.6
 tools:
   read: true
   write: true
@@ -937,7 +937,7 @@ If your organization uses different terminology (e.g., "Patch" instead of
 **Mixed providers**:
 ```json
 {
-  "model": "github-copilot/claude-sonnet-4.5",
+  "model": "github-copilot/claude-sonnet-4.6",
   "agent": {
     "forge-pm": { "model": "openai/o3" },
     "forge-architect": { "model": "github-copilot/claude-opus-4.6" },
@@ -951,11 +951,11 @@ If your organization uses different terminology (e.g., "Patch" instead of
 **Budget-conscious setup** (use Sonnet for everything):
 ```json
 {
-  "model": "github-copilot/claude-sonnet-4.5",
+  "model": "github-copilot/claude-sonnet-4.6",
   "agent": {
-    "forge-pm": { "model": "github-copilot/claude-sonnet-4.5" },
-    "forge-architect": { "model": "github-copilot/claude-sonnet-4.5" },
-    "forge-reviewer": { "model": "github-copilot/claude-sonnet-4.5" }
+    "forge-pm": { "model": "github-copilot/claude-sonnet-4.6" },
+    "forge-architect": { "model": "github-copilot/claude-sonnet-4.6" },
+    "forge-reviewer": { "model": "github-copilot/claude-sonnet-4.6" }
   }
 }
 ```
@@ -968,7 +968,7 @@ If your organization uses different terminology (e.g., "Patch" instead of
     "forge-analyst": { "model": "github-copilot/claude-opus-4.6" },
     "forge-pm": { "model": "github-copilot/claude-opus-4.6" },
     "forge-architect": { "model": "github-copilot/claude-opus-4.6" },
-    "forge-scrum": { "model": "github-copilot/claude-sonnet-4.5" },
+    "forge-scrum": { "model": "github-copilot/claude-sonnet-4.6" },
     "forge-reviewer": { "model": "github-copilot/claude-opus-4.6" },
     "forge-qa": { "model": "github-copilot/claude-opus-4.6" }
   }
@@ -989,7 +989,7 @@ For agents that need more (or less) extended thinking:
             "thinking": { "budgetTokens": 32000 }
           }
         },
-        "claude-sonnet-4.5": {
+        "claude-sonnet-4.6": {
           "options": {
             "thinking": { "budgetTokens": 4000 }
           }
@@ -1015,7 +1015,7 @@ If you want to use OpenCode's curated model selection:
 
 ```json
 {
-  "model": "opencode/claude-sonnet-4.5",
+  "model": "opencode/claude-sonnet-4.6",
   "agent": {
     "forge-architect": { "model": "opencode/claude-opus-4.6" }
   }
@@ -1277,7 +1277,7 @@ File: `~/.config/opencode/opencode.json`
 
 ```json
 {
-  "model": "github-copilot/claude-sonnet-4.5",
+  "model": "github-copilot/claude-sonnet-4.6",
   "provider": {
     "github-copilot": {
       "models": {

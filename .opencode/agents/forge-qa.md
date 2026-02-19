@@ -1,7 +1,7 @@
 ---
 description: "FORGE QA engineer: test strategy definition, test generation, coverage analysis, and adaptive testing based on workflow track"
 mode: subagent
-model: github-copilot/claude-sonnet-4.5
+model: github-copilot/claude-sonnet-4.6
 tools:
   read: true
   write: true
