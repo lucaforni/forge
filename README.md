@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenCode](https://img.shields.io/badge/OpenCode-Compatible-green.svg)](https://opencode.ai)
-[![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-orange.svg)](CHANGELOG.md)
 
 ---
 
@@ -40,10 +40,11 @@ Adapt your process to task complexity:
 
 ### 🤖 Specialized AI Agents
 
-Seven purpose-built agents handle different phases:
+Eight purpose-built agents handle different phases:
 
 - **forge-pm** - Product Manager: Requirements, PRDs, clarification
 - **forge-architect** - Solution Architect: Technical design, ADRs
+- **forge-ux** - UX Designer: User journeys, wireframes, accessibility, design specs
 - **forge-scrum** - Scrum Master: Sprint planning, task breakdown
 - **forge-analyst** - Business Analyst: Codebase exploration, product briefs
 - **forge-reviewer** - Adversarial Reviewer: Find real issues, not praise
@@ -55,9 +56,9 @@ Seven purpose-built agents handle different phases:
 Progressive context engineering through structured documents:
 
 ```
-Constitution → Brief → PRD → Spec → Architecture → Plan → Tasks → Code → Tests
-     ↓            ↓      ↓      ↓         ↓          ↓       ↓      ↓      ↓
-  Principles   Vision  What   Why      How        Steps  Action  Build  Verify
+Constitution → Brief → PRD → Spec → Design → Architecture → Plan → Tasks → Code → Tests
+     ↓            ↓      ↓      ↓       ↓          ↓          ↓       ↓      ↓      ↓
+  Principles   Vision  What   Why    UX/UI      How        Steps  Action  Build  Verify
 ```
 
 Each document:
@@ -165,6 +166,9 @@ opencode
 /forge-clarify
 # Refines requirements through Q&A
 
+/forge-ux
+# Designs user journeys, wireframes, accessibility spec
+
 /forge-plan
 # Creates architecture.md and plan.md
 
@@ -178,7 +182,7 @@ opencode
 # Builds the feature
 
 /forge-review
-# Adversarial review across 5 dimensions
+# Adversarial review across 6 dimensions
 
 /forge-test
 # Generates comprehensive tests
@@ -243,9 +247,12 @@ your-project/
 │   ├── specs/                  # Feature specifications
 │   │   └── 001-feature/
 │   │       ├── spec.md         # Requirements
-│   │       ├── architecture.md # Technical design
+│   │       ├── design-spec.md  # UX/UI design (wireframes, components, a11y)
+│   │       ├── user-journey.md # Personas & user journeys
 │   │       ├── plan.md         # Implementation plan
 │   │       └── tasks.md        # Task breakdown
+│   ├── ux/
+│   │   └── design-system.md    # Shared design tokens & components
 │   ├── knowledge/
 │   │   ├── adr/                # Architecture decisions
 │   │   ├── decision-log.md     # Session decisions
@@ -281,22 +288,24 @@ Each phase receives exactly the context it needs:
 
 ```
 Specify Phase    → Constitution, existing architecture
-Architecture     → Constitution, PRD, existing ADRs
-Implementation   → Spec, plan, architecture, constitution
-Review           → Spec, architecture, diff, constitution
+UX Phase         → Spec, existing design system
+Architecture     → Constitution, PRD, design spec, existing ADRs
+Implementation   → Spec, design spec, plan, architecture, constitution
+Review           → Spec, design spec, architecture, diff, constitution
 ```
 
 Budget-aware loading prevents context window overflow.
 
 ### Adversarial Review
 
-The `forge-reviewer` agent **must find at least 3 real issues** across 5 dimensions:
+The `forge-reviewer` agent **must find at least 3 real issues** across 6 dimensions:
 
 1. **Correctness** - Logic errors, edge cases, assumptions
 2. **Security** - Vulnerabilities, injection risks, data leaks
 3. **Performance** - Bottlenecks, inefficient algorithms, resource usage
 4. **Maintainability** - Complexity, documentation, extensibility
 5. **Constitution Compliance** - Adherence to project principles
+6. **UX Quality** - Accessibility (WCAG 2.1 AA), usability, consistency with design spec
 
 Anti-sycophancy rules prevent generic praise.
 

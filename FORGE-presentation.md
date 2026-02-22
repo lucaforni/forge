@@ -5,7 +5,7 @@ paginate: true
 backgroundColor: #fff
 color: #333
 header: 'FORGE - Framework for Orchestrated Requirements, Governance & Engineering'
-footer: 'Version 1.0.0 | Author: Luca Forni | © 2026'
+footer: 'Version 1.1.0 | Author: Luca Forni | © 2026'
 style: |
   section {
     font-size: 28px;
@@ -95,15 +95,15 @@ Un sistema di sviluppo software strutturato per OpenCode
         ┌────────────┼────────────┐
         ▼            ▼            ▼
 ┌──────────────────────────────────────────────────────┐
-│                  SUBAGENTS (6)                        │
-│  analyst | pm | architect | scrum | reviewer | qa   │
+│                  SUBAGENTS (7)                        │
+│  analyst | pm | ux | architect | scrum | reviewer | qa│
 └────────────────────┬─────────────────────────────────┘
                      │
         ┌────────────┼────────────┐
         ▼            ▼            ▼
 ┌──────────────────────────────────────────────────────┐
 │           SUPPORTING SYSTEMS                          │
-│   Skills (7) | Tools (3) | Plugins (3) | MCP         │
+│   Skills (9) | Tools (3) | Plugins (3) | MCP         │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -169,14 +169,59 @@ No docs     Tech spec   Spec+Plan    Full chain  Full chain
 ```bash
 /forge-specify "Add OAuth2 authentication with Google and GitHub"
 /forge-clarify    # Risolve ambiguità
+/forge-ux         # UX design: personas, wireframes, accessibilità
 /forge-plan       # Piano tecnico
 /forge-analyze    # Cross-valida spec vs plan
 /forge-tasks      # Task breakdown con dipendenze
 /forge-implement  # Implementa
-/forge-review     # Adversarial review
+/forge-review     # Adversarial review (6 dimensioni)
 ```
 
-**Output:** `spec.md`, `plan.md`, `tasks.md`, ADR opzionali
+**Output:** `spec.md`, `design-spec.md`, `user-journey.md`, `plan.md`, `tasks.md`, ADR opzionali
+
+---
+
+## Fase UX: `/forge-ux`
+
+**Quando:** Feature con interfaccia utente (web, mobile, design system)
+
+```bash
+/forge-ux "Login page with OAuth"
+```
+
+**Cosa produce:**
+
+| Artefatto | Contenuto |
+|-----------|-----------|
+| `design-spec.md` | Wireframe ASCII, componenti UI, specifiche interazione |
+| `user-journey.md` | Personas, scenari, flussi utente |
+
+**Aree coperte:**
+- 🗺️ User journeys e personas
+- 🖼️ Wireframe testuali/ASCII
+- ♿ Accessibilità WCAG 2.1 AA
+- 🎨 Design system integration
+- 📱 Responsive & multi-platform
+
+---
+
+## UX Review: 6ᵃ Dimensione
+
+**La review estende il protocollo da 5 a 6 dimensioni:**
+
+```
+Correctness          → logica, edge case
+Security             → vulnerabilità, injection
+Performance          → query, memory leak
+Maintainability      → leggibilità, coupling
+Constitution         → aderenza ai principi
+UX Quality  ★ NEW   → accessibilità, usabilità, design coerenza
+```
+
+**Esempi di issue UX:**
+- `[HIGH]` Bottone senza `aria-label` — non accessibile con screen reader
+- `[MEDIUM]` Form senza focus management — UX degradata dopo submit
+- `[LOW]` Contrasto colore 2.8:1 — sotto soglia WCAG AA (4.5:1)
 
 ---
 
@@ -209,21 +254,22 @@ No docs     Tech spec   Spec+Plan    Full chain  Full chain
 
 Poi segue il workflow Epic con l'aggiunta di:
 - **Constitution** - Governance document immutabile
-- **UX Spec** (opzionale) - Per prodotti con UI
+- **UX Phase** - `/forge-ux` per prodotti con interfaccia utente
 
 **Output completo:** Tutti i documenti del track Epic + Constitution
 
 ---
 
-## I 6 Subagent Specializzati
+## I 7 Subagent Specializzati
 
 | Agent | Modello | Ruolo |
 |-------|---------|-------|
 | **forge-analyst** | Sonnet 4.5 | Esplorazione, research, scope detection |
 | **forge-pm** | Opus 4.6 | Requirements, spec, PRD, user stories |
+| **forge-ux** | Opus 4.6 | User journeys, wireframe, accessibilità, design spec |
 | **forge-architect** | Opus 4.6 | Architettura, ADR, planning tecnico |
 | **forge-scrum** | Sonnet 4.5 | Sprint planning, story management |
-| **forge-reviewer** | Opus 4.6 | Adversarial review, validazione |
+| **forge-reviewer** | Opus 4.6 | Adversarial review, validazione (6 dimensioni) |
 | **forge-qa** | Sonnet 4.5 | Test strategy, test generation |
 
 > **Claude Opus 4.6** per deep reasoning | **Sonnet 4.5** per velocità
@@ -236,11 +282,11 @@ Poi segue il workflow Epic con l'aggiunta di:
 Constitution
     │
     ▼
-Brief ──> PRD ──> Architecture ──> Specs ──> Plans ──> Tasks ──> Code
-              │                                                     │
-              └─── ADRs ───────────────────────────────────────────┘
-              │                                                     │
-              └─── Knowledge Base <───────── Reviews ──────────────┘
+Brief ──> PRD ──> Architecture ──> Specs ──> Design ──> Plans ──> Tasks ──> Code
+              │                                                                  │
+              └─── ADRs ─────────────────────────────────────────────────────────┘
+              │                                                                  │
+              └─── Knowledge Base <───────── Reviews ──────────────────────────┘
 ```
 
 **Ogni fase riceve contesto strutturato dalla fase precedente**
@@ -294,13 +340,14 @@ La **Constitution** è il documento di governance di massima autorità
 
 ### Review che DEVONO trovare problemi
 
-Il `forge-reviewer` esamina su **5 dimensioni:**
+Il `forge-reviewer` esamina su **6 dimensioni:**
 
 1. **Correctness** - Logica, edge cases, errori
 2. **Security** - Vulnerabilità, validazione input
 3. **Performance** - Query inefficienti, memory leaks
 4. **Maintainability** - Leggibilità, accoppiamento
 5. **Constitution Compliance** - Aderenza ai principi
+6. **UX Quality** - Accessibilità (WCAG 2.1 AA), usabilità, coerenza col design
 
 **Minimo 3 issue per review** (1 HIGH, 2 MEDIUM/LOW)
 
@@ -371,7 +418,7 @@ Test file (src/auth/__tests__/login.test.ts)
 
 ---
 
-## 7 Skills Dinamiche
+## 9 Skills Dinamiche
 
 | Skill | Utilizzata da | Scopo |
 |-------|---------------|-------|
@@ -382,6 +429,8 @@ Test file (src/auth/__tests__/login.test.ts)
 | `brownfield-analysis` | forge-analyst | Analisi codebase esistenti |
 | `constitution-compliance` | architect, reviewer | Verifica compliance alla constitution |
 | `context-chain` | Tutti gli agent | Carica documenti upstream corretti |
+| `ux-design` | forge-ux | Genera user journey, wireframe, a11y spec |
+| `ux-review` | forge-reviewer | 6ᵃ dimensione review: qualità UX e accessibilità |
 
 **Caricate on-demand per risparmiare context window**
 
@@ -565,16 +614,16 @@ La domanda non è "possiamo permetterci l'overhead?" ma
 
 ## Componenti Tecnici
 
-### 9 Agents | 19 Commands | 7 Skills
+### 10 Agents | 21 Commands | 9 Skills
 
 ```
 .opencode/
-├── agents/          # 6 subagent specializzati
-├── commands/        # 19 slash command
-├── skills/          # 7 skill dinamiche
+├── agents/          # 7 subagent specializzati + forge orchestrator + Build + Plan
+├── commands/        # 21 slash command
+├── skills/          # 9 skill dinamiche
 ├── tools/           # 3 custom tool
 ├── plugins/         # 3 plugin automation
-└── templates/       # 8 document template
+└── templates/       # 11 document template
 ```
 
 **Tutto configurato in `opencode.json`**
@@ -616,13 +665,16 @@ opencode
 ├── constitution.md              # Governance
 ├── product/
 │   ├── brief.md                 # Strategic vision
-│   ├── prd.md                   # Full requirements
-│   └── ux-spec.md              # UX design (optional)
+│   └── prd.md                   # Full requirements
+├── ux/
+│   └── design-system.md        # Shared tokens & components
 ├── architecture/
 │   └── architecture.md         # Technical design
 ├── specs/
 │   └── NNN-name/               # Per-feature specs
 │       ├── spec.md
+│       ├── design-spec.md      # UX/UI design (wireframes, a11y)
+│       ├── user-journey.md     # Personas & user journeys
 │       ├── plan.md
 │       └── tasks.md
 ├── epics/                       # Epic breakdown
@@ -676,8 +728,11 @@ Tracks:          /forge-hotfix   Bug fix, 1 file, < 30 min
                  /forge-brief    Large epic
                  /forge-init     New product
 
-Feature Flow:    specify → clarify → plan → analyze 
+Feature Flow:    specify → clarify → ux → plan → analyze 
                  → tasks → implement → review
+
+UX Commands:     /forge-ux          User journeys, wireframes, a11y
+                 /forge-wireframe   ASCII wireframe generation
 
 Status:          /forge-status   Sprint dashboard
                  /forge-help     Context-aware help
@@ -697,19 +752,22 @@ Knowledge:       /forge-adr      Create ADR
 # 2. Chiarifica ambiguità
 /forge-clarify
 
-# 3. Piano tecnico
+# 3. UX Design
+/forge-ux  # login wireframe, user journey, a11y
+
+# 4. Piano tecnico
 /forge-plan
 
-# 4. Valida consistenza
+# 5. Valida consistenza
 /forge-analyze
 
-# 5. Task breakdown
+# 6. Task breakdown
 /forge-tasks
 
-# 6. Implementa
+# 7. Implementa
 /forge-implement
 
-# 7. Review adversarial
+# 8. Review adversarial (6 dimensioni)
 /forge-review
 ```
 
@@ -988,12 +1046,13 @@ Requirement NFR-001 (P95 < 200ms)
 
 1. **Contesto strutturato** previene inconsistenze tra sessioni AI
 2. **5 workflow track** adattano processo a complessità
-3. **Constitutional governance** garantisce quality bar uniforme
-4. **Knowledge base persistente** azzera knowledge loss
-5. **Adversarial review** cattura issue prima di production
-6. **Native OpenCode integration** sfrutta full platform
-7. **Brownfield support** onboarda codebase esistenti
-8. **Team-ready** supporta 15+ developer con parallel development
+3. **UX-first design** include user journeys, wireframe e accessibilità nel workflow
+4. **Constitutional governance** garantisce quality bar uniforme
+5. **Knowledge base persistente** azzera knowledge loss
+6. **Adversarial review** cattura issue prima di production (6 dimensioni)
+7. **Native OpenCode integration** sfrutta full platform
+8. **Brownfield support** onboarda codebase esistenti
+9. **Team-ready** supporta 15+ developer con parallel development
 
 ---
 
@@ -1046,4 +1105,4 @@ Framework for Orchestrated Requirements, Governance & Engineering
 
 **Autore:** Luca Forni
 
-*Version 1.0.0 | MIT License | 2026*
+*Version 1.1.0 | MIT License | 2026*

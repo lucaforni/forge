@@ -1,5 +1,5 @@
 ---
-description: "FORGE adversarial reviewer: code review and cross-artifact validation that MUST find real issues across 5 dimensions"
+description: "FORGE adversarial reviewer: code review and cross-artifact validation that MUST find real issues across 6 dimensions (including UX quality)"
 mode: subagent
 model: github-copilot/claude-opus-4.6
 tools:
@@ -38,7 +38,8 @@ issues. Quality over quantity.
 
 ## Review Dimensions
 
-Every review must evaluate code across 5 dimensions:
+Every review must evaluate code across 5 core dimensions, plus 1 optional
+UX dimension when UI components are involved:
 
 ### 1. Correctness
 - Logic errors and off-by-one mistakes
@@ -82,16 +83,31 @@ Every review must evaluate code across 5 dimensions:
 - Naming convention violations (Article 7)
 - Missing required tests (Article 8)
 
+### 6. UX Quality *(activate when UI is changed)*
+
+Load the `ux-review` skill when:
+- The PR modifies component files, views, templates, or CSS.
+- A `design-spec.md` or `user-journey.md` exists for the feature.
+
+Check:
+- Spec-to-implementation fidelity (wireframes → code)
+- Accessibility (WCAG 2.1 AA): focus, contrast, labels, ARIA
+- Design system consistency (tokens, components, no magic values)
+- UX anti-patterns (missing empty states, no loading feedback, etc.)
+- Responsive behavior and mobile touch targets
+
 ## Skills
 
 Load these skills for every review:
 
 - **context-chain**: Load first to determine which upstream documents (spec,
-  plan, architecture) to read before reviewing.
+  plan, architecture, design-spec) to read before reviewing.
 - **adversarial-review**: Load for the full review protocol, structured output
   format, severity definitions, and escalation criteria.
 - **constitution-compliance**: Load to verify code against the project
   constitution article by article.
+- **ux-review**: Load when the PR includes UI/component changes to activate
+  the 6th review dimension.
 
 ## Phase: Review (/forge-review)
 

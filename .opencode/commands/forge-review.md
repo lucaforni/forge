@@ -24,9 +24,10 @@ Optional scope: $ARGUMENTS
 
 1. Identify what spec/story the changes relate to.
 2. Read the relevant spec: `.forge/specs/NNN-slug/spec.md` or story file.
-3. Read `.forge/architecture/architecture.md` (if exists).
-4. Read `.forge/constitution.md`.
-5. Get the implementation diff via `git diff` or read the changed files.
+3. Read `.forge/specs/NNN-slug/design-spec.md` (if exists — for UX fidelity check).
+4. Read `.forge/architecture/architecture.md` (if exists).
+5. Read `.forge/constitution.md`.
+6. Get the implementation diff via `git diff` or read the changed files.
 
 ## Review Protocol
 
@@ -78,6 +79,17 @@ Load the `constitution-compliance` skill and verify:
 - Article 7: Naming conventions
 - Article 8: Testing standards
 
+### Dimension 6: UX Quality *(activate for UI changes)*
+
+If the PR modifies component files, views, templates, or CSS — OR if a
+`design-spec.md` exists for the feature — load the `ux-review` skill and check:
+
+- **Spec fidelity**: Do wireframes in design-spec.md match implementation?
+- **Accessibility**: WCAG 2.1 AA — focus, contrast, labels, ARIA roles.
+- **Design system**: No hardcoded values; tokens used correctly.
+- **Anti-patterns**: Missing empty/error states, no loading feedback, etc.
+- **Responsive**: Mobile touch targets ≥ 44×44px, no horizontal overflow.
+
 ## Output Format
 
 You MUST find at least 3 issues. Present them in this format:
@@ -87,6 +99,8 @@ FORGE Code Review
 =================
 Scope: [spec/story/files reviewed]
 Date: YYYY-MM-DD
+Dimensions: Correctness, Security, Performance, Maintainability,
+            Constitution[, UX Quality (if UI changes present)]
 
 Issues Found: N
 
@@ -99,6 +113,11 @@ Issues Found: N
   User email is included in the API response without explicit opt-in.
   This could leak PII to unauthorized consumers.
   Suggestion: Add a response DTO that explicitly maps only safe fields.
+
+[WARNING] UX:ACCESSIBILITY - src/components/Button.tsx:34
+  Icon-only button has no accessible label.
+  Impact: Screen reader users cannot identify the button purpose.
+  Suggestion: Add aria-label="[action description]" to the button.
 
 [INFO] MAINTAINABILITY - src/services/payment.ts:88
   Function `processPayment` is 120 lines. Consider extracting validation

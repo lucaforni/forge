@@ -29,11 +29,13 @@ opencode
 | `/forge-init` | All | Initialize FORGE | Validate setup |
 | `/forge-specify` | Feature+ | Create specification | `spec.md` |
 | `/forge-clarify` | Feature+ | Refine requirements | Updated `spec.md` |
+| `/forge-ux` | Feature+ | UX/UI design phase | `design-spec.md`, `user-journey.md` |
+| `/forge-wireframe` | Feature+ | Generate ASCII wireframes | Appended to `design-spec.md` |
 | `/forge-plan` | Feature+ | Create implementation plan | `plan.md` |
 | `/forge-analyze` | Feature+ | Review spec & plan | Consistency report |
 | `/forge-tasks` | Feature+ | Break down into tasks | `tasks.md` |
 | `/forge-implement` | All | Build the feature | Working code |
-| `/forge-review` | All | Adversarial code review | Issue report |
+| `/forge-review` | All | Adversarial code review (6 dimensions) | Issue report |
 | `/forge-test` | All | Generate tests | Test files |
 
 ---
@@ -60,11 +62,12 @@ opencode
 # Feature workflow (full ceremony)
 /forge-specify "User authentication system"
 /forge-clarify   # Refine requirements
+/forge-ux        # UX design: personas, wireframes, a11y (for UI features)
 /forge-plan      # Design solution
 /forge-analyze   # Validate consistency
 /forge-tasks     # Break into tasks
 /forge-implement # Build feature
-/forge-review    # AI review
+/forge-review    # AI review (6 dimensions: + UX quality)
 /forge-test      # Generate tests
 
 # Epic workflow (with sprint management)
@@ -86,7 +89,7 @@ opencode
 ```
 your-project/
 ├── .opencode/               # FORGE system files (don't edit directly)
-│   ├── agents/              # FORGE agents (PM, Architect, etc.)
+│   ├── agents/              # FORGE agents (PM, Architect, UX, etc.)
 │   ├── commands/            # Slash commands
 │   ├── skills/              # Reusable skills
 │   ├── plugins/             # Event-driven plugins
@@ -98,10 +101,13 @@ your-project/
 │   ├── constitution.md      # ⚠️ Project principles (customize this!)
 │   ├── specs/               # Feature specifications
 │   │   └── NNN-slug/        # Spec directory
-│   │       ├── spec.md      # Requirements
-│   │       ├── architecture.md  # Technical design
-│   │       ├── plan.md      # Implementation plan
-│   │       └── tasks.md     # Task breakdown
+│   │       ├── spec.md          # Requirements
+│   │       ├── design-spec.md   # UX/UI design (wireframes, components, a11y)
+│   │       ├── user-journey.md  # Personas & user journeys
+│   │       ├── plan.md          # Implementation plan
+│   │       └── tasks.md         # Task breakdown
+│   ├── ux/
+│   │   └── design-system.md # Shared design tokens & components
 │   ├── knowledge/
 │   │   ├── adr/             # Architecture Decision Records
 │   │   ├── decision-log.md  # Session decisions
@@ -155,6 +161,8 @@ Examples:
 |----------|----------|---------|
 | Specification | `.opencode/templates/spec.md` | `/forge-specify` |
 | Tech Spec | `.opencode/templates/tech-spec.md` | `/forge-quick` |
+| Design Spec | `.opencode/templates/design-spec.md` | `/forge-ux`, `/forge-wireframe` |
+| User Journey | `.opencode/templates/user-journey.md` | `/forge-ux` |
 | Architecture | `.opencode/templates/architecture.md` | `/forge-architecture` |
 | Plan | `.opencode/templates/plan.md` | `/forge-plan` |
 | Tasks | `.opencode/templates/tasks.md` | `/forge-tasks` |
@@ -343,5 +351,5 @@ FORGE is part of the OpenCode ecosystem. See LICENSE for details.
 
 ---
 
-**Last Updated**: 2026-02-14  
-**FORGE Version**: 1.0.0
+**Last Updated**: 2026-02-22  
+**FORGE Version**: 1.1.0

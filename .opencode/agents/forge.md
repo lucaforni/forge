@@ -84,6 +84,8 @@ Route commands to the correct subagent:
 | `/forge-clarify`     | Feature+      | Clarify        | forge-pm          |
 | `/forge-prd`         | Epic/Product  | Planning       | forge-pm          |
 | `/forge-architecture`| Epic/Product  | Solutioning    | forge-architect   |
+| `/forge-ux`          | Feature+      | UX Design      | forge-ux          |
+| `/forge-wireframe`   | Feature+      | UX Design      | forge-ux          |
 | `/forge-plan`        | Feature+      | Planning       | forge-architect   |
 | `/forge-analyze`     | Feature+      | Validation     | forge-reviewer    |
 | `/forge-tasks`       | Feature+      | Breakdown      | forge-scrum       |
@@ -107,14 +109,15 @@ correct upstream documents:
 | Phase              | Required Context                                        |
 | ------------------ | ------------------------------------------------------- |
 | Specify / PRD      | Constitution, existing architecture (if any)            |
-| Architecture       | Constitution, PRD/brief, existing ADRs                  |
-| Plan               | Constitution, spec, architecture, relevant ADRs         |
+| UX Design          | Spec, constitution, design-system (if any)              |
+| Architecture       | Constitution, PRD/brief, design-spec (if any), ADRs     |
+| Plan               | Constitution, spec, architecture, design-spec (if any)  |
 | Analyze            | Spec, plan, architecture, constitution                  |
-| Tasks              | Spec, plan                                              |
+| Tasks              | Spec, plan, design-spec (if any)                        |
 | Sprint Planning    | Epics, architecture, sprint history                     |
 | Story Creation     | Epic, PRD, architecture, sprint status                  |
-| Implementation     | Spec or story, plan or architecture, constitution       |
-| Code Review        | Spec or story, architecture, implementation diff        |
+| Implementation     | Spec or story, plan or architecture, design-spec, const |
+| Code Review        | Spec or story, architecture, design-spec, impl diff     |
 | Testing            | Spec or story, plan, constitution (Article 8)           |
 | Retrospective      | Sprint status, stories (done), decision log             |
 
@@ -123,18 +126,22 @@ correct upstream documents:
 ### Feature Track (most common)
 
 ```
-/forge-specify  ->  /forge-clarify  ->  /forge-plan  ->  /forge-analyze
-     |                   |                  |                  |
-  forge-pm           forge-pm        forge-architect     forge-reviewer
-     |                   |                  |                  |
-  spec.md          spec.md (updated)   plan.md + ADRs   Consistency report
-                                                              |
+/forge-specify  ->  /forge-clarify  ->  [/forge-ux]  ->  /forge-plan  ->  /forge-analyze
+     |                   |                   |                |                  |
+  forge-pm           forge-pm           forge-ux        forge-architect    forge-reviewer
+     |                   |                   |                |                  |
+  spec.md        spec.md (updated)  design-spec.md    plan.md + ADRs    Consistency report
+                                    user-journey.md                           |
 /forge-tasks  ->  /forge-implement  ->  /forge-test  ->  /forge-review
      |                   |                  |                  |
   forge-scrum         Build             forge-qa         forge-reviewer
      |                   |                  |                  |
-  tasks.md          Working code      Test report      Issue report -> Human review -> Merge
+  tasks.md          Working code      Test report      Issue report (6 dimensions)
+                                                            -> Human review -> Merge
 ```
+
+> `/forge-ux` is optional for API-only features and required for any feature
+> with user-facing UI. It runs after clarification, before technical planning.
 
 ### Quick Track
 
@@ -189,6 +196,7 @@ to ensure optimal performance and detect common issues.
 
 **Always run checks before:**
 - `/forge-specify` - Specification creation
+- `/forge-ux` - UX design phase
 - `/forge-plan` - Planning phase
 - `/forge-implement` - Implementation
 - `/forge-prd` - PRD creation

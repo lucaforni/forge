@@ -99,4 +99,8 @@ Present a summary:
 
 Recommend next steps:
 - If there are `[NEEDS CLARIFICATION]` markers: `/forge-clarify`
-- If spec is complete: `/forge-plan` to create the technical plan
+- If the feature has UI components or user-facing screens: `/forge-ux`
+  to produce personas, user journeys, wireframes, and accessibility specs
+  before the technical plan.
+- If spec is complete and no UI is involved: `/forge-plan` to create
+  the technical plan.

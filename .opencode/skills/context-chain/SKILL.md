@@ -23,15 +23,16 @@ Use this table to determine which documents to load:
 | Phase              | Required Documents                                    | Optional Documents                    |
 | ------------------ | ----------------------------------------------------- | ------------------------------------- |
 | Specify / PRD      | constitution.md                                       | architecture.md, existing specs       |
+| UX Design          | specs/NNN/spec.md, constitution.md                    | architecture.md, ux/design-system.md  |
 | Architecture       | constitution.md, product/prd.md OR product/brief.md   | knowledge/adr/*.md                    |
-| Plan               | constitution.md, specs/NNN/spec.md                    | architecture.md, knowledge/adr/*.md   |
+| Plan               | constitution.md, specs/NNN/spec.md                    | architecture.md, specs/NNN/design-spec.md, knowledge/adr/*.md |
 | Clarify            | specs/NNN/spec.md, constitution.md                    | specs/NNN/plan.md                     |
-| Analyze            | specs/NNN/spec.md, specs/NNN/plan.md, constitution.md | architecture.md                       |
-| Tasks              | specs/NNN/spec.md, specs/NNN/plan.md                  | constitution.md                       |
+| Analyze            | specs/NNN/spec.md, specs/NNN/plan.md, constitution.md | architecture.md, specs/NNN/design-spec.md |
+| Tasks              | specs/NNN/spec.md, specs/NNN/plan.md                  | constitution.md, specs/NNN/design-spec.md |
 | Sprint Planning    | architecture.md, sprints/active/*.yaml                | epics/*, product/prd.md               |
 | Story Creation     | epics/epic-NN/epic.md, architecture.md                | product/prd.md, sprints/active/*.yaml |
-| Implementation     | spec.md OR story file, constitution.md                | plan.md OR architecture.md, ADRs      |
-| Code Review        | spec.md OR story file, constitution.md                | architecture.md, plan.md              |
+| Implementation     | spec.md OR story file, constitution.md                | plan.md OR architecture.md, specs/NNN/design-spec.md, ADRs |
+| Code Review        | spec.md OR story file, constitution.md                | architecture.md, plan.md, specs/NNN/design-spec.md |
 | Retrospective      | sprints/active/*.yaml, sprints/completed/*.yaml       | decision-log.md, lessons-learned.md   |
 | ADR Creation       | constitution.md, knowledge/adr/*.md                   | architecture.md, decision-log.md      |
 
@@ -78,11 +79,14 @@ To avoid exhausting the context window, follow these guidelines:
 | ----------------------- | ----------------------- |
 | constitution.md         | Full (no limit)         |
 | Primary spec/plan/story | Full (no limit)         |
+| design-spec.md          | ~150 lines (Wireframes + Components sections) |
+| user-journey.md         | ~100 lines (Happy paths + key edge cases) |
 | architecture.md         | ~200 lines (key sections) |
 | Each ADR                | ~30 lines (Decision + Status) |
 | decision-log.md         | Last 10 entries (~100 lines) |
 | lessons-learned.md      | Last 5 entries (~50 lines) |
 | prd.md                  | ~150 lines (key sections) |
+| ux/design-system.md     | ~100 lines (tokens + component list) |
 | sprints/active/*.yaml   | Full all files (typically small) |
 | sprints/completed/*.yaml| Last 5 files (velocity history) |
 
