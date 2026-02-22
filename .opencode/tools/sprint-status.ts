@@ -136,35 +136,35 @@ function parseSprintYaml(content: string): SprintFile {
     if (!line.trim()) continue
 
     const indent = line.length - line.trimStart().length
-    const kvMatch = line.match(/^(\s*)([^:]+):\s*(.*)/)
-    
-    if (!kvMatch) {
-      // List item: - key: value
-      const listMatch = line.match(/^(\s*)-\s+(.*)/)
-      if (listMatch) {
-        const listContent = listMatch[2]
-        const inlineKv = listContent.match(/^([^:]+):\s*(.*)/)
-        if (inlineKv && (context === "stories" || context === "story")) {
-          const key = inlineKv[1].trim()
-          const val = cleanValue(inlineKv[2])
-          
-          if (key === "id") {
-            if (currentStory.id) {
-              data.sprint.stories.push(currentStory as Story)
-            }
-            currentStory = {
-              id: val,
-              title: "",
-              status: "pending",
-              points: 0,
-            }
-            context = "story"
+
+    // List item check MUST come before kv check: a line like "    - id: foo"
+    // would also match the kv regex (key="    - id"), so we handle list items first.
+    const listMatch = line.match(/^(\s*)-\s+(.*)/)
+    if (listMatch) {
+      const listContent = listMatch[2]
+      const inlineKv = listContent.match(/^([^:]+):\s*(.*)/)
+      if (inlineKv && (context === "stories" || context === "story")) {
+        const key = inlineKv[1].trim()
+        const val = cleanValue(inlineKv[2])
+
+        if (key === "id") {
+          if (currentStory.id) {
+            data.sprint.stories.push(currentStory as Story)
           }
+          currentStory = {
+            id: val,
+            title: "",
+            status: "pending",
+            points: 0,
+          }
+          context = "story"
         }
-        continue
       }
       continue
     }
+
+    const kvMatch = line.match(/^(\s*)([^:]+):\s*(.*)/)
+    if (!kvMatch) continue
 
     const key = kvMatch[2].trim()
     const val = cleanValue(kvMatch[3])
