@@ -435,10 +435,12 @@ Execute the complete Feature track workflow for: $ARGUMENTS
 Run these phases in order:
 1. /forge-specify $ARGUMENTS
 2. After the spec is created, run /forge-clarify
-3. After clarification, run /forge-plan
-4. After the plan is created, run /forge-analyze
-5. If analysis passes, run /forge-tasks
-6. Report the final task list and suggest /forge-implement
+3. After clarification, if the feature has user-facing screens run /forge-ux;
+   otherwise skip to step 4
+4. After UX design (or clarification if no UI), run /forge-plan
+5. After the plan is created, run /forge-analyze
+6. If analysis passes, run /forge-tasks
+7. Report the final task list and suggest /forge-implement
 
 At each phase, present the output and ask the user if they want to
 proceed to the next phase or make adjustments.

@@ -413,14 +413,39 @@ I found 2 areas that need clarification in spec 003:
 
 After your answers, the spec is updated and all markers are resolved.
 
-**Phase 3: Plan**
+**Phase 3: UX Design** *(for features with user-facing screens)*
+
+```
+> /forge-ux
+```
+
+The `forge-ux` subagent reads the spec and produces the full UX design
+package:
+
+```
+I've analysed spec 003. This feature has user-facing screens (OAuth
+buttons on login/register, account linking confirmation flow).
+
+Deliverables:
+  - Personas: 2 identified (New User, Existing User with password)
+  - User journeys: 3 flows (Sign Up via OAuth, Sign In via OAuth,
+    Link OAuth to existing account)
+  - Wireframes: 4 screens described (Login page, OAuth consent redirect,
+    Linking confirmation, Success state)
+  - Accessibility: WCAG 2.1 AA compliance notes per screen
+  - Design tokens: colours, spacing, focus states for OAuth buttons
+```
+
+**Output**: `.forge/specs/003-oauth2-authentication/design-spec.md`
+
+**Phase 4: Plan**
 
 ```
 > /forge-plan
 ```
 
-The `forge-architect` reads the spec + constitution + existing architecture
-and produces a technical plan:
+The `forge-architect` reads the spec + design-spec + constitution +
+existing architecture and produces a technical plan:
 
 ```
 I've analyzed your spec against the existing architecture. Here's my plan:
@@ -443,7 +468,7 @@ Architecture Decision:
 
 **Output**: `.forge/specs/003-oauth2-authentication/plan.md` + ADR
 
-**Phase 4: Analyze**
+**Phase 5: Analyze**
 
 ```
 > /forge-analyze
@@ -472,7 +497,7 @@ Overall: PASS with 1 warning. Address the rate limiting gap before
 proceeding to task breakdown.
 ```
 
-**Phase 5: Tasks**
+**Phase 6: Tasks**
 
 ```
 > /forge-tasks
@@ -510,7 +535,7 @@ Phase 4: Integration (3 tasks)
 
 **Output**: `.forge/specs/003-oauth2-authentication/tasks.md`
 
-**Phase 6: Implement**
+**Phase 7: Implement**
 
 ```
 > /forge-implement
@@ -1544,8 +1569,12 @@ Quick overview:
 - **Use [NEEDS CLARIFICATION] markers liberally** during the Specify phase.
   It is better to flag uncertainty explicitly than to guess.
 
-- **Run /forge-clarify at least once** before proceeding to Plan. The
+- **Run /forge-clarify at least once** before proceeding to UX design or Plan. The
   clarification phase catches most spec issues before they become code issues.
+
+- **Run /forge-ux before /forge-plan** for any feature with user-facing screens.
+  The design-spec feeds the architect with layout, interaction, and accessibility
+  constraints that shape the technical plan.
 
 ### 8.3 Architecture
 

@@ -120,6 +120,8 @@ Recommended Actions:
 
 Based on findings, suggest:
 - `/forge-clarify` if spec has ambiguities
+- `/forge-ux` if UX/UI requirements are missing or incomplete and the
+  feature has user-facing screens
 - `/forge-plan` if plan is missing or inconsistent
 - `/forge-architecture` if architecture gaps found
 - `/forge-specify` if requirements need updating

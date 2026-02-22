@@ -72,5 +72,9 @@ Present a clarification report:
 - Constitution compliance status
 
 Recommend next steps:
-- If all resolved: `/forge-plan` to create the technical plan
+- If all resolved and the feature has UI components or user-facing screens:
+  `/forge-ux` to produce personas, user journeys, wireframes, and
+  accessibility specs before the technical plan.
+- If all resolved and no UI is involved: `/forge-plan` to create the
+  technical plan.
 - If some remain: schedule another `/forge-clarify` session
