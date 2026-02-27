@@ -1,14 +1,14 @@
 ---
-description: "Adversarial code review that MUST find real issues across 5 dimensions"
-agent: forge-reviewer
+description: "Dual-model adversarial code review: Claude Opus 4.6 + GPT-5.3-Codex, synthesized"
 subtask: true
-model: github-copilot/claude-opus-4.6
 ---
 
-# Adversarial Code Review
+# Dual-Model Adversarial Code Review
 
-You are handling `/forge-review` to conduct an adversarial code review.
-This review MUST find real issues. "Looks good" is NOT an acceptable outcome.
+You are the FORGE orchestrator handling `/forge-review`. This command runs two
+**independent** adversarial reviews in parallel — one with Claude Opus 4.6
+(`forge-reviewer`) and one with GPT-5.3-Codex (`forge-reviewer-codex`) — then
+synthesizes their findings into a single authoritative report.
 
 ## Arguments
 
@@ -20,129 +20,101 @@ Optional scope: $ARGUMENTS
 - If `--diff` is provided, review only the current git diff.
 - If no argument, review the most recent changes (via `git diff`).
 
-## Context Loading
+## Phase 1: Parallel Reviews
 
-1. Identify what spec/story the changes relate to.
-2. Read the relevant spec: `.forge/specs/NNN-slug/spec.md` or story file.
-3. Read `.forge/specs/NNN-slug/design-spec.md` (if exists — for UX fidelity check).
-4. Read `.forge/architecture/architecture.md` (if exists).
-5. Read `.forge/constitution.md`.
-6. Get the implementation diff via `git diff` or read the changed files.
+Spawn both review tasks **concurrently** using the Task tool. Pass the
+original `$ARGUMENTS` unchanged to each agent.
 
-## Review Protocol
+### Task A — forge-reviewer (Claude Opus 4.6)
 
-Load the `adversarial-review` skill before beginning the review.
+Invoke the `forge-reviewer` agent with scope: $ARGUMENTS
 
-### Dimension 1: Correctness
+The agent will:
+1. Load the relevant spec/story, architecture, and constitution.
+2. Review all changed files across 7 dimensions (Correctness, Security,
+   Performance, Maintainability, Constitution, Test-Spec Coherence, and
+   UX Quality if UI changes are present).
+3. Return its full structured findings report.
 
-- Does the code implement what the spec/story requires?
-- Are all acceptance criteria addressed?
-- Are edge cases handled?
-- Are there off-by-one errors, null pointer risks, or race conditions?
-- Do the tests actually test the right behavior?
-- Are there logic errors or incorrect assumptions?
+### Task B — forge-reviewer-codex (GPT-5.3-Codex)
 
-### Dimension 2: Security
+Invoke the `forge-reviewer-codex` agent with scope: $ARGUMENTS
 
-- Input validation: is all user input validated and sanitized?
-- Authentication/authorization: are access controls correct?
-- Data exposure: is sensitive data logged, leaked, or over-exposed?
-- Injection risks: SQL, XSS, command injection?
-- Dependency risks: are new dependencies trustworthy and pinned?
-- Secrets: are any hardcoded credentials or tokens present?
+The agent will perform the same 7-dimension adversarial review independently,
+with no knowledge of Task A's findings.
 
-### Dimension 3: Performance
+> Do NOT wait for Task A before launching Task B. Run both in parallel.
 
-- Are there N+1 query patterns?
-- Are there unnecessary database calls or API requests?
-- Are expensive operations done in hot paths?
-- Is there potential for memory leaks?
-- Are large datasets handled with pagination/streaming?
-- Could any operation block the event loop (Node.js)?
+## Phase 2: Synthesis
 
-### Dimension 4: Maintainability
+Once both reviews complete, merge their findings:
 
-- Is the code readable and well-structured?
-- Are naming conventions followed (check AGENTS.md)?
-- Is there code duplication that should be extracted?
-- Are functions/methods appropriately sized?
-- Is error handling consistent?
-- Are types used effectively (no unnecessary `any`)?
+1. **Label** every finding: `[OPUS]` for Task A, `[CODEX]` for Task B.
+2. **Consensus**: If both models report the same underlying issue (same file,
+   same root cause, even if described differently), merge into a single entry
+   tagged `[CONSENSUS]` and elevate to the highest severity between the two.
+3. **Unique findings**: Preserve findings reported by only one model — they
+   represent the independent perspective of each reviewer.
+4. **Sort** the final list: CONSENSUS first (highest confidence), then by
+   severity (CRITICAL → WARNING → INFO), then by dimension.
 
-### Dimension 5: Constitution Compliance
-
-Load the `constitution-compliance` skill and verify:
-- Article 2: Technology stack alignment
-- Article 3: Architecture patterns
-- Article 4: Quality standards
-- Article 5: Security requirements
-- Article 7: Naming conventions
-- Article 8: Testing standards
-
-### Dimension 6: UX Quality *(activate for UI changes)*
-
-If the PR modifies component files, views, templates, or CSS — OR if a
-`design-spec.md` exists for the feature — load the `ux-review` skill and check:
-
-- **Spec fidelity**: Do wireframes in design-spec.md match implementation?
-- **Accessibility**: WCAG 2.1 AA — focus, contrast, labels, ARIA roles.
-- **Design system**: No hardcoded values; tokens used correctly.
-- **Anti-patterns**: Missing empty/error states, no loading feedback, etc.
-- **Responsive**: Mobile touch targets ≥ 44×44px, no horizontal overflow.
-
-## Output Format
-
-You MUST find at least 3 issues. Present them in this format:
+## Synthesis Output Format
 
 ```
-FORGE Code Review
-=================
-Scope: [spec/story/files reviewed]
-Date: YYYY-MM-DD
-Dimensions: Correctness, Security, Performance, Maintainability,
-            Constitution[, UX Quality (if UI changes present)]
+FORGE Dual-Model Code Review
+=============================
+Scope:   [spec/story/files reviewed]
+Date:    YYYY-MM-DD
+Models:  Claude Opus 4.6 (forge-reviewer)
+         GPT-5.3-Codex (forge-reviewer-codex)
+Dimensions: Correctness · Security · Performance · Maintainability ·
+            Constitution · Test-Spec Coherence[· UX Quality]
 
-Issues Found: N
+Issues Found: N total  (X consensus · Y opus-only · Z codex-only)
+─────────────────────────────────────────────────────────────────
 
-[CRITICAL] CORRECTNESS - src/auth/login.ts:42
-  Missing null check on user lookup result. If the user is not found,
-  the code will throw an unhandled TypeError.
-  Suggestion: Add explicit null check and return 401 response.
+[CONSENSUS][CRITICAL] CORRECTNESS - src/auth/login.ts:42
+  Issue: Missing null check on user lookup result.
+  Impact: Unhandled TypeError if user is not found — crashes the endpoint.
+  Suggestion: Add explicit null check and return 401 before accessing user fields.
+  Reported by: OPUS + CODEX
 
-[WARNING] SECURITY - src/api/users.ts:15
-  User email is included in the API response without explicit opt-in.
-  This could leak PII to unauthorized consumers.
-  Suggestion: Add a response DTO that explicitly maps only safe fields.
+[OPUS][WARNING] TEST-SPEC COHERENCE - tests/auth/login.test.ts
+  Issue: Acceptance criterion AC-3 (rate limiting after 5 failed attempts)
+         has no corresponding test.
+  Impact: Rate limiting may be silently broken without any regression signal.
+  Suggestion: Add test: "should return 429 after 5 failed login attempts".
 
-[WARNING] UX:ACCESSIBILITY - src/components/Button.tsx:34
-  Icon-only button has no accessible label.
-  Impact: Screen reader users cannot identify the button purpose.
-  Suggestion: Add aria-label="[action description]" to the button.
+[CODEX][WARNING] SECURITY - src/api/users.ts:15
+  Issue: User email is returned in all API responses without an explicit DTO.
+  Impact: PII leakage to unintended consumers.
+  Suggestion: Add a response DTO that maps only safe fields.
 
-[INFO] MAINTAINABILITY - src/services/payment.ts:88
-  Function `processPayment` is 120 lines. Consider extracting validation
-  and notification logic into separate functions.
+[CONSENSUS][INFO] MAINTAINABILITY - src/services/payment.ts:88
+  Issue: Function `processPayment` is 120 lines.
+  Impact: Difficult to test and maintain independently.
   Suggestion: Extract `validatePaymentInput()` and `notifyPaymentComplete()`.
+  Reported by: OPUS + CODEX
 
+─────────────────────────────────────────────────────────────────
 Summary:
-  CRITICAL: N
-  WARNING:  N
-  INFO:     N
+  CONSENSUS: N  (flagged by both models — highest confidence)
+  OPUS only: N
+  CODEX only: N
+
+  Severity:  CRITICAL N | WARNING N | INFO N
 
 Verdict: [NEEDS CHANGES / APPROVED WITH NOTES]
 ```
 
 ## Anti-Sycophancy Rules
 
-- You MUST find at least 3 issues. If you cannot find 3 real issues, look
-  harder. Every implementation has room for improvement.
-- Do NOT inflate severity. Be honest about impact.
-- Do NOT report style preferences as issues unless they violate the
-  constitution or AGENTS.md conventions.
-- Focus on issues that could cause bugs, security vulnerabilities, or
-  maintenance burden.
-- If the code is genuinely excellent, find 3 INFO-level improvements
-  (there are always improvements possible).
+- Combined, the two models MUST surface at least 5 issues. If synthesis
+  produces fewer, flag a meta-warning that one or both reviews were shallow.
+- Do NOT discard a finding just because only one model reported it — unique
+  findings are valuable and represent blind spots of the other model.
+- Consensus findings carry the highest confidence and MUST be addressed
+  before merge if CRITICAL.
 
-After the AI review, remind the user that human review is the second gate
-before merging.
+After presenting the synthesis, remind the user that **human review is the
+second gate** before merging.

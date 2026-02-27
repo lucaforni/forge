@@ -1,5 +1,5 @@
 ---
-description: "Create a technical implementation plan for a feature spec"
+description: 'Create a technical implementation plan for a feature spec'
 agent: forge-architect
 subtask: true
 model: github-copilot/claude-opus-4.6
@@ -26,6 +26,10 @@ Before starting, read the following upstream documents:
 3. `.forge/architecture/architecture.md` -- system architecture (if exists)
 4. `.forge/knowledge/adr/` -- scan for relevant ADRs
 5. `.forge/knowledge/decision-log.md` -- prior decisions
+6. `.forge/specs/NNN-slug/design-spec.md` -- UX wireframes and component
+   inventory (if exists); load Wireframes and Components sections (~150 lines)
+7. `.forge/specs/NNN-slug/user-journey.md` -- user journeys and edge cases
+   (if exists); load happy paths and key edge cases (~100 lines)
 
 If the spec does not exist, stop and tell the user to run `/forge-specify`
 first.
@@ -35,6 +39,7 @@ first.
 ### Step 1: Requirements Analysis
 
 Review the spec and extract:
+
 1. All functional requirements (FR-NNN) to be addressed.
 2. All non-functional requirements with their targets.
 3. All acceptance criteria from user stories.
@@ -43,6 +48,7 @@ Review the spec and extract:
 ### Step 2: Data Model Design
 
 Design the data layer for this feature:
+
 1. New database tables/collections with full schema.
 2. Modified existing tables (columns added, indexes needed).
 3. Migration strategy.
@@ -51,6 +57,7 @@ Design the data layer for this feature:
 ### Step 3: API Design
 
 Design the API endpoints:
+
 1. Full endpoint contracts (method, path, request/response bodies).
 2. Authentication/authorization requirements per endpoint.
 3. Error response formats.
@@ -59,6 +66,7 @@ Design the API endpoints:
 ### Step 4: Component Design
 
 Design the implementation:
+
 1. New classes/modules with responsibilities.
 2. Key methods with signatures and behavior descriptions.
 3. Integration points with existing code.
@@ -67,6 +75,7 @@ Design the implementation:
 ### Step 5: File Map
 
 Create a complete file map showing:
+
 1. New files to create (with purpose).
 2. Existing files to modify (with description of changes).
 3. Test files to create.
@@ -74,6 +83,7 @@ Create a complete file map showing:
 ### Step 6: Dependencies
 
 Identify:
+
 1. New npm/pip packages needed (with version constraints).
 2. Internal module dependencies.
 3. External service dependencies.
@@ -82,6 +92,7 @@ Identify:
 ### Step 7: Testing Strategy
 
 Define the testing approach:
+
 1. Unit test scope (what to test, what to mock).
 2. Integration test scope.
 3. Test data requirements.
@@ -90,6 +101,7 @@ Define the testing approach:
 ### Step 8: Requirement Traceability
 
 Create a traceability table mapping each FR/NFR to:
+
 - Plan section where it is addressed.
 - Files where it will be implemented.
 - Test files where it will be verified.
@@ -97,6 +109,7 @@ Create a traceability table mapping each FR/NFR to:
 ### Step 9: Constitution Compliance
 
 Load the `constitution-compliance` skill and verify:
+
 - Technical choices comply with the constitution.
 - Patterns match prescribed architecture.
 - Testing approach meets standards.
@@ -109,6 +122,7 @@ at `.forge/specs/NNN-slug/plan.md`.
 ### Step 11: Summary and Next Steps
 
 Present a plan summary:
+
 - Number of new files
 - Number of modified files
 - Number of new dependencies
@@ -117,5 +131,6 @@ Present a plan summary:
 - Constitution compliance status
 
 Recommend next steps:
+
 - `/forge-analyze` to validate plan against spec and architecture
 - `/forge-tasks` to generate task breakdown from the plan

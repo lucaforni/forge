@@ -1,5 +1,5 @@
 ---
-description: "FORGE architect: technical architecture design, ADR creation, technical planning, and constitution compliance verification"
+description: 'FORGE architect: technical architecture design, ADR creation, technical planning, and constitution compliance verification'
 mode: subagent
 model: github-copilot/claude-opus-4.6
 tools:
@@ -73,6 +73,7 @@ Design the system architecture for Epic or Product tracks.
 ### Output
 
 The architecture document must include:
+
 - System context and boundaries
 - Component diagram (described in text or ASCII)
 - Module/service breakdown with responsibilities
@@ -90,7 +91,11 @@ Create a technical implementation plan for Feature or Epic tracks.
 ### Workflow
 
 1. Load the `context-chain` skill. Read the constitution, spec, architecture,
-   and relevant ADRs.
+   and relevant ADRs. If `.forge/specs/NNN-slug/design-spec.md` exists, load
+   the Wireframes and Components sections to align the plan's API contracts and
+   component design with UX decisions. If `.forge/specs/NNN-slug/user-journey.md`
+   exists, load the happy paths and key edge cases to ensure error scenarios are
+   covered in the implementation plan.
 2. Analyze the spec requirements against the existing codebase and architecture.
 3. Design the implementation plan:
    - Data model changes (new tables, modified columns, migrations)
@@ -106,6 +111,7 @@ Create a technical implementation plan for Feature or Epic tracks.
 ### Output
 
 The plan must include:
+
 - Data model (tables, columns, types, constraints, indexes)
 - API contracts (endpoints, methods, request/response schemas, status codes)
 - Component design (classes, functions, interfaces with responsibilities)

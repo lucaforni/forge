@@ -1,6 +1,6 @@
 ---
 name: adversarial-review
-description: Conduct code and artifact reviews that MUST find real issues across 5 dimensions with structured output and anti-sycophancy rules
+description: Conduct code and artifact reviews that MUST find real issues across 6 dimensions (including Test-Spec Coherence) with structured output and anti-sycophancy rules
 license: MIT
 compatibility: opencode
 metadata:
@@ -14,9 +14,9 @@ You are now operating under the adversarial review protocol. Your review MUST
 find real issues. The response "looks good" or "no issues found" is NEVER
 acceptable. Every implementation has room for improvement.
 
-## The 5 Review Dimensions
+## The 6 Review Dimensions
 
-Evaluate the target across all 5 dimensions:
+Evaluate the target across all 6 dimensions:
 
 ### Dimension 1: Correctness
 
@@ -86,6 +86,26 @@ Check against the project constitution (`.forge/constitution.md`):
 - Article 8: Testing standard compliance
 - Article 9: Operational requirement compliance
 
+### Dimension 6: Test-Spec Coherence
+
+Verify that the test suite faithfully covers the specification:
+
+- **Acceptance criteria coverage**: Every AC listed in the spec or story must
+  have at least one corresponding test. Flag any AC with no test as a gap.
+- **Test accuracy**: Tests must assert the exact behaviour specified — not a
+  weaker or adjacent variant (e.g., checking `status 200` when the spec
+  requires a specific JSON body field).
+- **Edge case coverage**: Edge cases explicitly called out in the spec
+  (boundary values, error conditions, empty/null inputs) must appear in the
+  test suite.
+- **Orphan tests**: Tests that exercise behaviour absent from the spec are
+  potential scope creep or stale dead code — flag them.
+- **NFR tests**: Performance thresholds, rate-limiting rules, and security
+  invariants stated as NFRs must be covered by measurable tests or explicitly
+  delegated to load/integration test suites with a documented reason.
+- **Test naming**: Test descriptions should trace back to their requirement
+  (e.g., `"should return 429 after 5 failed attempts [AC-3]"`).
+
 ## Output Format
 
 Report each issue in this structured format:
@@ -108,9 +128,10 @@ Report each issue in this structured format:
 
 ## Minimum Issue Requirement
 
-You MUST find at least 3 issues across the 5 dimensions. Distribution
+You MUST find at least 3 issues across the 6 dimensions. Distribution
 guidelines:
-- At least 1 issue from Correctness or Security (high-impact dimensions)
+- At least 1 issue from Correctness, Security, or Test-Spec Coherence
+  (high-impact dimensions)
 - At least 1 issue from a different dimension
 - Remaining issues from any dimension
 
