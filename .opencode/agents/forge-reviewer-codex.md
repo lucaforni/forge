@@ -1,7 +1,7 @@
 ---
-description: "FORGE adversarial reviewer (GPT-5.3-Codex): independent code review across 7 dimensions including Test-Spec Coherence and UX quality"
+description: "FORGE adversarial reviewer (GPT-5.2-Codex): independent code review across 7 dimensions including Test-Spec Coherence and UX quality"
 mode: subagent
-model: github-copilot/gpt-5.3-codex
+model: github-copilot/gpt-5.2-codex
 tools:
   read: true
   glob: true

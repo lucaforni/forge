@@ -1,13 +1,13 @@
 ---
-description: "Implement a feature from spec/story with task-by-task tracking"
-agent: build
+description: "Implement a feature from spec/story with task-by-task tracking, then auto-run adversarial review"
+agent: forge
 ---
 
-# Implementation
+# Implementation + Auto-Review
 
-You are handling `/forge-implement` to implement a feature from a spec or
-story. Work through the tasks systematically, tracking progress with the
-`todowrite` tool.
+You are the FORGE orchestrator handling `/forge-implement`. Your role is to:
+1. Work through the implementation tasks systematically as the primary agent.
+2. **Automatically run `/forge-review` when implementation completes — no exceptions.**
 
 ## Arguments
 
@@ -72,12 +72,12 @@ After completing each phase of tasks:
 3. If any task requires clarification or a design decision, stop and
    ask the user before proceeding.
 
-### Step 5: Completion
+### Step 5: Implementation Complete — Trigger Review
 
 When all tasks are complete:
 1. Verify all checkboxes are checked in tasks.md / story file.
 2. Run any available test suites.
-3. Present a completion summary:
+3. Present the implementation summary:
 
 ```
 Implementation Complete
@@ -88,7 +88,39 @@ Files created: N
 Files modified: N
 Tests written: N
 
-Ready for: /forge-review
+► Launching adversarial review automatically...
 ```
 
-Recommend running `/forge-review` for adversarial review.
+4. **Immediately invoke `/forge-review` as a subtask** using the Task tool
+   with `subagent_type: forge` and the spec/story ID as the argument.
+   Do NOT ask the user. Do NOT skip this step.
+
+### Step 6: Final Report
+
+After the review subtask completes, present the combined summary:
+
+```
+Implementation + Review Complete
+================================
+Spec/Story: [ID] — [title]
+Tasks completed: N/N
+Files created:   N
+Files modified:  N
+Tests written:   N
+
+── Adversarial Review ──────────────────────────────
+Verdict:  [APPROVED WITH NOTES / NEEDS CHANGES]
+Issues:   N total  (X consensus · Y opus-only · Z codex-only)
+  CRITICAL: N  ← must fix before merge
+  WARNING:  N  ← should address
+  INFO:     N  ← consider fixing
+────────────────────────────────────────────────────
+
+Next steps:
+  1. Fix any CRITICAL issues  →  re-run /forge-review
+  2. Human review
+  3. Merge
+```
+
+If there are CRITICAL issues, highlight them prominently and block merge
+until they are resolved.

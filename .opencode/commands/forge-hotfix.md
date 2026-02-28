@@ -1,12 +1,13 @@
 ---
-description: "Diagnose and fix a critical bug with minimal changes (Hotfix track)"
-agent: build
+description: "Diagnose and fix a critical bug with minimal changes, then auto-run adversarial review (Hotfix track)"
+agent: forge
 ---
 
-# Hotfix Workflow
+# Hotfix Workflow + Auto-Review
 
-You are handling `/forge-hotfix` for the Hotfix track. This is an all-in-one
-workflow for critical bugs requiring minimal, targeted fixes.
+You are the FORGE orchestrator handling `/forge-hotfix`. This is an all-in-one
+workflow for critical bugs requiring minimal, targeted fixes, followed by a
+**mandatory adversarial review**.
 
 ## Arguments
 
@@ -66,16 +67,9 @@ Proceed only if the user confirms staying in Hotfix track.
 2. Run existing tests to verify no regressions.
 3. The test should fail without the fix and pass with it.
 
-### Step 5: Self-Review
+### Step 5: Fix Complete — Trigger Review
 
-Perform a quick review against the constitution:
-- Does the fix follow coding conventions?
-- Does it introduce any security issues?
-- Is error handling consistent with existing patterns?
-
-### Step 6: Completion
-
-Present the fix summary:
+Present the fix summary, then immediately launch review:
 
 ```
 Hotfix Complete
@@ -90,9 +84,37 @@ Regressions: [none/details]
 Commit message suggestion:
 fix([scope]): [description]
 
-Root cause: [explanation]
-Fix: [what was changed]
+► Launching adversarial review automatically...
 ```
 
-Remind the user to run `/forge-review` if they want an adversarial review
-before committing.
+**Immediately invoke `/forge-review` as a subtask** using the Task tool
+with `subagent_type: forge` and `--diff` as the argument (to review the
+current git diff).
+Do NOT ask the user. Do NOT skip this step.
+
+### Step 6: Final Report
+
+After the review subtask completes, present the combined summary:
+
+```
+Hotfix + Review Complete
+========================
+Bug: [description]
+Fix: [what was changed]
+Files modified: [list]
+
+── Adversarial Review ──────────────────────────────
+Verdict:  [APPROVED WITH NOTES / NEEDS CHANGES]
+Issues:   N total  (X consensus · Y opus-only · Z codex-only)
+  CRITICAL: N  ← must fix before commit
+  WARNING:  N  ← should address
+  INFO:     N  ← consider fixing
+────────────────────────────────────────────────────
+
+Suggested commit:
+  fix([scope]): [description]
+
+Next steps:
+  1. Fix any CRITICAL issues  →  re-run /forge-review
+  2. Commit and push
+```

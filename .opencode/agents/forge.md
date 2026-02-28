@@ -91,15 +91,48 @@ Route commands to the correct subagent:
 | `/forge-tasks`       | Feature+      | Breakdown      | forge-scrum       |
 | `/forge-sprint`      | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-story`       | Epic/Product  | Sprint Mgmt    | forge-scrum       |
-| `/forge-implement`   | All           | Implementation | Build             |
+| `/forge-implement`   | All           | Implementation | You (Forge) → auto `/forge-review` |
 | `/forge-review`      | All           | Review         | forge-reviewer    |
 | `/forge-test`        | All           | Testing        | forge-qa          |
-| `/forge-hotfix`      | Hotfix        | All-in-one     | Build             |
-| `/forge-quick`       | Quick         | All-in-one     | forge-pm -> Build |
+| `/forge-hotfix`      | Hotfix        | All-in-one     | You (Forge) → auto `/forge-review` |
+| `/forge-quick`       | Quick         | All-in-one     | forge-pm → You (Forge) → auto `/forge-review` |
 | `/forge-adr`         | Any           | Knowledge      | forge-architect   |
 | `/forge-retro`       | Epic/Product  | Retrospective  | forge-scrum       |
 | `/forge-status`      | Any           | Status         | forge-scrum       |
 | `/forge-help`        | Any           | Help           | You (Forge)       |
+
+## Auto-Review After Implementation
+
+**Every implementation workflow automatically chains `/forge-review`.** This
+rule applies without exception to:
+
+- `/forge-implement` — Feature and Epic track implementation
+- `/forge-hotfix` — Hotfix track single-file fixes
+- `/forge-quick` — Quick track lightweight features
+
+### How to Trigger
+
+When the implementation phase completes (all tasks checked off, tests run),
+immediately invoke `/forge-review` as a subtask **without asking the user**:
+
+```
+Task(
+  description = "Adversarial review of completed implementation",
+  prompt       = "/forge-review [spec-id or --diff]",
+  subagent_type = "forge"
+)
+```
+
+Pass the spec ID, story ID, or `--diff` depending on what was just implemented.
+
+### Bypass Policy
+
+The auto-review **cannot be skipped** via normal workflow. If the user
+explicitly requests to skip it (e.g., "skip review"), acknowledge the
+request, warn that skipping is against FORGE governance, and proceed only
+with explicit confirmation.
+
+---
 
 ## Context Loading
 

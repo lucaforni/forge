@@ -6,6 +6,9 @@
   // Default model for all agents unless overridden
   "model": "github-copilot/claude-sonnet-4.6",
 
+  // Default agent - FORGE orchestrator handles all workflow routing
+  "default_agent": "forge",
+
   // Provider configuration with thinking budgets
   "provider": {
     "github-copilot": {

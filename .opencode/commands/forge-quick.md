@@ -53,17 +53,28 @@ After the tech spec is created, implement the tasks:
 3. Write unit tests for new/changed code.
 4. Check off tasks in the tech-spec as they are completed.
 
-### Step 4: Quick Review
+### Step 4: Implementation Complete — Trigger Review
 
-Perform a lightweight self-review:
-- Does the implementation match the tech spec?
-- Are tests written and passing?
-- Does the code follow project conventions (AGENTS.md)?
-- Are there any obvious security issues?
+When all tasks are done, present the implementation summary:
 
-### Step 5: Completion
+```
+Quick Track Implementation Complete
+====================================
+Spec: NNN-slug
+Tasks: N/N completed
+Tests: N written
+Files: N created, N modified
 
-Present the completion summary:
+► Launching adversarial review automatically...
+```
+
+**Immediately invoke `/forge-review` as a subtask** using the Task tool
+with `subagent_type: forge` and the spec ID as the argument.
+Do NOT ask the user. Do NOT skip this step.
+
+### Step 5: Final Report
+
+After the review subtask completes, present the combined summary:
 
 ```
 Quick Track Complete
@@ -73,11 +84,18 @@ Tasks: N/N completed
 Tests: N written
 Files: N created, N modified
 
+── Adversarial Review ──────────────────────────────
+Verdict:  [APPROVED WITH NOTES / NEEDS CHANGES]
+Issues:   N total  (X consensus · Y opus-only · Z codex-only)
+  CRITICAL: N  ← must fix before merge
+  WARNING:  N  ← should address
+  INFO:     N  ← consider fixing
+────────────────────────────────────────────────────
+
 Commit message suggestion:
 feat([scope]): [description]
 
-Ready for: /forge-review (optional for Quick track)
+Next steps:
+  1. Fix any CRITICAL issues  →  re-run /forge-review
+  2. Human review → merge
 ```
-
-Suggest running `/forge-review` for important changes, but note it is
-optional for Quick track.
