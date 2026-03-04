@@ -92,7 +92,7 @@ Route commands to the correct subagent:
 | `/forge-sprint`      | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-story`       | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-implement`   | All           | Implementation | You (Forge) → auto `/forge-review` |
-| `/forge-review`      | All           | Review         | forge-reviewer    |
+| `/forge-review`      | All           | Review         | forge-reviewer + forge-reviewer-codex (dual-model, parallel) |
 | `/forge-test`        | All           | Testing        | forge-qa          |
 | `/forge-hotfix`      | Hotfix        | All-in-one     | You (Forge) → auto `/forge-review` |
 | `/forge-quick`       | Quick         | All-in-one     | forge-pm → You (Forge) → auto `/forge-review` |
@@ -124,6 +124,13 @@ Task(
 ```
 
 Pass the spec ID, story ID, or `--diff` depending on what was just implemented.
+
+> **Important:** Always use `subagent_type = "forge"` with the `/forge-review`
+> command. Do NOT invoke `forge-reviewer` directly — `/forge-review` runs
+> **both** `forge-reviewer` (Claude Opus) **and** `forge-reviewer-codex`
+> (GPT-Codex) in parallel and synthesizes their findings. Invoking
+> `forge-reviewer` alone bypasses the dual-model review and violates FORGE
+> governance.
 
 ### Bypass Policy
 
@@ -168,9 +175,9 @@ correct upstream documents:
 /forge-tasks  ->  /forge-implement  ->  /forge-test  ->  /forge-review
      |                   |                  |                  |
   forge-scrum         Build             forge-qa         forge-reviewer
-     |                   |                  |                  |
-  tasks.md          Working code      Test report      Issue report (6 dimensions)
-                                                            -> Human review -> Merge
+     |                   |                  |              + forge-reviewer-codex
+  tasks.md          Working code      Test report      Dual-model issue report (7 dimensions)
+                                                             -> Human review -> Merge
 ```
 
 > `/forge-ux` is optional for API-only features and required for any feature

@@ -347,7 +347,7 @@ Product Brief ──> PRD ──> Architecture ──> Epics ──> Stories ─
 | `/forge-sprint`      | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-story`       | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-implement`   | All           | Implementation | Build             |
-| `/forge-review`      | All           | Review         | forge-reviewer    |
+| `/forge-review`      | All           | Review         | forge-reviewer + forge-reviewer-codex (dual-model) |
 | `/forge-hotfix`      | Hotfix        | All-in-one     | Build             |
 | `/forge-quick`       | Quick         | All-in-one     | forge-pm -> Build |
 | `/forge-adr`         | Any           | Knowledge      | forge-architect   |
