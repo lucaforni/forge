@@ -119,95 +119,45 @@ A11y:
 
 ### Step 6: Design Token Specification
 
-Define tokens in a CSS-custom-property-compatible format:
+If the project has an existing design system at `.forge/ux/design-system.md`,
+reference existing tokens. Otherwise define tokens using CSS custom property
+format across these categories:
 
-```markdown
-## Design Tokens
+| Category | Tokens to define |
+|----------|-----------------|
+| Colors | primary (500/600), error, success, neutral (900/100) |
+| Typography | font-size (xs/sm/base/lg/xl/2xl), line-height (tight/normal) |
+| Spacing | scale-4 (1=4px, 2=8px, 3=12px, 4=16px, 6=24px, 8=32px, 12=48px) |
+| Border Radius | sm=4px, md=8px, lg=16px, full=9999px |
+| Shadows | sm (subtle), md (cards), lg (modals/dropdowns) |
 
-### Colors
-| Token | Value | Usage |
-|-------|-------|-------|
-| --color-primary-500 | #0066CC | Primary CTA, links |
-| --color-primary-600 | #0052A3 | Hover state |
-| --color-error-500 | #CC0000 | Error states, destructive actions |
-| --color-success-500 | #007A33 | Success states |
-| --color-neutral-900 | #111827 | Body text |
-| --color-neutral-100 | #F3F4F6 | Backgrounds |
+Use `--token-category-scale` naming convention (e.g., `--color-primary-500`,
+`--space-4`, `--radius-md`).
 
-### Typography
-| Token | Value | Usage |
-|-------|-------|-------|
-| --font-size-xs | 12px / 0.75rem | Captions, labels |
-| --font-size-sm | 14px / 0.875rem | Secondary text |
-| --font-size-base | 16px / 1rem | Body text |
-| --font-size-lg | 18px / 1.125rem | Subheadings |
-| --font-size-xl | 24px / 1.5rem | Section headings |
-| --font-size-2xl | 32px / 2rem | Page titles |
-| --line-height-tight | 1.25 | Headings |
-| --line-height-normal | 1.5 | Body |
+## Accessibility Checklist (WCAG 2.1 AA)
 
-### Spacing
-| Token | Value | Usage |
-|-------|-------|-------|
-| --space-1 | 4px | Internal padding (tight) |
-| --space-2 | 8px | Icon gaps, tight stacking |
-| --space-3 | 12px | Compact padding |
-| --space-4 | 16px | Default padding |
-| --space-6 | 24px | Section spacing |
-| --space-8 | 32px | Section separation |
-| --space-12 | 48px | Page-level spacing |
+Apply to every screen before finalizing:
 
-### Border Radius
-| Token | Value | Usage |
-|-------|-------|-------|
-| --radius-sm | 4px | Inputs, tags |
-| --radius-md | 8px | Cards, buttons |
-| --radius-lg | 16px | Modals, panels |
-| --radius-full | 9999px | Pills, avatars |
-
-### Shadows
-| Token | Value | Usage |
-|-------|-------|-------|
-| --shadow-sm | 0 1px 2px rgba(0,0,0,.05) | Subtle lift |
-| --shadow-md | 0 4px 6px rgba(0,0,0,.07) | Cards |
-| --shadow-lg | 0 10px 15px rgba(0,0,0,.1) | Modals, dropdowns |
-```
-
-## Accessibility Checklist
-
-Apply this checklist to every screen before finalizing:
-
-### Perceivable
+**Perceivable**
 - [ ] All images have `alt` text (decorative: `alt=""`)
 - [ ] Color is not the only way to convey information
-- [ ] Text contrast ≥ 4.5:1 (body), ≥ 3:1 (large text ≥ 18px bold)
-- [ ] Interactive element contrast ≥ 3:1
-- [ ] Text can be resized to 200% without horizontal scrolling
-- [ ] No content flashes more than 3 times per second
+- [ ] Text contrast ≥ 4.5:1 (body), ≥ 3:1 (large text ≥ 18px bold); interactive elements ≥ 3:1
+- [ ] Text resizable to 200% without horizontal scrolling; no flashing > 3/sec
 
-### Operable
-- [ ] All functionality accessible by keyboard alone
-- [ ] No keyboard traps (except intentional: modals must have Esc)
-- [ ] Skip navigation link provided
-- [ ] Tab order is logical and matches visual order
-- [ ] Focus indicator visible on all interactive elements
-- [ ] Touch targets ≥ 44×44px (mobile)
-- [ ] No time limits, or user can extend them
+**Operable**
+- [ ] All functionality accessible by keyboard; no keyboard traps (except intentional: modals trap, Esc releases)
+- [ ] Skip navigation link provided; tab order logical and matches visual order
+- [ ] Focus indicator visible; touch targets ≥ 44×44px (mobile); no time limits (or user can extend)
 
-### Understandable
-- [ ] Page language declared
-- [ ] Error messages identify the field and describe the issue
-- [ ] All inputs have visible labels (not just placeholders)
-- [ ] Required fields indicated (not only by color)
-- [ ] Consistent navigation across pages
-- [ ] Consistent component behavior across pages
+**Understandable**
+- [ ] Page language declared; error messages identify field and describe the issue
+- [ ] All inputs have visible labels (not only placeholders); required fields indicated beyond color
+- [ ] Consistent navigation and component behavior across pages
 
-### Robust
+**Robust**
 - [ ] Valid HTML structure (headings, landmarks, lists used correctly)
-- [ ] All form elements have associated labels
-- [ ] Status updates announced via `aria-live`
-- [ ] Modals have focus trap + `role="dialog"` + `aria-labelledby`
-- [ ] Custom components have correct ARIA roles and states
+- [ ] All form elements have associated labels; status updates announced via `aria-live`
+- [ ] Modals: focus trap + `role="dialog"` + `aria-labelledby`; custom components have correct ARIA roles
 
 ## Platform-Specific Conventions
 

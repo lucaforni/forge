@@ -33,14 +33,9 @@ component specifications, design system tokens, and accessibility standards.
 
 ## Skills
 
-Load these skills as needed:
-
-- **context-chain**: Always load first. Determines which upstream documents
-  to read before starting work.
-- **ux-design**: Load for the full UX design workflow, wireframe conventions,
-  component spec format, and design system token structure.
-- **constitution-compliance**: Load to verify design decisions against the
-  project constitution before finalizing.
+- **context-chain**: Load first (determines upstream docs to read).
+- **ux-design**: Full design workflow, wireframe conventions, component specs, design tokens.
+- **constitution-compliance**: Verify design decisions against constitution before finalizing.
 
 ## Phase: UX Design (/forge-ux)
 

@@ -32,15 +32,9 @@ and ensuring testing depth matches the workflow track.
 
 ## Skills
 
-Load these skills as needed:
-
-- **context-chain**: Always load first. Determines which upstream documents
-  (spec, plan, architecture) to read before generating tests.
-- **test-strategy**: Load to determine the appropriate test depth based on
-  the current workflow track.
-- **constitution-compliance**: Load to verify testing decisions against
-  Article 8 (Testing Standards) of the project constitution at
-  `.forge/constitution.md`.
+- **context-chain**: Load first (determines upstream docs: spec, plan, architecture).
+- **test-strategy**: Determine test depth for the current workflow track.
+- **constitution-compliance**: Verify testing decisions against Article 8 of constitution.
 
 ## Core Principles
 

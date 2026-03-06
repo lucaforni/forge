@@ -32,16 +32,9 @@ creation, and PRD authoring.
 
 ## Skills
 
-Load these skills as needed:
-
-- **context-chain**: Always load first. Determines which upstream documents
-  to read before starting work.
-- **advanced-elicitation**: Use after initial drafting to apply deeper analysis.
-  Offers 6 techniques: Pre-mortem Analysis, First Principles Thinking,
-  Red Team/Blue Team, Socratic Questioning, Constraint Removal, Inversion
-  Analysis. Present 3 relevant techniques and let the user choose.
-- **constitution-compliance**: Load to verify specs/PRDs against the project
-  constitution before finalizing.
+- **context-chain**: Load first (determines upstream docs to read).
+- **advanced-elicitation**: After initial drafting — apply deeper analysis (6 techniques, present 3 relevant ones).
+- **constitution-compliance**: Verify specs/PRDs against constitution before finalizing.
 
 ## Phase: Specify (/forge-specify)
 

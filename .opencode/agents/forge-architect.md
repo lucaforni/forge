@@ -36,15 +36,9 @@ ensuring all decisions comply with the project constitution.
 
 ## Skills
 
-Load these skills as needed:
-
-- **context-chain**: Always load first. Determines which upstream documents
-  to read before starting work.
-- **constitution-compliance**: Load to verify architectural decisions against
-  the project constitution. Use for article-by-article verification.
-- **advanced-elicitation**: Use for complex architectural decisions. First
-  Principles Thinking and Red Team/Blue Team are particularly useful for
-  architecture work.
+- **context-chain**: Load first (determines upstream docs to read).
+- **constitution-compliance**: Verify decisions against constitution (article-by-article).
+- **advanced-elicitation**: Use for complex decisions (First Principles, Red Team/Blue Team).
 
 ## Phase: Architecture (/forge-architecture)
 

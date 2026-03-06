@@ -143,23 +143,21 @@ with explicit confirmation.
 
 ## Context Loading
 
-Before invoking a subagent, load the `context-chain` skill and pass the
-correct upstream documents:
+Before invoking a subagent, load the `context-chain` skill. It contains
+the full phase-to-document mapping table and context window budget guidelines.
 
-| Phase              | Required Context                                        |
-| ------------------ | ------------------------------------------------------- |
-| Specify / PRD      | Constitution, existing architecture (if any)            |
-| UX Design          | Spec, constitution, design-system (if any)              |
-| Architecture       | Constitution, PRD/brief, design-spec (if any), ADRs     |
-| Plan               | Constitution, spec, architecture, design-spec (if any)  |
-| Analyze            | Spec, plan, architecture, constitution                  |
-| Tasks              | Spec, plan, design-spec (if any)                        |
-| Sprint Planning    | Epics, architecture, sprint history                     |
-| Story Creation     | Epic, PRD, architecture, sprint status                  |
-| Implementation     | Spec or story, plan or architecture, design-spec, const |
-| Code Review        | Spec or story, architecture, design-spec, impl diff     |
-| Testing            | Spec or story, plan, constitution (Article 8)           |
-| Retrospective      | Sprint status, stories (done), decision log             |
+### Track-Aware Context Budget
+
+Once the track is confirmed, limit context to what that track actually needs.
+Do NOT load Epic/Product artifacts for Hotfix or Quick work.
+
+| Track   | Load                                         | Skip                                      |
+| ------- | -------------------------------------------- | ----------------------------------------- |
+| Hotfix  | Affected file(s) only                        | constitution, architecture, spec, ADRs    |
+| Quick   | tech-spec.md only                            | architecture.md, ADRs, design-spec        |
+| Feature | constitution, spec, plan, architecture (key sections) | full ADR history, PRD, sprint history |
+| Epic    | constitution, PRD, architecture, sprint files | unrelated spec dirs                      |
+| Product | Full chain                                   | —                                         |
 
 ## Workflow Sequences
 
@@ -229,107 +227,21 @@ When the user runs `/forge-help` or asks for help:
 
 ## Pre-Flight Checks (Run Before Major Commands)
 
-**Important:** Before executing major workflow commands, run pre-flight checks
-to ensure optimal performance and detect common issues.
+Load the `pre-flight-checks` skill before executing the following commands.
+The skill handles all check logic, output format, and error handling.
 
-### When to Run
+**Always run before:**
+`/forge-specify`, `/forge-ux`, `/forge-plan`, `/forge-implement`,
+`/forge-prd`, `/forge-architecture`, `/forge-sprint`
 
-**Always run checks before:**
-- `/forge-specify` - Specification creation
-- `/forge-ux` - UX design phase
-- `/forge-plan` - Planning phase
-- `/forge-implement` - Implementation
-- `/forge-prd` - PRD creation
-- `/forge-architecture` - Architecture design
-- `/forge-sprint` - Sprint planning
+**Skip for:**
+`/forge-init`, `/forge-help`, `/forge-archive-decisions`, `/forge-validate-decisions`
 
-**Skip checks for:**
-- `/forge-init` - Initialization (would fail, creates structure)
-- `/forge-help` - Help commands (informational only)
-- `/forge-archive-decisions` - Archive command (would be circular)
-- `/forge-validate-decisions` - Validation command (standalone)
-- `/forge-quick` - Quick track (if user wants speed)
-- `/forge-hotfix` - Hotfix track (if urgent)
+**Optional (speed-sensitive):**
+`/forge-quick`, `/forge-hotfix`
 
-### How to Execute
-
-1. Load the `pre-flight-checks` skill
-2. Check decision log size against configured thresholds
-3. Verify directory structure exists
-4. Display warnings if issues found
-5. For warnings: Show recommended action but continue execution
-6. For errors: Block execution and require fix (e.g., missing `.forge/`)
-
-### Check: Decision Log Size
-
-**Implementation:**
-```bash
-# Count lines in decision log
-lines=$(wc -l < .forge/knowledge/decision-log.md 2>/dev/null || echo "0")
-
-# Load threshold from config or use default
-threshold=500  # or from .forge/config.yml
-
-# Estimate tokens (4 chars ≈ 1 token)
-if [ -f .forge/knowledge/decision-log.md ]; then
-  chars=$(wc -c < .forge/knowledge/decision-log.md)
-  tokens=$((chars / 4))
-else
-  tokens=0
-fi
-
-# Check and warn if exceeded
-if [ $lines -gt $threshold ]; then
-  echo "⚠️  Decision log size check"
-  echo ""
-  echo "   Current: $lines lines (~${tokens} tokens)"
-  echo "   Threshold: $threshold lines"
-  echo "   Status: EXCEEDED"
-  echo ""
-  echo "   Impact: May slow down context loading"
-  echo ""
-  echo "   💡 Recommended action:"
-  echo "      /forge-archive-decisions"
-  echo ""
-  echo "   Preview first: /forge-archive-decisions --dry-run"
-  echo ""
-fi
-```
-
-**Output Format:**
-
-If **below threshold** (silent success):
-```
-✅ Pre-flight checks passed
-```
-
-If **above threshold** (warning):
-```
-⚠️  Pre-flight check warning
-
-Decision Log Size:
-   Current: 1247 lines (~50k tokens)
-   Threshold: 500 lines
-   Status: ⚠️  EXCEEDED (2.5x over limit)
-
-Impact:
-   - Slower context loading
-   - Frequent context compaction
-
-Recommended Action:
-   /forge-archive-decisions --dry-run
-
-Continuing with command...
-```
-
-### User Override
-
-If user wants to skip checks for urgent work:
-```bash
-/forge-specify --skip-checks
-```
-
-Parse command flags and skip pre-flight checks if `--skip-checks` is present.
+Parse `--skip-checks` flag to bypass when user requests.
+Run checks silently — display output only if warnings or errors are found.
 
 ---
 

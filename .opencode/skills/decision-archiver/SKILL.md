@@ -42,29 +42,8 @@
 
 ### Step 1: Parse decision-log.md
 
-Extract all entries with their metadata:
-```markdown
-## 2026-02-17 | Session: Feature Implementation
-**Status:** `completed`
-**Tags:** `architecture`, `security`
-**Spec Refs:** `042-auth-system`
-**Decision ID:** `DEC-2026-042`
-```
-
-Parse into structured data:
-```javascript
-{
-  date: "2026-02-17",
-  session: "Feature Implementation",
-  status: "completed",
-  tags: ["architecture", "security"],
-  specRefs: ["042-auth-system"],
-  decisionId: "DEC-2026-042",
-  content: "...",
-  lineStart: 42,
-  lineEnd: 68
-}
-```
+Extract each entry's metadata: date, session, status, tags, specRefs,
+decisionId, line range, and full content block.
 
 ### Step 2: Load Configuration
 
@@ -93,32 +72,10 @@ IF decision-log.md line count > max_lines
 
 ### Step 4: Identify Archivable Entries
 
-```
-FOR EACH entry IN decision-log.md:
-  // Rule 1: Never archive non-completed statuses
-  IF entry.status IN [pending, in-progress, blocked]:
-    KEEP entry
-    CONTINUE
-  
-  // Rule 2: Always keep last N entries
-  IF entry IN last_N_entries:
-    KEEP entry
-    CONTINUE
-  
-  // Rule 3: Keep critical tags
-  IF entry.tags INTERSECTS critical_tags:
-    KEEP entry
-    CONTINUE
-  
-  // Rule 4: Keep if referenced by active specs
-  IF entry.specRefs INTERSECTS active_spec_ids:
-    KEEP entry
-    CONTINUE
-  
-  // Rule 5: Archive eligible
-  IF entry.status IN [completed, resolved, cancelled, superseded]:
-    MARK for_archive
-```
+For each entry: keep if status is pending/in-progress/blocked; keep if it's
+among the last N entries; keep if tagged critical; keep if referenced by an
+active spec. Mark all remaining completed/resolved/cancelled/superseded entries
+for archiviation.
 
 ### Step 5: Create Archive Structure
 
@@ -308,11 +265,4 @@ knowledge:
 - **Concurrent safety:** If multiple agents archive simultaneously, last write wins
   (rare edge case, acceptable)
 
----
 
-## Future Enhancements
-
-1. **Smart search:** Index archived decisions for fast search
-2. **Auto-promotion:** Suggest promoting recurring decisions to ADRs
-3. **Metrics:** Track decision velocity, resolution time
-4. **Compression:** Old archives could be compressed to .zip
