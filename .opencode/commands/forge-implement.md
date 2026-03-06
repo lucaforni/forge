@@ -28,6 +28,10 @@ Read the following based on what is being implemented:
 2. `.forge/specs/NNN-slug/plan.md` -- the technical plan
 3. `.forge/specs/NNN-slug/tasks.md` -- the task breakdown
 4. `.forge/constitution.md` -- governance constraints
+5. `.forge/specs/NNN-slug/design-spec.md` -- UX wireframes and component
+   specs (if exists); load Wireframes and Components sections only (~150 lines)
+6. `.forge/specs/NNN-slug/user-journey.md` -- user journeys and edge cases
+   (if exists); load happy paths and key edge cases (~100 lines)
 
 **For a story (Epic track):**
 1. The story file: `.forge/epics/epic-NN-slug/story-NNN-slug.md`
