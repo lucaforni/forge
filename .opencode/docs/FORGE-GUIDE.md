@@ -7,8 +7,8 @@
 
 | Field   | Value      |
 | ------- | ---------- |
-| Version | 1.0.0      |
-| Updated | 2026-02-12 |
+| Version | 1.2.0      |
+| Updated | 2026-03-07 |
 
 ---
 
@@ -131,17 +131,23 @@ request and recommends the right track. You always have the final say.
 
 ### 2.3 Agents
 
-FORGE uses 7 specialized subagents, each with a distinct role and model:
+FORGE uses 9 specialized subagents, each with a distinct role and model:
 
-| Agent           | Role                                    | When Active                   |
-| --------------- | --------------------------------------- | ----------------------------- |
-| Forge           | Orchestrates workflows, routes to track | Always (primary agent)        |
-| forge-analyst   | Explores, researches, assesses scope    | Analysis phases               |
-| forge-pm        | Defines requirements, writes specs/PRDs | Specify, Clarify, PRD phases  |
-| forge-architect | Designs architecture, creates ADRs      | Architecture, Plan phases     |
-| forge-scrum     | Plans sprints, manages stories          | Sprint, Story, Retro phases   |
-| forge-reviewer  | Adversarial reviews (code + specs)      | Review, Analyze phases        |
-| forge-qa        | Defines test strategy, generates tests  | Testing phases                |
+| Agent                  | Role                                              | When Active                       |
+| ---------------------- | ------------------------------------------------- | --------------------------------- |
+| Forge                  | Orchestrates workflows, routes to track           | Always (primary agent)            |
+| forge-analyst          | Explores, researches, assesses scope              | Analysis phases                   |
+| forge-pm               | Defines requirements, writes specs/PRDs           | Specify, Clarify, PRD phases      |
+| forge-ux               | UX design: personas, journeys, wireframes, a11y   | UX Design phase (Feature+)        |
+| forge-architect        | Designs architecture, creates ADRs                | Architecture, Plan phases         |
+| forge-scrum            | Plans sprints, manages stories                    | Sprint, Story, Retro phases       |
+| forge-reviewer         | Adversarial reviewer — Claude Opus 4.6            | Review phase (dual-model, Task A) |
+| forge-reviewer-codex   | Adversarial reviewer — GPT-Codex (independent)   | Review phase (dual-model, Task B) |
+| forge-qa               | Defines test strategy, generates tests            | Testing phases                    |
+
+> **Dual-model review**: `/forge-review` always runs `forge-reviewer` (Claude Opus) and
+> `forge-reviewer-codex` (GPT-Codex) **in parallel**. Their independent findings are
+> synthesised into one report — consensus issues carry the highest confidence.
 
 ### 2.4 The Constitution
 
@@ -579,36 +585,61 @@ All 14 tasks complete. Running test suite...
 > /forge-review
 ```
 
-The `forge-reviewer` conducts an adversarial review:
+`/forge-review` runs two independent adversarial reviewers **in parallel** —
+`forge-reviewer` (Claude Opus 4.6) and `forge-reviewer-codex` (GPT-Codex) —
+then synthesises their findings into one authoritative report:
 
 ```
-Adversarial Code Review - 003 OAuth2 Authentication
-====================================================
+FORGE Dual-Model Code Review
+=============================
+Scope:   003-oauth2-authentication
+Date:    2026-03-07
+Models:  Claude Opus 4.6 (forge-reviewer)
+         GPT-5.3-Codex (forge-reviewer-codex)
+Dimensions: Correctness · Security · Performance · Maintainability ·
+            Constitution · Test-Spec Coherence · UX Quality
 
-[HIGH] SECURITY - src/routes/auth/oauth/callback.ts:47
+Issues Found: 5 total  (2 consensus · 2 opus-only · 1 codex-only)
+─────────────────────────────────────────────────────────────────
+
+[CONSENSUS][HIGH] SECURITY - src/routes/auth/oauth/callback.ts:47
   Issue: OAuth state token is not deleted after use. A captured state
   token could be replayed within its expiry window.
   Suggestion: Delete the state token immediately after validation,
   before processing the callback.
+  Reported by: OPUS + CODEX
 
-[MEDIUM] CORRECTNESS - src/services/oauth/google.ts:23
+[CONSENSUS][MEDIUM] PERFORMANCE - src/repositories/oauth-provider.repository.ts:34
+  Issue: findByProviderAndUserId query lacks a composite index.
+  This will be called on every OAuth login.
+  Suggestion: Add index on (provider, provider_user_id) in migration.
+  Reported by: OPUS + CODEX
+
+[OPUS][MEDIUM] CORRECTNESS - src/services/oauth/google.ts:23
   Issue: The email scope is requested but email_verified is not checked.
   Google can return unverified emails, which would bypass the account
   linking security check.
   Suggestion: Add `if (!profile.email_verified) throw new Error(...)`
 
-[MEDIUM] PERFORMANCE - src/repositories/oauth-provider.repository.ts:34
-  Issue: findByProviderAndUserId query lacks a composite index.
-  This will be called on every OAuth login.
-  Suggestion: Add index on (provider, provider_user_id) in migration.
-
-[LOW] MAINTAINABILITY - src/services/oauth/github.ts:15
+[OPUS][LOW] MAINTAINABILITY - src/services/oauth/github.ts:15
   Issue: GitHub API base URL is hardcoded. Enterprise GitHub uses a
   different URL.
   Suggestion: Extract to configuration constant.
 
-4 issues found. 1 high severity (blocking), 3 non-blocking.
-Recommend fixing the HIGH issue before merge.
+[CODEX][MEDIUM] TEST-SPEC COHERENCE - tests/auth/oauth.test.ts
+  Issue: Acceptance criterion AC-5 (CSRF state validation) has no
+  corresponding test case.
+  Suggestion: Add test: "should reject callback with mismatched state token".
+
+─────────────────────────────────────────────────────────────────
+Summary:
+  CONSENSUS: 2  (flagged by both models — highest confidence)
+  OPUS only: 2
+  CODEX only: 1
+
+  Severity: HIGH 1 | MEDIUM 3 | LOW 1
+
+Verdict: NEEDS CHANGES — fix the CONSENSUS HIGH issue before merge.
 ```
 
 You fix the issues, then the code goes to human review.
@@ -901,8 +932,10 @@ The rest follows the Epic track workflow.
 | ------- | --------- | ----------- |
 | `/forge-init` | `[--constitution]` | Initialize FORGE in a project. Use `--constitution` to add a constitution to an existing FORGE project. |
 | `/forge-brief` | `"description"` | Create a product brief with vision, scope, and complexity assessment. |
-| `/forge-specify` | `"description"` `[--ux]` | Create a feature specification. Use `--ux` for UX-focused specs. |
+| `/forge-specify` | `"description"` | Create a feature specification. |
 | `/forge-clarify` | `[spec-id]` | Review a spec for ambiguities and surface questions. Defaults to most recent spec. |
+| `/forge-ux` | `[spec-id]` | Run UX design phase: personas, user journeys, wireframes, accessibility. Required for any feature with user-facing UI. |
+| `/forge-wireframe` | `[spec-id]` | Add or update ASCII wireframes in the existing `design-spec.md`. |
 | `/forge-prd` | none | Create a full PRD from the product brief. |
 | `/forge-architecture` | none | Create the architecture document with ADRs. |
 | `/forge-plan` | `[spec-id]` | Create a technical plan for a spec. Defaults to most recent spec. |
@@ -916,7 +949,7 @@ The rest follows the Epic track workflow.
 
 | Command | Arguments | Description |
 | ------- | --------- | ----------- |
-| `/forge-review` | `[spec-id \| story-id]` | Adversarial code review. Reviews the most recent changes by default. |
+| `/forge-review` | `[spec-id \| story-id \| --diff]` | **Dual-model** adversarial review: runs `forge-reviewer` (Claude Opus 4.6) and `forge-reviewer-codex` (GPT-Codex) in parallel across **7 dimensions**, then synthesises a single authoritative report. Consensus findings (raised by both models) carry the highest confidence. |
 
 ### 4.3 Track Shortcuts
 
@@ -1021,26 +1054,39 @@ Scrum Master: /forge-retro
 
 ### 5.4 Code Review Flow
 
-FORGE implements a dual-review process:
+FORGE implements a **dual-model** AI review followed by human review:
 
 ```
 Developer writes code
         |
         v
   /forge-review
-  (AI adversarial review)
+  ┌─────────────────────────────────────────┐
+  │  Parallel                               │
+  │  Task A: forge-reviewer (Claude Opus)   │
+  │  Task B: forge-reviewer-codex (Codex)   │
+  └──────────────┬──────────────────────────┘
+                 │  Synthesis
+                 v
+  Dual-model report:
+   · CONSENSUS issues (both models) — highest confidence
+   · OPUS-only findings
+   · CODEX-only findings
+  7 dimensions: Correctness · Security · Performance
+                Maintainability · Constitution
+                Test-Spec Coherence · UX Quality
         |
         v
-  Fix blocking issues
-  (HIGH severity)
+  Fix CRITICAL / HIGH issues
+  (consensus findings must be addressed)
         |
         v
   Create Pull Request
-  (PR body auto-generated from spec/story)
+  (PR body references spec/story + review summary)
         |
         v
   Human reviewer assigned
-  (uses FORGE review output as starting point)
+  (uses dual-model review output as starting point)
         |
         v
   Human approves or requests changes
@@ -1050,8 +1096,10 @@ Developer writes code
 ```
 
 The AI review is NOT a substitute for human review. It is a first pass that
-catches mechanical issues (security, performance, correctness) so that human
-reviewers can focus on design, readability, and business logic.
+catches mechanical issues (security, performance, correctness, test gaps) so
+that human reviewers can focus on design, readability, and business logic.
+Consensus findings — raised by both Claude Opus and GPT-Codex independently —
+deserve the highest attention.
 
 ### 5.5 Onboarding New Team Members
 
@@ -1695,15 +1743,17 @@ The scrum master agent can create GitHub issues from sprint stories:
 
 #### Code Review (`/forge-review`)
 
-The reviewer agent can create pull requests with structured review output:
+The reviewer agents can create pull requests with structured review output:
 
 ```
 /forge-review src/auth/
 
-> The agent will:
-> 1. Perform adversarial review across 5 dimensions
-> 2. Optionally create a PR with the review summary in the body
-> 3. Add review comments to an existing PR if a PR URL is provided
+> The orchestrator will:
+> 1. Run forge-reviewer (Claude Opus) and forge-reviewer-codex (GPT-Codex) in parallel
+> 2. Synthesise findings across 7 dimensions (Correctness, Security, Performance,
+>    Maintainability, Constitution, Test-Spec Coherence, UX Quality)
+> 3. Optionally create a PR with the dual-model review summary in the body
+> 4. Add review comments to an existing PR if a PR URL is provided
 ```
 
 #### Status Dashboard (`/forge-status`)
@@ -1804,12 +1854,13 @@ review and tune the `scope-detection` skill.
 
 ### 10.3 "The adversarial review finds too many false positives"
 
-**Cause**: The reviewer is instructed to find at least 3 issues, which can
-force low-quality findings.
+**Cause**: The dual-model review is instructed to find at least 5 issues across
+7 dimensions combined, which can surface low-quality findings in simple code.
 
-**Fix**: Focus on HIGH and MEDIUM severity. Ignore LOW severity if they seem
-like nitpicks. If the problem persists, adjust the minimum issue count in
-the `adversarial-review` skill.
+**Fix**: Focus on CRITICAL and HIGH severity, especially CONSENSUS findings
+(raised by both Claude Opus and GPT-Codex). MEDIUM and LOW findings from only
+one model can be treated as advisory. If the problem persists, adjust the
+minimum issue count in the `adversarial-review` skill.
 
 ### 10.4 "Cross-artifact analysis keeps finding inconsistencies"
 
@@ -1866,7 +1917,7 @@ Tracks:          /forge-hotfix   Bug fix, 1 file, < 30 min
                  /forge-brief    Large feature/epic, 20-50+ tasks
                  /forge-init     New product/platform
 
-Feature Flow:    specify -> clarify -> plan -> analyze -> tasks -> implement -> review
+Feature Flow:    specify -> clarify -> [ux] -> plan -> analyze -> tasks -> implement -> review
 
 Epic Flow:       brief -> prd -> architecture -> analyze
                  -> sprint -> story -> implement -> review -> retro

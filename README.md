@@ -40,16 +40,21 @@ Adapt your process to task complexity:
 
 ### 🤖 Specialized AI Agents
 
-Eight purpose-built agents handle different phases:
+Nine purpose-built agents handle different phases:
 
 - **forge-pm** - Product Manager: Requirements, PRDs, clarification
 - **forge-architect** - Solution Architect: Technical design, ADRs
 - **forge-ux** - UX Designer: User journeys, wireframes, accessibility, design specs
 - **forge-scrum** - Scrum Master: Sprint planning, task breakdown
 - **forge-analyst** - Business Analyst: Codebase exploration, product briefs
-- **forge-reviewer** - Adversarial Reviewer: Find real issues, not praise
+- **forge-reviewer** - Adversarial Reviewer (Claude Opus 4.6): Find real issues, not praise
+- **forge-reviewer-codex** - Adversarial Reviewer (GPT-Codex): Independent second opinion
 - **forge-qa** - QA Engineer: Test strategy, coverage analysis
 - **forge** (orchestrator) - Routes to the right agent based on complexity
+
+> `/forge-review` always invokes **both** reviewer agents in parallel. Their
+> findings are synthesised — consensus issues (flagged by both models) carry
+> the highest confidence.
 
 ### 📋 Document Chain Pattern
 
@@ -182,7 +187,7 @@ opencode
 # Builds the feature
 
 /forge-review
-# Adversarial review across 6 dimensions
+# Dual-model adversarial review across 7 dimensions (Claude Opus + GPT-Codex in parallel)
 
 /forge-test
 # Generates comprehensive tests
@@ -292,22 +297,29 @@ UX Phase         → Spec, existing design system
 Architecture     → Constitution, PRD, design spec, existing ADRs
 Implementation   → Spec, design spec, plan, architecture, constitution
 Review           → Spec, design spec, architecture, diff, constitution
+                   (loaded by both forge-reviewer and forge-reviewer-codex independently)
 ```
 
 Budget-aware loading prevents context window overflow.
 
 ### Adversarial Review
 
-The `forge-reviewer` agent **must find at least 3 real issues** across 6 dimensions:
+`/forge-review` runs a **dual-model** adversarial review — `forge-reviewer`
+(Claude Opus 4.6) and `forge-reviewer-codex` (GPT-Codex) execute **in parallel**
+and independently, then the orchestrator synthesises their findings.
+
+Each model reviews across **7 dimensions**:
 
 1. **Correctness** - Logic errors, edge cases, assumptions
 2. **Security** - Vulnerabilities, injection risks, data leaks
 3. **Performance** - Bottlenecks, inefficient algorithms, resource usage
 4. **Maintainability** - Complexity, documentation, extensibility
 5. **Constitution Compliance** - Adherence to project principles
-6. **UX Quality** - Accessibility (WCAG 2.1 AA), usability, consistency with design spec
+6. **Test-Spec Coherence** - Every acceptance criterion has a matching test
+7. **UX Quality** - Accessibility (WCAG 2.1 AA), usability, consistency with design spec
 
-Anti-sycophancy rules prevent generic praise.
+The synthesis report highlights **consensus findings** (raised by both models) as
+highest-confidence issues. Anti-sycophancy rules prevent generic praise.
 
 ### Sprint Management
 

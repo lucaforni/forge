@@ -35,7 +35,7 @@ opencode
 | `/forge-analyze` | Feature+ | Review spec & plan | Consistency report |
 | `/forge-tasks` | Feature+ | Break down into tasks | `tasks.md` |
 | `/forge-implement` | All | Build the feature | Working code |
-| `/forge-review` | All | Adversarial code review (6 dimensions) | Issue report |
+| `/forge-review` | All | Dual-model adversarial review: Claude Opus + GPT-Codex in parallel (7 dimensions) | Synthesised issue report |
 | `/forge-test` | All | Generate tests | Test files |
 
 ---
@@ -67,7 +67,7 @@ opencode
 /forge-analyze   # Validate consistency
 /forge-tasks     # Break into tasks
 /forge-implement # Build feature
-/forge-review    # AI review (6 dimensions: + UX quality)
+/forge-review    # Dual-model review: Claude Opus + GPT-Codex, 7 dimensions
 /forge-test      # Generate tests
 
 # Epic workflow (with sprint management)
@@ -209,7 +209,7 @@ CONTRIBUTING.md              # Your contribution guide
 |-----------|-------|----------|
 | Bug fix (production) | Hotfix | `/forge-hotfix` → `/forge-review` |
 | Small feature (< 1 day) | Quick | `/forge-quick` → `/forge-implement` → `/forge-review` |
-| Standard feature | Feature | `/forge-specify` → `/forge-plan` → `/forge-tasks` → `/forge-implement` |
+| Standard feature | Feature | `/forge-specify` → `/forge-clarify` → `/forge-ux` → `/forge-plan` → `/forge-tasks` → `/forge-implement` → `/forge-review` |
 | Large feature (weeks) | Epic | `/forge-brief` → `/forge-prd` → `/forge-architecture` → `/forge-sprint` |
 | New product/platform | Product | Full Epic + Constitution + Multi-sprint |
 
@@ -351,5 +351,5 @@ FORGE is part of the OpenCode ecosystem. See LICENSE for details.
 
 ---
 
-**Last Updated**: 2026-02-22  
-**FORGE Version**: 1.1.0
+**Last Updated**: 2026-03-07  
+**FORGE Version**: 1.2.0

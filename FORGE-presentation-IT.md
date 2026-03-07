@@ -5,7 +5,7 @@ paginate: true
 backgroundColor: #fff
 color: #333
 header: 'FORGE - Framework for Orchestrated Requirements, Governance & Engineering'
-footer: 'Version 1.1.0 | Author: Luca Forni | © 2026'
+footer: 'Version 1.2.0 | Author: Luca Forni | © 2026'
 style: |
   section {
     font-size: 28px;
@@ -95,8 +95,9 @@ Un sistema di sviluppo software strutturato per OpenCode
         ┌────────────┼────────────┐
         ▼            ▼            ▼
 ┌──────────────────────────────────────────────────────┐
-│                  SUBAGENTS (7)                        │
-│  analyst | pm | ux | architect | scrum | reviewer | qa│
+│                  SUBAGENTS (8)                        │
+│  analyst | pm | ux | architect | scrum               │
+│  reviewer(Opus) | reviewer-codex(Codex) | qa          │
 └────────────────────┬─────────────────────────────────┘
                      │
         ┌────────────┼────────────┐
@@ -174,7 +175,7 @@ No docs     Tech spec   Spec+Plan    Full chain  Full chain
 /forge-analyze    # Cross-valida spec vs plan
 /forge-tasks      # Task breakdown con dipendenze
 /forge-implement  # Implementa
-/forge-review     # Adversarial review (6 dimensioni)
+/forge-review     # Adversarial review (7 dimensioni, dual-model: Claude Opus + GPT-Codex)
 ```
 
 **Output:** `spec.md`, `design-spec.md`, `user-journey.md`, `plan.md`, `tasks.md`, ADR opzionali
@@ -189,25 +190,16 @@ No docs     Tech spec   Spec+Plan    Full chain  Full chain
 /forge-ux "Login page with OAuth"
 ```
 
-**Cosa produce:**
-
-| Artefatto | Contenuto |
-|-----------|-----------|
-| `design-spec.md` | Wireframe ASCII, componenti UI, specifiche interazione |
-| `user-journey.md` | Personas, scenari, flussi utente |
-
-**Aree coperte:**
-- 🗺️ User journeys e personas
-- 🖼️ Wireframe testuali/ASCII
-- ♿ Accessibilità WCAG 2.1 AA
-- 🎨 Design system integration
-- 📱 Responsive & multi-platform
+| Artefatto | Contenuto | Focus |
+|-----------|-----------|-------|
+| `design-spec.md` | Wireframe ASCII, componenti UI, specifiche interazione | 🖼️ wireframe · 🎨 design system · 📱 responsive |
+| `user-journey.md` | Personas, scenari, flussi utente | 🗺️ journeys · ♿ WCAG 2.1 AA |
 
 ---
 
-## UX Review: 6ᵃ Dimensione
+## Review: 7 Dimensioni di Qualità
 
-**La review estende il protocollo da 5 a 6 dimensioni:**
+**La review copre tutte e 7 le dimensioni:**
 
 ```
 Correctness          → logica, edge case
@@ -215,7 +207,8 @@ Security             → vulnerabilità, injection
 Performance          → query, memory leak
 Maintainability      → leggibilità, coupling
 Constitution         → aderenza ai principi
-UX Quality  ★ NEW   → accessibilità, usabilità, design coerenza
+Test-Spec Coherence  → test coprono i requisiti della spec
+UX Quality           → accessibilità, usabilità, design coerenza
 ```
 
 **Esempi di issue UX:**
@@ -260,7 +253,7 @@ Poi segue il workflow Epic con l'aggiunta di:
 
 ---
 
-## I 7 Subagent Specializzati
+## Gli 8 Subagent Specializzati
 
 | Agent | Modello | Ruolo |
 |-------|---------|-------|
@@ -269,10 +262,11 @@ Poi segue il workflow Epic con l'aggiunta di:
 | **forge-ux** | Opus 4.6 | User journeys, wireframe, accessibilità, design spec |
 | **forge-architect** | Opus 4.6 | Architettura, ADR, planning tecnico |
 | **forge-scrum** | Sonnet 4.5 | Sprint planning, story management |
-| **forge-reviewer** | Opus 4.6 | Adversarial review, validazione (6 dimensioni) |
+| **forge-reviewer** | Opus 4.6 | Adversarial review — Task A (7 dimensioni) |
+| **forge-reviewer-codex** | GPT-Codex | Adversarial review — Task B, indipendente |
 | **forge-qa** | Sonnet 4.5 | Test strategy, test generation |
 
-> **Claude Opus 4.6** per deep reasoning | **Sonnet 4.5** per velocità
+> `/forge-review` lancia **forge-reviewer + forge-reviewer-codex in parallelo** e sintetizza i risultati — i *consensus findings* (entrambi i modelli) hanno la massima priorità
 
 ---
 
@@ -338,18 +332,19 @@ La **Constitution** è il documento di governance di massima autorità
 
 ## Adversarial Review
 
-### Review che DEVONO trovare problemi
+### Due Modelli in Parallelo — Review che DEVONO trovare problemi
 
-Il `forge-reviewer` esamina su **6 dimensioni:**
+`forge-reviewer` (Claude Opus) + `forge-reviewer-codex` (GPT-Codex) esaminano su **7 dimensioni:**
 
 1. **Correctness** - Logica, edge cases, errori
 2. **Security** - Vulnerabilità, validazione input
 3. **Performance** - Query inefficienti, memory leaks
 4. **Maintainability** - Leggibilità, accoppiamento
 5. **Constitution Compliance** - Aderenza ai principi
-6. **UX Quality** - Accessibilità (WCAG 2.1 AA), usabilità, coerenza col design
+6. **Test-Spec Coherence** - I test coprono i requisiti della spec
+7. **UX Quality** - Accessibilità (WCAG 2.1 AA), usabilità, coerenza col design
 
-**Minimo 3 issue per review** (1 HIGH, 2 MEDIUM/LOW)
+**Minimo 5 issue combined** tra i due modelli — i *consensus findings* (segnalati da entrambi) hanno la massima priorità
 
 > Meglio falsi positivi che false sicurezze
 
@@ -359,19 +354,30 @@ Il `forge-reviewer` esamina su **6 dimensioni:**
 
 ```
 Developer scrive codice
-        ▼
-/forge-review (AI adversarial review)
-        ▼
+         ▼
+/forge-review (lancia due agenti in parallelo)
+    ┌────┴────┐
+    ▼         ▼
+Task A      Task B
+forge-      forge-
+reviewer    reviewer-codex
+(Opus 4.6)  (GPT-Codex)
+    └────┬────┘
+         ▼
+   Sintesi findings
+   [CONSENSUS] = alta priorità
+   [OPUS] / [CODEX] = unici
+         ▼
 Fix blocking issues (HIGH severity)
-        ▼
+         ▼
 Create Pull Request
-        ▼
+         ▼
 Human reviewer (focus su design)
-        ▼
+         ▼
 Merge to main
 ```
 
-**AI review** = issue meccaniche (security, performance)
+**AI review** = issue meccaniche (security, performance, spec coherence)
 **Human review** = design, business logic, readability
 
 ---
@@ -430,7 +436,7 @@ Test file (src/auth/__tests__/login.test.ts)
 | `constitution-compliance` | architect, reviewer | Verifica compliance alla constitution |
 | `context-chain` | Tutti gli agent | Carica documenti upstream corretti |
 | `ux-design` | forge-ux | Genera user journey, wireframe, a11y spec |
-| `ux-review` | forge-reviewer | 6ᵃ dimensione review: qualità UX e accessibilità |
+| `ux-review` | forge-reviewer | 7ᵃ dimensione review: qualità UX e accessibilità |
 
 **Caricate on-demand per risparmiare context window**
 
@@ -523,7 +529,7 @@ Test file (src/auth/__tests__/login.test.ts)
 | Tracks | 3 | 1 | 5 |
 | Governance | Debole | Constitution | Constitution + ADR + KB |
 | Knowledge persistence | None | Per-branch | Cross-session KB |
-| Review | Adversarial | None | Dual (AI + Human) |
+| Review | Adversarial | None | Dual Adversarial |
 | Brownfield | Limitato | Limitato | Strutturato |
 | Platform | IDE-agnostic | Agent-agnostic | OpenCode-native |
 
@@ -618,7 +624,7 @@ La domanda non è "possiamo permetterci l'overhead?" ma
 
 ```
 .opencode/
-├── agents/          # 7 subagent specializzati + forge orchestrator + Build + Plan
+├── agents/          # 8 subagent specializzati + forge orchestrator + Build + Plan
 ├── commands/        # 21 slash command
 ├── skills/          # 9 skill dinamiche
 ├── tools/           # 3 custom tool
@@ -695,6 +701,7 @@ opencode
 |-------|--------|--------|
 | **Claude Opus 4.6** | Deep reasoning, decisioni architetturali, adversarial review | forge-pm, forge-architect, forge-reviewer |
 | **Claude Sonnet 4.5** | Velocità, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa, Build, Plan |
+| **GPT-5.2-Codex** | Adversarial review indipendente (secondo modello) | forge-reviewer-codex |
 
 **Modelli forniti via GitHub Copilot subscription**
 
@@ -767,7 +774,7 @@ Knowledge:       /forge-adr      Create ADR
 # 7. Implementa
 /forge-implement
 
-# 8. Review adversarial (6 dimensioni)
+# 8. Review adversarial (7 dimensioni, dual-model: Claude Opus + GPT-Codex)
 /forge-review
 ```
 
@@ -1022,7 +1029,7 @@ Requirement NFR-001 (P95 < 200ms)
 
 ### Community & Support
 
-- GitHub: `anomalyco/opencode`
+- GitHub: `lucaforni/forge`
 - OpenCode Docs: `https://opencode.ai/docs`
 
 ---
@@ -1049,7 +1056,7 @@ Requirement NFR-001 (P95 < 200ms)
 3. **UX-first design** include user journeys, wireframe e accessibilità nel workflow
 4. **Constitutional governance** garantisce quality bar uniforme
 5. **Knowledge base persistente** azzera knowledge loss
-6. **Adversarial review** cattura issue prima di production (6 dimensioni)
+6. **Adversarial review** cattura issue prima di production (7 dimensioni, dual-model)
 7. **Native OpenCode integration** sfrutta full platform
 8. **Brownfield support** onboarda codebase esistenti
 9. **Team-ready** supporta 15+ developer con parallel development
@@ -1091,7 +1098,7 @@ cd your-project && opencode
 
 **Contatti:**
 - Documentation: `.opencode/docs/`
-- GitHub Issues: `anomalyco/opencode`
+- GitHub Issues: `lucaforni/forge`
 - OpenCode Docs: `https://opencode.ai/docs`
 
 ---
@@ -1104,5 +1111,7 @@ Framework for Orchestrated Requirements, Governance & Engineering
 > Sviluppo software enterprise con AI, strutturato e sostenibile
 
 **Autore:** Luca Forni
+🔗 [linkedin.com/in/lucaforni](https://linkedin.com/in/lucaforni)
+🔗 [github.com/lucaforni](https://github.com/lucaforni)
 
-*Version 1.1.0 | MIT License | 2026*
+*Version 1.2.0 | MIT License | 2026*
