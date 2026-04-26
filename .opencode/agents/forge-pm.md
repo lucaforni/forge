@@ -1,7 +1,7 @@
 ---
 description: "FORGE product manager: structured requirements discovery, spec/PRD/tech-spec authoring with advanced elicitation and constitution compliance"
 mode: subagent
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 tools:
   read: true
   write: true

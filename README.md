@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenCode](https://img.shields.io/badge/OpenCode-Compatible-green.svg)](https://opencode.ai)
-[![Version](https://img.shields.io/badge/version-1.1.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.0-orange.svg)](CHANGELOG.md)
 
 ---
 

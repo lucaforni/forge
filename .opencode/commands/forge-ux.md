@@ -2,7 +2,7 @@
 description: "Produce a UX/UI design spec (personas, user journeys, wireframes, components, a11y) for an existing feature spec"
 agent: forge-ux
 subtask: true
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 ---
 
 # UX/UI Design Phase

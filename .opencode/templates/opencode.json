@@ -10,9 +10,14 @@
   "default_agent": "forge",
 
   // Provider configuration with thinking budgets
+  // claude-opus-4.7 is the default for reasoning-heavy agents
+  // claude-opus-4.6 remains available on GitHub Copilot Business/Enterprise accounts
   "provider": {
     "github-copilot": {
       "models": {
+        // claude-opus-4.7 is a reasoning-native model (temperature: false).
+        // It does NOT accept external thinking parameters — reasoning is built-in.
+        "claude-opus-4.7": {},
         "claude-opus-4.6": {
           "options": {
             "thinking": { "budgetTokens": 16000 }
@@ -28,15 +33,26 @@
   },
 
   // Agent model overrides - Opus for deep reasoning, Sonnet for speed
+  // Default: claude-opus-4.7 (target model for all Opus-based agents)
+  //
+  // GITHUB COPILOT BUSINESS/ENTERPRISE FALLBACK:
+  // If claude-opus-4.7 is not yet available on your account, uncomment the
+  // section below to override agents to use claude-opus-4.6, which is still
+  // available on Business and Enterprise accounts:
+  //
+  // "forge-pm":        { "model": "github-copilot/claude-opus-4.6" },
+  // "forge-architect": { "model": "github-copilot/claude-opus-4.6" },
+  // "forge-reviewer":  { "model": "github-copilot/claude-opus-4.6" },
+  // "forge-ux":        { "model": "github-copilot/claude-opus-4.6" }
   "agent": {
     "forge-pm": {
-      "model": "github-copilot/claude-opus-4.6"
+      "model": "github-copilot/claude-opus-4.7"
     },
     "forge-architect": {
-      "model": "github-copilot/claude-opus-4.6"
+      "model": "github-copilot/claude-opus-4.7"
     },
     "forge-reviewer": {
-      "model": "github-copilot/claude-opus-4.6"
+      "model": "github-copilot/claude-opus-4.7"
     }
   },
 

@@ -2,7 +2,7 @@
 description: "Cross-validate consistency between specs, plans, architecture, and constitution"
 agent: forge-reviewer
 subtask: true
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 ---
 
 # Cross-Artifact Validation

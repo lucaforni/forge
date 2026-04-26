@@ -2,7 +2,7 @@
 description: 'Create a technical implementation plan for a feature spec'
 agent: forge-architect
 subtask: true
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 ---
 
 # Technical Plan

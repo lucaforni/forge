@@ -10,9 +10,14 @@
   "default_agent": "forge",
 
   // Provider configuration with thinking budgets
+  // claude-opus-4.7 is the default for reasoning-heavy agents
+  // claude-opus-4.6 is available on GitHub Copilot Business/Enterprise accounts
   "provider": {
     "github-copilot": {
       "models": {
+        // claude-opus-4.7 is a reasoning-native model (temperature: false).
+        // It does NOT accept external thinking parameters — reasoning is built-in.
+        "claude-opus-4.7": {},
         "claude-opus-4.6": {
           "options": {
             "thinking": { "budgetTokens": 16000 }
@@ -28,14 +33,24 @@
   },
 
   // Agent model overrides - Opus for deep reasoning, Sonnet for speed
+  // Default: claude-opus-4.7 (available on all account types)
   // NOTE: For FORGE meta-development, we override agent paths to use meta versions
+  //
+  // GITHUB COPILOT BUSINESS/ENTERPRISE FALLBACK:
+  // If claude-opus-4.7 is not yet available on your account, override agents
+  // to use claude-opus-4.6 (still available on Business/Enterprise accounts):
+  //
+  //   "forge-pm":        { "model": "github-copilot/claude-opus-4.6", "path": "..." }
+  //   "forge-architect": { "model": "github-copilot/claude-opus-4.6", "path": "..." }
+  //   "forge-reviewer":  { "model": "github-copilot/claude-opus-4.6" }
+  //   "forge-ux":        { "model": "github-copilot/claude-opus-4.6" }
   "agent": {
     "forge-pm": {
-      "model": "github-copilot/claude-opus-4.6",
+      "model": "github-copilot/claude-opus-4.7",
       "path": ".opencode-meta/agents/forge-pm-meta.md"
     },
     "forge-architect": {
-      "model": "github-copilot/claude-opus-4.6",
+      "model": "github-copilot/claude-opus-4.7",
       "path": ".opencode-meta/agents/forge-architect-meta.md"
     },
     "forge-scrum": {
@@ -43,7 +58,7 @@
       "path": ".opencode-meta/agents/forge-scrum-meta.md"
     },
     "forge-reviewer": {
-      "model": "github-copilot/claude-opus-4.6"
+      "model": "github-copilot/claude-opus-4.7"
     }
   },
 

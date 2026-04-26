@@ -2,7 +2,7 @@
 description: "Create a Product Requirements Document for Epic or Product track"
 agent: forge-pm
 subtask: true
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 ---
 
 # Product Requirements Document (PRD)

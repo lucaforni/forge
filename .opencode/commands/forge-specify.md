@@ -2,7 +2,7 @@
 description: "Create a feature specification with requirements, user stories, and acceptance criteria"
 agent: forge-pm
 subtask: true
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 ---
 
 # Feature Specification

@@ -1,7 +1,7 @@
 ---
 description: "FORGE adversarial reviewer: code review and cross-artifact validation that MUST find real issues across 7 dimensions (including Test-Spec Coherence and UX quality)"
 mode: subagent
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 tools:
   read: true
   glob: true

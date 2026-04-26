@@ -2,7 +2,7 @@
 description: "Generate ASCII wireframes and interaction specs for specific screens or components"
 agent: forge-ux
 subtask: true
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 ---
 
 # Wireframe Generation

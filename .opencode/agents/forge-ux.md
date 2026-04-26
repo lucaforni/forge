@@ -1,7 +1,7 @@
 ---
 description: "FORGE UX/UI designer: user journeys, personas, wireframes, component specs, design system, and accessibility standards"
 mode: subagent
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.7
 tools:
   read: true
   write: true
