@@ -10,133 +10,115 @@ metadata:
 
 ## Purpose
 
-You now have access to 6 advanced elicitation techniques for deeper analysis.
-These techniques are used as a **second pass** after your initial analysis is
-complete. They help surface hidden requirements, risks, and assumptions.
+6 advanced elicitation techniques for deeper analysis. Used as a **second pass** after initial analysis. Surface hidden requirements, risks, assumptions.
 
 ## When to Use
 
-After producing your initial output (spec, PRD, architecture, plan), suggest
-3 relevant techniques to the user and let them choose which to apply. Do NOT
-apply all 6 -- that would be overwhelming.
+After producing initial output (spec, PRD, architecture, plan), suggest 3 relevant techniques; user chooses. Do NOT apply all 6.
 
 ## Technique Selection Guide
 
-| Technique              | Best For                                     |
-| ---------------------- | -------------------------------------------- |
-| Pre-mortem Analysis    | Risk-heavy projects, new products            |
-| First Principles       | Solving the right problem, innovation        |
-| Red Team / Blue Team   | Security-critical, high-stakes features      |
-| Socratic Questioning   | Unclear requirements, stakeholder alignment  |
-| Constraint Removal     | Innovative solutions, breaking out of ruts   |
-| Inversion Analysis     | Edge cases, failure mode discovery            |
+| Technique | Best for |
+|-----------|----------|
+| Pre-mortem Analysis | Risk-heavy projects, new products |
+| First Principles | Solving the right problem, innovation |
+| Red Team / Blue Team | Security-critical, high-stakes features |
+| Socratic Questioning | Unclear requirements, stakeholder alignment |
+| Constraint Removal | Innovative solutions, breaking out of ruts |
+| Inversion Analysis | Edge cases, failure mode discovery |
 
 ## The 6 Techniques
 
-### Technique 1: Pre-mortem Analysis
+### 1. Pre-mortem Analysis
 
-**Question**: "Imagine this project has failed spectacularly 6 months from
-now. What went wrong?"
+**Question**: "Imagine this project has failed spectacularly 6 months from now. What went wrong?"
 
 **Process**:
 1. List 5-7 plausible failure scenarios.
-2. For each scenario, identify:
-   - What caused the failure?
-   - What early warning signs did we miss?
-   - What could we have done to prevent it?
-3. Map prevention actions to specific requirements or design decisions.
-4. Add any new requirements discovered to the spec.
+2. Per scenario: cause? early warning signs missed? prevention?
+3. Map prevention actions to specific requirements/design decisions.
+4. Add new requirements discovered to spec.
 
-**Output**: Risk register entries with mitigations.
+**Output**: risk register entries with mitigations.
 
-### Technique 2: First Principles Thinking
+### 2. First Principles Thinking
 
-**Question**: "If we strip away all assumptions, what is the fundamental
-problem we are solving?"
+**Question**: "Stripping all assumptions, what's the fundamental problem we're solving?"
 
 **Process**:
-1. State the problem without any solution bias.
-2. Identify all assumptions currently baked into the design.
-3. Challenge each assumption: Is this actually true? Is this necessary?
-4. Rebuild the solution from the ground truth up.
-5. Compare the rebuilt solution with the original.
+1. State the problem without solution bias.
+2. Identify assumptions baked into the design.
+3. Challenge each: actually true? necessary?
+4. Rebuild the solution from ground truth.
+5. Compare rebuilt vs original.
 
-**Output**: Validated or revised requirements with explicit assumption list.
+**Output**: validated/revised requirements with explicit assumption list.
 
-### Technique 3: Red Team / Blue Team
+### 3. Red Team / Blue Team
 
 **Question**: "How would an adversary exploit, break, or misuse this system?"
 
 **Process**:
-1. **Red Team** (attacker perspective):
-   - How could authentication be bypassed?
-   - How could data be stolen or corrupted?
-   - How could the system be made unavailable?
-   - How could business logic be exploited?
-   - How could the system be used for unintended purposes?
-2. **Blue Team** (defender perspective):
-   - For each attack, what defenses exist?
-   - What defenses are missing?
-   - What monitoring would detect the attack?
+1. **Red Team** (attacker): How could auth be bypassed? Data stolen/corrupted? System made unavailable? Business logic exploited? System used for unintended purposes?
+2. **Blue Team** (defender): per attack, what defenses exist / are missing? What monitoring would detect it?
 3. Map defensive gaps to security requirements.
 
-**Output**: Security requirements and threat model additions.
+**Output**: security requirements + threat model additions.
 
-### Technique 4: Socratic Questioning
+### 4. Socratic Questioning
 
 **Question**: "Why do we need this, and what happens if we don't build it?"
 
 **Process**:
-1. For each major feature/requirement, ask:
-   - Why is this needed? (purpose)
-   - What evidence supports this need? (validation)
-   - What are the alternatives? (options)
-   - What are the consequences of NOT doing this? (impact)
+1. Per major feature/requirement, ask:
+   - Why needed? (purpose)
+   - What evidence supports the need? (validation)
+   - Alternatives? (options)
+   - Consequences of NOT doing it? (impact)
    - Who benefits and who is affected? (stakeholders)
-   - What assumptions underlie this? (assumptions)
-2. Each answer should be supported by evidence, not opinion.
-3. Remove or deprioritize requirements that cannot withstand questioning.
+   - Underlying assumptions? (assumptions)
+2. Answers supported by evidence, not opinion.
+3. Remove/deprioritize requirements that fail questioning.
 
-**Output**: Prioritized requirements with validated justification.
+**Output**: prioritized requirements with validated justification.
 
-### Technique 5: Constraint Removal
+### 5. Constraint Removal
 
-**Question**: "What would we build if we had unlimited time, budget, and
-no technical constraints?"
+**Question**: "What would we build with unlimited time, budget, no technical constraints?"
 
 **Process**:
-1. Describe the ideal, unconstrained solution.
+1. Describe the ideal unconstrained solution.
 2. Reintroduce constraints one by one:
-   - Time constraint: What do we cut?
-   - Budget constraint: What do we simplify?
-   - Technical constraint: What do we compromise on?
-   - Team constraint: What do we defer?
-3. For each cut/simplification, note what is lost and what is preserved.
-4. Ensure the constrained solution still solves the core problem.
+   - Time: what do we cut?
+   - Budget: what do we simplify?
+   - Technical: what do we compromise on?
+   - Team: what do we defer?
+3. Per cut/simplification, note what's lost and preserved.
+4. Constrained solution still solves the core problem.
 
-**Output**: Prioritized feature list with clear rationale for cuts.
+**Output**: prioritized feature list with rationale for cuts.
 
-### Technique 6: Inversion Analysis
+### 6. Inversion Analysis
 
 **Question**: "What would guarantee this feature FAILS?"
 
 **Process**:
-1. List 5-7 things that would guarantee failure:
+1. List 5-7 failure guarantors:
    - "Users cannot figure out how to..."
    - "The system crashes when..."
    - "Data is lost if..."
    - "Performance degrades to unusable when..."
-2. Invert each failure into a success criterion:
+2. Invert each into a success criterion:
    - "Users can complete X in under Y seconds"
    - "The system handles Z without crashing"
-3. Check if these success criteria are covered in the spec.
-4. Add any missing criteria as acceptance criteria or NFRs.
+3. Check if these are covered in the spec.
+4. Add missing criteria as acceptance criteria or NFRs.
 
-**Output**: Acceptance criteria and NFRs derived from failure analysis.
+**Output**: acceptance criteria + NFRs from failure analysis.
 
 ## Presentation Format
 
-When suggesting techniques to the user:
+When suggesting techniques:
 
 ```
 I've completed the initial [spec/architecture/plan]. To go deeper, I can
@@ -149,5 +131,4 @@ apply one or more of these analysis techniques:
 Which would you like to explore? (You can select multiple or skip.)
 ```
 
-Always suggest exactly 3 techniques, chosen for relevance to the current
-work. Let the user decide.
+Always suggest exactly 3 techniques chosen for relevance. User decides.

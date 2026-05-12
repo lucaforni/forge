@@ -6,42 +6,32 @@ subtask: true
 
 # Test Generation & Coverage Analysis
 
-You are handling `/forge-test` to generate tests, analyze coverage, and ensure
-testing depth matches the workflow track.
+Handle `/forge-test` to generate tests, analyze coverage, and ensure depth matches the workflow track.
 
 ## Arguments
 
 Optional scope: $ARGUMENTS
 
-- If a spec ID is provided (e.g., `001`), generate tests for that spec's
-  implementation at `.forge/specs/NNN-slug/`.
-- If a story ID is provided, generate tests for that story's scope.
-- If a file path or glob pattern is provided, generate/analyze tests for
-  those specific files.
-- If `--coverage` is provided, run the test suite with coverage and report
-  gaps.
-- If `--strategy` is provided, output the test strategy without generating
-  tests.
-- If no argument, detect the current spec/story context and generate tests.
+- Spec ID (e.g., `001`) → tests for that spec's implementation.
+- Story ID → tests for that story's scope.
+- File path/glob → tests for those files.
+- `--coverage` → run test suite with coverage, report gaps.
+- `--strategy` → output test strategy without generating tests.
+- None → detect current spec/story context.
 
 ## Context Loading
 
-1. Load the `context-chain` skill.
-2. Read the relevant spec: `.forge/specs/NNN-slug/spec.md` (for requirements
-   IDs: FR-NNN, NFR-NNN, acceptance criteria).
-3. Read the plan: `.forge/specs/NNN-slug/plan.md` (for file map, API contracts,
-   data model).
-4. Read `.forge/constitution.md` and load `constitution-compliance` skill to
-   check Article 8 (Testing Standards).
-5. Read existing test files to understand project conventions.
+1. Load `context-chain` skill.
+2. `.forge/specs/NNN-slug/spec.md` — requirement IDs (FR-NNN, NFR-NNN, AC).
+3. `.forge/specs/NNN-slug/plan.md` — file map, API contracts, data model.
+4. `.forge/constitution.md` + `constitution-compliance` skill — Article 8 (Testing).
+5. Existing test files — project conventions.
 
 ## Workflow
 
 ### 1. Determine Test Strategy
 
-1. Load the `test-strategy` skill.
-2. Identify the current workflow track (Hotfix, Quick, Feature, Epic, Product).
-3. Determine the appropriate test depth:
+Load `test-strategy` skill. Identify track. Apply depth:
 
 | Track        | Required Tests                        |
 | ------------ | ------------------------------------- |
@@ -52,38 +42,33 @@ Optional scope: $ARGUMENTS
 
 ### 2. Map Requirements to Test Cases
 
-For each functional requirement (FR-NNN) and acceptance criterion:
-1. Identify the source file(s) that implement it.
-2. Design test cases covering:
-   - Happy path (expected behavior).
-   - Error paths (invalid input, missing data, permission denied).
-   - Edge cases (empty collections, boundary values, null/undefined).
-3. For each NFR with a metric (e.g., "response time < 200ms"), note whether
-   it needs a performance test.
+Per FR/AC: identify source file(s), then design cases for:
+- Happy path
+- Error paths (invalid input, missing data, permission denied)
+- Edge cases (empty collections, boundaries, null/undefined)
+
+For each NFR with a metric (e.g., "response < 200ms"): note if perf test needed.
 
 ### 3. Generate Tests
 
-1. Identify the test framework from `package.json` / `pyproject.toml` /
-   existing test files.
-2. Follow existing test file naming and directory conventions.
-3. Write tests using Arrange-Act-Assert (AAA) pattern.
-4. Name tests descriptively: `should [behavior] when [condition]`.
-5. Include traceability comments linking tests to requirements:
+1. Detect framework (`package.json`/`pyproject.toml`/existing tests).
+2. Follow existing naming + directory conventions.
+3. AAA pattern (Arrange-Act-Assert).
+4. Descriptive names: `should [behavior] when [condition]`.
+5. Add traceability comments:
    ```
    // Covers: FR-001 - User can register with email and password
    ```
 
 ### 4. Run and Validate
 
-1. Run the generated tests to verify they pass.
-2. If any tests fail, diagnose whether it is a test bug or a code bug:
-   - **Test bug**: Fix the test.
-   - **Code bug**: Report it clearly — do NOT modify source code.
-3. Run coverage analysis if applicable.
+Run tests. If fail: diagnose test bug vs code bug.
+- **Test bug**: fix the test.
+- **Code bug**: report clearly — do NOT modify source code.
+
+Run coverage if applicable.
 
 ### 5. Coverage Report
-
-Report coverage against track-specific targets:
 
 | Metric          | Quick | Feature | Epic/Product |
 | --------------- | ----- | ------- | ------------ |
@@ -91,7 +76,7 @@ Report coverage against track-specific targets:
 | Branch coverage | 50%   | 65%     | 75%          |
 | Critical paths  | 100%  | 100%    | 100%         |
 
-List any gaps explicitly with file paths and uncovered lines/branches.
+List gaps with file paths and uncovered lines/branches.
 
 ## Output Format
 
@@ -129,7 +114,6 @@ Requirements Traceability:
 
 ## Constraints
 
-- Do NOT modify source code. You write and modify TEST code only.
-- ALWAYS run tests after generating them to verify they pass.
-- If you cannot achieve the target coverage, explain why and list the
-  specific gaps that remain.
+- Do NOT modify source code. Test code only.
+- ALWAYS run tests after generating to verify pass.
+- If target coverage unachievable: explain and list specific remaining gaps.

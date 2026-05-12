@@ -7,98 +7,65 @@ model: github-copilot/claude-opus-4.7
 
 # Product Requirements Document (PRD)
 
-You are handling `/forge-prd` to create a comprehensive PRD for an Epic or
-Product track workflow.
+Create a comprehensive PRD for Epic/Product workflows.
 
 ## Arguments
 
-The user's description or context: $ARGUMENTS
+`$ARGUMENTS` — description or context.
 
 ## Context Loading
 
-Before starting, read the following upstream documents:
+1. `.forge/constitution.md`
+2. `.forge/product/brief.md` (should exist for Epic/Product)
+3. `.forge/architecture/architecture.md`
+4. `.forge/knowledge/decision-log.md`
+5. `.forge/knowledge/adr/`
 
-1. `.forge/constitution.md` -- governance constraints
-2. `.forge/product/brief.md` -- product brief (should exist for Epic/Product)
-3. `.forge/architecture/architecture.md` -- existing architecture (if any)
-4. `.forge/knowledge/decision-log.md` -- prior decisions
-5. `.forge/knowledge/adr/` -- scan for relevant ADRs
+If brief missing, warn and suggest `/forge-brief`. Proceed only with user confirmation.
 
-If `.forge/product/brief.md` does not exist, warn the user and suggest
-running `/forge-brief` first. Proceed only if the user confirms.
+## Process
 
-## Discovery Process
+### 1. Personas
 
-### Step 1: Persona Definition
+Define 3 primary personas via `question` tool: user types, goals, pain points, technical proficiency, system interaction.
 
-Work with the user to define 3 primary personas:
-1. Who are the main user types?
-2. What are their goals, pain points, and technical proficiency?
-3. How do they interact with the system?
+### 2. Requirements Elicitation
 
-Use the `question` tool for structured input.
+Gather by module/area:
 
-### Step 2: Requirements Elicitation
+| Type | Details |
+|---|---|
+| Functional | IDs FR-001…, grouped, MoSCoW priority (Must/Should/Could/Won't) |
+| Non-Functional | Performance metrics, security, accessibility, scalability |
+| User Journeys | End-to-end per persona |
+| Success Metrics | KPIs with measurable targets |
 
-Systematically gather requirements organized by module/feature area:
+### 3. Advanced Elicitation
 
-1. **Functional Requirements**: What the system must do.
-   - Assign unique IDs: FR-001, FR-002, ...
-   - Group by module or feature area.
-   - Include priority (Must/Should/Could/Won't - MoSCoW).
-2. **Non-Functional Requirements**: Quality attributes.
-   - Performance targets with specific metrics.
-   - Security requirements.
-   - Accessibility requirements.
-   - Scalability requirements.
-3. **User Journeys**: End-to-end workflows for each persona.
-4. **Success Metrics**: KPIs with measurable targets.
+Load `advanced-elicitation`; apply:
+- **Pre-mortem**: What could cause failure?
+- **Red Team**: How could requirements be misinterpreted/exploited?
 
-### Step 3: Advanced Elicitation
+### 4. Risk Assessment
 
-Load the `advanced-elicitation` skill and apply:
-- **Pre-mortem Analysis**: What could cause this product to fail?
-- **Red Team**: How could requirements be misinterpreted or exploited?
+Categories: technical, business, operational, timeline. Each: description, likelihood, impact, mitigation.
 
-Present findings to the user and incorporate into the PRD.
+### 5. Authoring
 
-### Step 4: Risk Assessment
-
-Identify and categorize risks:
-- Technical risks (complexity, unknowns)
-- Business risks (market, competition)
-- Operational risks (deployment, support)
-- Timeline risks (dependencies, resources)
-
-Each risk needs: description, likelihood, impact, mitigation.
-
-### Step 5: PRD Authoring
-
-Read the template from `.opencode/templates/prd.md` and create the PRD at
-`.forge/product/prd.md`.
-
-Fill in all sections:
-- Product overview and vision (from brief)
-- Personas (3 minimum)
-- Functional requirements by module with IDs and MoSCoW priority
-- Non-functional requirements with measurable targets
-- User journeys (at least 1 per persona)
-- Success metrics with KPIs
+Use `.opencode/templates/prd.md`. Write to `.forge/product/prd.md`. Sections:
+- Vision/overview (from brief)
+- Personas (≥3)
+- FRs by module with MoSCoW
+- NFRs with measurable targets
+- User journeys (≥1 per persona)
+- Success metrics/KPIs
 - Risk register
-- Scope boundaries (in/out)
-- Constitution compliance section
-- Cross-references to brief and existing architecture
+- Scope (in/out)
+- Constitution compliance
+- Cross-refs
 
-### Step 6: Summary and Next Steps
+### 6. Summary & Next
 
-Present a PRD summary:
-- Number of personas
-- Number of functional requirements (by priority)
-- Number of non-functional requirements
-- Number of user journeys
-- Number of identified risks
-- Constitution compliance status
+Report: personas, FRs by priority, NFRs, journeys, risks, constitution status.
 
-Recommend next steps:
-- `/forge-architecture` to design the technical architecture
-- If architecture exists, `/forge-analyze` to validate PRD consistency
+Next: `/forge-architecture` · `/forge-analyze` (if architecture exists).

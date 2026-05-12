@@ -10,28 +10,27 @@ metadata:
 
 ## Purpose
 
-Lightweight checks to ensure optimal FORGE operation before executing major
-workflow commands. Three checks: decision log size, config validation,
-directory structure. All non-blocking warnings except missing `.forge/`.
+Lightweight checks before major workflow commands. Three checks: decision log
+size, directory structure, config validation. All non-blocking warnings
+**except** missing `.forge/` which blocks init-required commands.
 
 ---
 
 ## Check 1: Decision Log Size
 
-**Goal:** Warn when decision log exceeds thresholds; suggest archiviation.
+**Goal**: warn when `.forge/knowledge/decision-log.md` exceeds thresholds; suggest archiving.
 
-**Logic:**
-1. Count lines in `.forge/knowledge/decision-log.md` (skip if missing)
-2. Estimate tokens: `chars / 4`
-3. Load thresholds from `.forge/config.yml` or use defaults (`max_lines: 500`, `max_tokens: 20000`)
-4. If exceeded → display warning; otherwise → silent
+**Logic**:
+1. Count lines (skip if missing). Estimate tokens: `chars / 4`.
+2. Load thresholds from `.forge/config.yml` or use defaults (`max_lines: 500`, `max_tokens: 20000`).
+3. If exceeded → warning; else → silent.
 
-**Output — below threshold:**
+**Output — below threshold**:
 ```
 ✅ Pre-flight checks passed
 ```
 
-**Output — above threshold:**
+**Output — above threshold**:
 ```
 ⚠️  Pre-flight check warning
 
@@ -46,7 +45,7 @@ Recommended Action:
 Continuing with command...
 ```
 
-**Configuration** (`.forge/config.yml`):
+**Config** (`.forge/config.yml`):
 ```yaml
 knowledge:
   decision_log:
@@ -61,14 +60,14 @@ If `auto_suggest_archive: false`, skip this check.
 
 ## Check 2: Directory Structure
 
-**Goal:** Ensure `.forge/` exists; block commands that require initialization.
+**Goal**: ensure `.forge/` exists; block init-required commands.
 
-**Logic:**
-1. If `.forge/` missing → ERROR, block execution, suggest `/forge-init`
-2. If `.forge/knowledge/` missing → create it silently
-3. Command-specific dirs (e.g., `/forge-sprint` needs `.forge/sprints/`) → warn if missing
+**Logic**:
+1. `.forge/` missing → ERROR, block, suggest `/forge-init`.
+2. `.forge/knowledge/` missing → create silently.
+3. Command-specific dirs (e.g., `/forge-sprint` needs `.forge/sprints/`) → warn if missing.
 
-**Output — missing `.forge/`:**
+**Output — missing `.forge/`**:
 ```
 ❌ Pre-flight check failed
 
@@ -79,7 +78,7 @@ Run: /forge-init
 Command aborted.
 ```
 
-**Output — missing knowledge dir (auto-created):**
+**Output — knowledge dir auto-created**:
 ```
 ✅ Pre-flight checks passed
    - Created .forge/knowledge/ (was missing)
@@ -89,8 +88,8 @@ Command aborted.
 
 ## Check 3: Config Validation
 
-Validate `.forge/config.yml` syntax if it exists. If file is absent, skip.
-If invalid YAML, display warning and use defaults — do not block execution.
+Validate `.forge/config.yml` syntax if present. If absent, skip. If invalid YAML,
+warn and use defaults — do not block.
 
 ```
 ⚠️  Invalid configuration detected
@@ -106,9 +105,8 @@ If invalid YAML, display warning and use defaults — do not block execution.
 
 ## Error Handling
 
-All checks are non-blocking warnings **except** missing `.forge/` which blocks
-initialization-required commands. If a check fails to run, log a warning but
-continue with command execution.
+All checks non-blocking except missing `.forge/`. If a check itself fails, log
+a warning and continue.
 
 ```
 ⚠️  Could not check decision log size
@@ -122,7 +120,7 @@ continue with command execution.
 
 ## Skip Override
 
-Users can bypass checks for urgent work:
+Bypass for urgent work:
 
 ```
 /forge-specify --skip-checks

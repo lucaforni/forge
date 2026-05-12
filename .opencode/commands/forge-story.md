@@ -6,82 +6,60 @@ subtask: true
 
 # Story Preparation
 
-You are handling `/forge-story` to prepare a user story for implementation
-in an Epic or Product track workflow.
+Prepare a user story for implementation in Epic/Product workflows.
 
 ## Arguments
 
-Optional story ID or epic reference: $ARGUMENTS
-
-- If a story ID is provided (e.g., `E01-S003`), prepare that story.
-- If an epic ID is provided (e.g., `E01`), create the next story for that epic.
-- If no argument, ask the user which epic to work on.
+`$ARGUMENTS`:
+- story ID (`E01-S003`) → prepare that story
+- epic ID (`E01`) → next story for that epic
+- empty → ask which epic
 
 ## Context Loading
 
-Read the following:
+1. Parent epic: `.forge/epics/epic-NN-slug/epic.md`
+2. `.forge/product/prd.md`
+3. `.forge/architecture/architecture.md`
+4. `.forge/sprints/sprint-status.yaml`
+5. Existing stories in epic dir (numbering, context)
 
-1. The parent epic file: `.forge/epics/epic-NN-slug/epic.md`
-2. `.forge/product/prd.md` -- product requirements
-3. `.forge/architecture/architecture.md` -- architecture context
-4. `.forge/sprints/sprint-status.yaml` -- current sprint
-5. Existing stories in the epic directory for numbering and context.
+## Process
 
-## Story Creation Process
+### 1. Story Selection
 
-### Step 1: Story Selection
+For new story: review epic scope, identify next logical story, consider deps, assign ID (`ENN-SNNN`), confirm scope with user.
 
-If creating a new story:
-1. Review the epic's scope and identify the next logical story.
-2. Consider dependencies on completed or in-progress stories.
-3. Assign the story ID (format: `ENN-SNNN`, e.g., E01-S003).
-4. Ask the user to confirm or provide the story scope.
+### 2. Story Definition
 
-### Step 2: Story Definition
+- **Description**: As a [persona], I want [capability], so that [benefit]
+- **Acceptance Criteria**: Given/When/Then, testable
+- **Implementation Notes**: components/files, patterns, relevant ADRs
+- **Dependencies**: prerequisite stories
 
-Work with the user to define:
-1. **Description**: As a [persona], I want [capability], so that [benefit].
-2. **Acceptance Criteria**: Specific, testable criteria (Given/When/Then).
-3. **Implementation Notes**: Guidance from the architecture document:
-   - Which components/files are involved.
-   - Which patterns to follow.
-   - Which ADRs are relevant.
-4. **Dependencies**: Other stories that must be complete first.
+### 3. Task Breakdown
 
-### Step 3: Task Breakdown
+Specific coding tasks · `[P]` for parallelizable · include tests · sizes `[S]`/`[M]`/`[L]`.
 
-Break the story into implementation tasks:
-1. List specific coding tasks.
-2. Mark parallelizable tasks with `[P]`.
-3. Include test tasks.
-4. Estimate sizes: `[S]`, `[M]`, `[L]`.
+### 4. Definition of Done
 
-### Step 4: Definition of Done
-
-Include the standard DoD checklist:
-- [ ] All acceptance criteria verified
+- [ ] All ACs verified
 - [ ] Unit tests written and passing
-- [ ] Integration tests written (if applicable)
-- [ ] Code reviewed (adversarial review via `/forge-review`)
-- [ ] No new `[NEEDS CLARIFICATION]` markers introduced
+- [ ] Integration tests (if applicable)
+- [ ] Adversarial review via `/forge-review`
+- [ ] No new `[NEEDS CLARIFICATION]` markers
 - [ ] Constitution compliance verified
-- [ ] Documentation updated (if applicable)
+- [ ] Docs updated (if applicable)
 
-### Step 5: Story Authoring
+### 5. Authoring
 
-Read the template from `.opencode/templates/story.md` and create the
-story file at `.forge/epics/epic-NN-slug/story-NNN-slug.md`.
+Use `.opencode/templates/story.md`. Write to `.forge/epics/epic-NN-slug/story-NNN-slug.md`.
 
-### Step 6: Sprint Assignment
+### 6. Sprint Assignment
 
-If a sprint is active:
-1. Ask the user if this story should be added to the current sprint.
-2. If yes, estimate story points and update `sprint-status.yaml`.
-3. Check velocity impact.
+If sprint active: ask if story should be added, estimate points, update `sprint-status.yaml`, check velocity impact.
 
-### Step 7: Summary
+### 7. Summary
 
-Present the story summary:
 ```
 Story: ENN-SNNN - [Title]
 Epic: NN - [Epic Name]

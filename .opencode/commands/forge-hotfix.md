@@ -5,116 +5,97 @@ agent: forge
 
 # Hotfix Workflow + Auto-Review
 
-You are the FORGE orchestrator handling `/forge-hotfix`. This is an all-in-one
-workflow for critical bugs requiring minimal, targeted fixes, followed by a
-**mandatory adversarial review**.
+All-in-one workflow for critical bugs: minimal targeted fix + **mandatory** adversarial review.
 
 ## Arguments
 
-Bug description: $ARGUMENTS
+`$ARGUMENTS` — bug description.
 
-## Scope Constraints
+## Scope
 
-The Hotfix track is for:
-- Critical bugs requiring immediate fix
-- 1-2 files affected maximum
-- Under 30 minutes of work
+Hotfix track is for:
+- Critical bugs needing immediate fix
+- ≤2 files affected
+- <30 minutes work
 - No new patterns or architectural changes
 
-## Hotfix Process
+## Process
 
-### Step 1: Diagnosis
+### 1. Diagnosis
 
-1. Understand the bug from the user's description.
-2. Explore the relevant code to identify the root cause.
-3. Verify the bug exists (check the code path, logic, data flow).
-4. Present the root cause analysis to the user before proceeding:
+Understand the bug, explore the code, verify it exists. Present root cause:
 
 ```
 Root Cause Analysis
 ===================
-Bug: [description]
+Bug:      [description]
 Location: [file:line]
-Cause: [explanation]
-Impact: [what is affected]
+Cause:    [explanation]
+Impact:   [what is affected]
 ```
 
-### Step 2: Scope Check
+### 2. Scope Check
 
-Before fixing, verify this is truly a hotfix:
-- Will the fix touch more than 2 files (excluding tests)?
-- Does it require new patterns, dependencies, or schema changes?
-- Is the root cause architectural?
+Escalate if:
+- Fix touches >2 files (excl. tests)
+- Requires new patterns, deps, or schema changes
+- Root cause is architectural
 
-If ANY of these are true, alert the user:
 ```
-SCOPE ESCALATION: This fix requires [reason]. Recommend:
-- /forge-quick for a broader fix (Quick track)
-- /forge-specify for a planned fix (Feature track)
+SCOPE ESCALATION: [reason]. Recommend:
+- /forge-quick (Quick track)
+- /forge-specify (Feature track)
 ```
 
-Proceed only if the user confirms staying in Hotfix track.
+Proceed only if user confirms Hotfix track.
 
-### Step 3: Fix
+### 3. Fix
 
-1. Apply the minimal, targeted fix.
-2. Follow existing code patterns (do not refactor).
-3. Add a comment explaining WHY the fix was needed (not what it does).
+Apply minimal targeted fix. Follow existing patterns. Add comment explaining WHY (not what).
 
-### Step 4: Regression Test
+### 4. Regression Test
 
-1. Write or update a test that covers the specific bug scenario.
-2. Run existing tests to verify no regressions.
-3. The test should fail without the fix and pass with it.
+Add/update test for the bug scenario (fails without fix, passes with). Run existing tests for regressions.
 
-### Step 5: Fix Complete — Trigger Review
-
-Present the fix summary, then immediately launch review:
+### 5. Trigger Review
 
 ```
 Hotfix Complete
 ===============
-Bug: [description]
-Root cause: [explanation]
-Fix: [what was changed]
+Bug:            [description]
+Root cause:     [explanation]
+Fix:            [what changed]
 Files modified: [list]
-Tests: [added/updated]
-Regressions: [none/details]
+Tests:          [added/updated]
+Regressions:    [none/details]
 
-Commit message suggestion:
-fix([scope]): [description]
+Commit suggestion: fix([scope]): [description]
 
 ► Launching adversarial review automatically...
 ```
 
-**Immediately invoke `/forge-review` as a subtask** using the Task tool
-with `subagent_type: forge` and `--diff` as the argument (to review the
-current git diff).
-Do NOT ask the user. Do NOT skip this step.
+**Immediately invoke `/forge-review`** via Task tool with `subagent_type: forge` and `--diff` argument. Do NOT ask. Do NOT skip.
 
-### Step 6: Final Report
-
-After the review subtask completes, present the combined summary:
+### 6. Final Report
 
 ```
 Hotfix + Review Complete
 ========================
-Bug: [description]
-Fix: [what was changed]
+Bug:  [description]
+Fix:  [what changed]
 Files modified: [list]
 
 ── Adversarial Review ──────────────────────────────
-Verdict:  [APPROVED WITH NOTES / NEEDS CHANGES]
-Issues:   N total  (X consensus · Y opus-only · Z codex-only)
+Verdict: [APPROVED WITH NOTES / NEEDS CHANGES]
+Issues:  N total (X consensus · Y opus-only · Z codex-only)
   CRITICAL: N  ← must fix before commit
   WARNING:  N  ← should address
   INFO:     N  ← consider fixing
 ────────────────────────────────────────────────────
 
-Suggested commit:
-  fix([scope]): [description]
+Suggested commit: fix([scope]): [description]
 
-Next steps:
-  1. Fix any CRITICAL issues  →  re-run /forge-review
+Next:
+  1. Fix CRITICAL issues → re-run /forge-review
   2. Commit and push
 ```

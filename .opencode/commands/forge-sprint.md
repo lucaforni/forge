@@ -6,115 +6,86 @@ subtask: true
 
 # Sprint Management
 
-You are handling `/forge-sprint` to manage sprints in a multi-sprint
-architecture for Epic or Product track workflows.
+Handle `/forge-sprint` for multi-sprint Epic/Product workflows.
 
 ## Arguments
 
-Parse $ARGUMENTS to determine the subcommand and optional sprint ID:
+Parse `$ARGUMENTS`:
 
-**Subcommands**:
-- `start` -- Start a new sprint
-- `close [sprint-id]` -- Close a sprint (defaults to oldest active if no ID)
-- `list` -- Show all active and recent completed sprints
-- `update [sprint-id]` -- Update story statuses (prompts for target if multiple active)
-- (no args) -- Smart default: show dashboard if sprints exist, otherwise start new
+| Subcommand           | Behavior                                                          |
+| -------------------- | ----------------------------------------------------------------- |
+| `start`              | Start a new sprint                                                |
+| `close [sprint-id]`  | Close a sprint (defaults to oldest active)                        |
+| `list`               | Show all active + last 5 completed sprints                        |
+| `update [sprint-id]` | Update story statuses (prompts if multiple active and no id)      |
+| *(empty)*            | Smart default: dashboard if active sprints exist, else `start`    |
 
-**Sprint ID format**: `NNN` (e.g., `001`, `042`)
-
-**Parsing logic**:
-1. Split $ARGUMENTS by whitespace
-2. First token is subcommand (or empty)
-3. Second token is optional sprint-id (for close/update)
-4. If $ARGUMENTS is empty, use smart default behavior (see below)
+**Sprint ID format**: `NNN` (e.g., `001`, `042`). Tokens: 1st = subcommand, 2nd = optional id.
 
 ## Context Loading
 
-Read the following based on action:
-
 **All actions**:
-1. `.forge/sprints/sprint-sequence.yaml` -- next sprint number
-2. `.forge/sprints/active/` -- all active sprint files
-3. `.forge/sprints/completed/` -- recent completed sprints (last 5)
+- `.forge/sprints/sprint-sequence.yaml` (next sprint number)
+- `.forge/sprints/active/` (all active)
+- `.forge/sprints/completed/` (last 5)
 
-**For start/update actions**:
-4. `.forge/epics/` -- scan for all epics and their stories
-5. `.forge/architecture/architecture.md` -- architecture context
-6. `.forge/product/prd.md` -- product requirements (if exists)
-7. `.forge/knowledge/decision-log.md` -- prior decisions
+**start/update also**:
+- `.forge/epics/` (epics + stories), `.forge/architecture/architecture.md`, `.forge/product/prd.md` (if exists), `.forge/knowledge/decision-log.md`
 
-**For close action**:
-8. `.forge/sprints/retrospectives/` -- check for retrospective
+**close also**: `.forge/sprints/retrospectives/`
 
-## Smart Default Behavior (No Arguments)
+## Smart Default (No Args)
 
-If $ARGUMENTS is empty:
-1. Check if any active sprints exist (read `.forge/sprints/active/` directory)
-2. **If active sprints exist**: Show dashboard by invoking `/sprint-status` tool
-3. **If no active sprints**: Start a new sprint (proceed to "Action: Start")
+1. Check `.forge/sprints/active/`.
+2. Active sprints exist → invoke `/sprint-status` tool (dashboard).
+3. None → proceed to **Start**.
 
-This provides intuitive behavior where `/forge-sprint` "just works" based on context.
+---
 
-## Sprint Actions
+## Action: Start
 
-### Action: Start
+Trigger: `start` subcommand, or smart default when no active sprints.
 
-**Trigger**: Subcommand `start` or smart default when no active sprints.
+### Step 1 — Read Sprint Sequence
 
-#### Step 1: Read Sprint Sequence
+Read `.forge/sprints/sprint-sequence.yaml` → `next_sprint_number`. If missing, call `rebuildSequenceFile()` from sprint-status tool (scans active+completed for max, sets next=max+1, warns user). Store as `NNN` (zero-padded 3 digits).
 
-1. Read `.forge/sprints/sprint-sequence.yaml` to get `next_sprint_number`
-2. **If file missing**: Call `rebuildSequenceFile()` from sprint-status tool
-   - Scans active/ and completed/ for highest sprint number
-   - Creates sequence file with next = max + 1
-   - Logs warning to user about recovery
-3. Store next sprint number as `NNN` (zero-padded 3 digits)
+### Step 2 — Review Velocity
 
-#### Step 2: Review Velocity
+Read last 5 completed sprints; compute average velocity. No history → default 20 points.
 
-1. Read last 5 completed sprints from `.forge/sprints/completed/`
-2. Calculate average velocity from completed sprints
-3. If no history, use default velocity estimate (e.g., 20 points)
+### Step 3 — Sprint Planning
 
-#### Step 3: Sprint Planning
+Use `question` tool to set: sprint goal (required, 1-2 sentences), duration (default 2 weeks, show end date), select stories from unassigned backlog (multi-select), estimate points each. Sum total points; **warn if total > 120% avg velocity**. Confirm before proceeding.
 
-1. Present the backlog of unassigned stories from all epics
-2. Use the `question` tool to help the user:
-   - Set the sprint goal (required, 1-2 sentences)
-   - Set sprint duration (default: 2 weeks, show end date)
-   - Select stories for the sprint (multi-select from backlog)
-   - Estimate story points for each selected story
-3. Calculate total points for selected stories
-4. **Warn if overcommitted**: Total points > 120% of average velocity
-5. Confirm with user before proceeding
+### Step 4 — Create Sprint File
 
-#### Step 4: Create Sprint File
+Read template `../.opencode/templates/sprint-status.yaml`.
 
-1. Read template from `../.opencode/templates/sprint-status.yaml`
-2. **Create** `.forge/sprints/active/sprint-NNN.yaml` with:
-   - `version: 1`
-   - `sprint_number: NNN` (integer)
-   - `sprint_goal: "[user input]"`
-   - `start_date: YYYY-MM-DD` (today)
-   - `end_date: YYYY-MM-DD` (calculated from duration)
-   - `velocity_target: N` (total points)
-   - `stories: []` array with selected stories in format:
-     ```yaml
-     - id: "E01-S001"
-       title: "Story title"
-       status: pending
-       points: 5
-     ```
-3. **Update** `.forge/sprints/sprint-sequence.yaml`:
-   - Increment `next_sprint_number` by 1
-4. Handle filesystem errors:
-   - **EEXIST** (sprint file exists): Error with message "Sprint NNN already exists. Close it first or check sequence file."
-   - **ENOENT** (directories missing): Create active/ and completed/ directories
-   - **EACCES** (permission denied): Error with actionable message about file permissions
+Create `.forge/sprints/active/sprint-NNN.yaml`:
+```yaml
+version: 1
+sprint_number: NNN
+sprint_goal: "[user input]"
+start_date: YYYY-MM-DD       # today
+end_date: YYYY-MM-DD          # today + duration
+velocity_target: N            # total points
+stories:
+  - id: "E01-S001"
+    title: "Story title"
+    status: pending
+    points: 5
+```
 
-#### Step 5: Summary
+Update `.forge/sprints/sprint-sequence.yaml`: increment `next_sprint_number`.
 
-Present the sprint plan:
+**Filesystem errors**:
+- `EEXIST`: "Sprint NNN already exists. Close it first or check sequence file."
+- `ENOENT`: create `active/` and `completed/` directories.
+- `EACCES`: actionable permission error.
+
+### Step 5 — Summary
+
 ```
 ✓ Sprint NNN started: [Goal]
 Duration: [start] → [end] (N weeks)
@@ -123,82 +94,57 @@ Velocity target: N points (avg from last 5: N points)
 
 Stories:
   E01-S001  [5pt]  pending   Story title
-  E01-S002  [8pt]  pending   Story title
   ...
 
 File created: .forge/sprints/active/sprint-NNN.yaml
 Next sprint will be: NNN+1
 ```
 
-### Action: Close
+---
 
-**Trigger**: Subcommand `close [sprint-id]`
+## Action: Close
 
-**Sprint selection**:
-- If `sprint-id` provided: Close that specific sprint
-- If no `sprint-id` and single active sprint: Close that sprint
-- If no `sprint-id` and multiple active sprints: Close oldest (lowest number)
+Trigger: `close [sprint-id]`.
 
-#### Step 1: Read Target Sprint
+**Selection**: explicit id → that sprint; single active → that one; multiple → oldest (lowest number).
 
-1. Read all active sprints from `.forge/sprints/active/`
-2. Select target sprint based on rules above
-3. Parse sprint file to get all story statuses
+### Step 1 — Read Target Sprint
 
-#### Step 2: Review Completion
+Read all from `.forge/sprints/active/`, select per rules, parse story statuses.
 
-1. For each story, check current status:
-   - `done`: Complete, no action needed
-   - `in_progress` or `pending`: Mark as `carried_over`
-   - `blocked`: Mark as `carried_over`
-2. Calculate actual velocity (sum points of `done` stories)
-3. Show completion summary:
-   ```
-   Sprint NNN: [Goal]
-   Stories completed: N/M (N points)
-   Stories carried over: M (M points)
-   Actual velocity: N points (target was: N points)
-   ```
+### Step 2 — Review Completion
 
-#### Step 3: Handle Carry-Over Stories
+Per story: `done` no action; `in_progress`/`pending`/`blocked` → mark `carried_over`. Compute actual velocity (sum of `done` points). Show:
+```
+Sprint NNN: [Goal]
+Stories completed: N/M (N points)
+Stories carried over: M (M points)
+Actual velocity: N points (target: N points)
+```
 
-**IMPORTANT**: The `carried_over` status is for archival tracking only. Stories
-are NOT automatically added to the next sprint.
+### Step 3 — Handle Carry-Over
 
-1. **Update story statuses**: Change `in_progress`, `pending`, `blocked` → `carried_over`
-2. **Explain to user**: Carried-over stories remain in epic backlog for manual re-selection
-3. **Show list**: Display which stories were marked as carried over
+`carried_over` is archival only — stories are NOT auto-added to next sprint. Update statuses, explain that carried-over stories stay in epic backlog for manual re-selection, list which ones.
 
-**User action required**: User must manually re-add these stories when starting next sprint.
+### Step 4 — Archive Sprint File
 
-#### Step 4: Archive Sprint File
+1. Today = `YYYY-MM-DD`.
+2. Target: `.forge/sprints/completed/YYYY-MM-DD-sprint-NNN.yaml`.
+3. Collision: append `-2`, `-3`, etc. (e.g., `2026-02-14-sprint-001-2.yaml`).
+4. Set `end_date: YYYY-MM-DD`.
+5. Write to `completed/`; delete `active/sprint-NNN.yaml`.
 
-1. **Read current date**: `YYYY-MM-DD`
-2. **Target filename**: `.forge/sprints/completed/YYYY-MM-DD-sprint-NNN.yaml`
-3. **Check for collision**: If file exists (closing multiple sprints same day):
-   - Append `-2`, `-3`, etc. until unique filename found
-   - Example: `2026-02-14-sprint-001-2.yaml`
-4. **Set end_date**: Update `end_date: YYYY-MM-DD` in sprint data
-5. **Write to completed/**: Move sprint data to completed directory
-6. **Delete from active/**: Remove `active/sprint-NNN.yaml`
+### Step 5 — Retrospective Check
 
-#### Step 5: Retrospective Check
+Check `.forge/sprints/retrospectives/retro-NNN.md`. Missing → non-blocking warning suggesting `/forge-retro NNN`. Exists → acknowledge.
 
-1. Check if retrospective exists: `.forge/sprints/retrospectives/retro-NNN.md`
-2. **If missing**: Warn user (non-blocking):
-   ```
-   ⚠ No retrospective found for sprint NNN.
-   Consider running: /forge-retro NNN
-   ```
-3. **If exists**: Acknowledge retrospective was completed
+### Step 6 — Errors
 
-#### Step 6: Error Handling
+- `ENOENT`: "Sprint NNN not found in active/"
+- `EACCES`: actionable permission error.
+- `EEXIST` after 10 collision attempts: "Unable to create unique filename after 10 attempts".
 
-- **ENOENT** (sprint file missing): Error "Sprint NNN not found in active/"
-- **EACCES** (permission denied): Error with actionable message
-- **EEXIST** (target exists after collision handling): Error "Unable to create unique filename after 10 attempts"
-
-#### Step 7: Summary
+### Step 7 — Summary
 
 ```
 ✓ Sprint NNN closed and archived
@@ -213,54 +159,41 @@ Archived to: .forge/sprints/completed/YYYY-MM-DD-sprint-NNN.yaml
 
 Carried-over stories (manual re-add required):
   E01-S001  [5pt]  Story title
-  E01-S003  [3pt]  Story title
+  ...
 
 Next steps:
 - Review retrospective: /forge-retro NNN (if not done)
 - Start next sprint: /forge-sprint start
 ```
 
-### Action: List
+---
 
-**Trigger**: Subcommand `list`
+## Action: List
 
-#### Implementation
+Invoke `sprint-status` tool in list mode (handles reading active/ + completed/). Expected compact format:
 
-1. **Invoke sprint-status tool** in list mode:
-   - Call the `sprint-status` tool which has built-in list rendering
-   - Tool will handle reading active/ and completed/ directories
-2. **Expected output**: Compact table format:
-   ```
-   Sprint List (all active + last 5 completed)
-   
-   #    Status    Goal                          Period              Velocity
-   ---- --------- ----------------------------- ------------------- ---------
-   001  active    Initial MVP features          2026-02-01 → 02-14  15/20 pts
-   002  active    User authentication           2026-02-15 → 02-28  8/25 pts
-   003  completed Dashboard improvements        2026-01-18 → 01-31  20/20 pts
-   ...
-   ```
+```
+Sprint List (all active + last 5 completed)
 
-### Action: Update
+#    Status    Goal                       Period              Velocity
+---- --------- -------------------------- ------------------- ---------
+001  active    Initial MVP features       2026-02-01 → 02-14  15/20 pts
+002  active    User authentication        2026-02-15 → 02-28  8/25 pts
+003  completed Dashboard improvements     2026-01-18 → 01-31  20/20 pts
+```
 
-**Trigger**: Subcommand `update [sprint-id]`
+---
 
-**Sprint selection**:
-- If `sprint-id` provided: Update that specific sprint
-- If no `sprint-id` and single active sprint: Update that sprint
-- If no `sprint-id` and multiple active sprints: **Prompt user to select**
+## Action: Update
 
-#### Step 1: Select Target Sprint
+Trigger: `update [sprint-id]`. Selection: id → that sprint; single active → that; multiple + no id → **prompt user**.
 
-1. Read all active sprints from `.forge/sprints/active/`
-2. If multiple active and no sprint-id:
-   - Use `question` tool to present list of active sprints
-   - User selects target sprint by number
-3. Read target sprint file
+### Step 1 — Select Target
 
-#### Step 2: Present Current Status
+Read all active. Multiple + no id → `question` tool to pick. Read target file.
 
-Show current sprint progress:
+### Step 2 — Present Status
+
 ```
 Sprint NNN: [Goal]
 Duration: [start] → [end]
@@ -273,23 +206,15 @@ Stories:
   E01-S004  [5pt]  blocked      Story title ✗
 ```
 
-#### Step 3: Update Story Statuses
+### Step 3 — Update Statuses
 
-1. Use `question` tool for each story (or bulk selection):
-   - Show story ID, title, current status, points
-   - Options: `pending`, `in_progress`, `done`, `blocked`
-   - Allow multi-select for batch updates
-2. Validate transitions:
-   - Any status can go to any other status (no restrictions)
-   - `carried_over` status is only set during close action (not user-settable)
+Per story (or bulk via `question`): options `pending`, `in_progress`, `done`, `blocked`. Any transition allowed. **`carried_over` is set only during close, not user-settable.**
 
-#### Step 4: Write Updates
+### Step 4 — Write Updates
 
-1. Update sprint file at `.forge/sprints/active/sprint-NNN.yaml`
-2. Preserve all other fields (goal, dates, velocity_target)
-3. Only modify `status` field for updated stories
+Update `.forge/sprints/active/sprint-NNN.yaml`. Preserve all other fields. Only modify `status`.
 
-#### Step 5: Report Progress
+### Step 5 — Report
 
 ```
 ✓ Sprint NNN updated
@@ -302,82 +227,49 @@ Status changes:
 Updated: .forge/sprints/active/sprint-NNN.yaml
 ```
 
+---
+
 ## Migration from Old Format
 
-**Trigger**: When `/sprint-status` tool detects old format (single `sprint-status.yaml` file).
+Trigger: `/sprint-status` tool reports old single-file format.
 
-The tool will return a migration prompt. When user runs `/forge-sprint` in this state:
+### Step 1 — Explain
 
-#### Step 1: Explain Migration
-
-Show user-friendly explanation:
 ```
 ⚠ Old sprint format detected
 
-FORGE now uses a directory-based multi-sprint architecture:
-- Old: Single .forge/sprints/sprint-status.yaml
-- New: .forge/sprints/active/sprint-NNN.yaml (one per sprint)
-      .forge/sprints/completed/YYYY-MM-DD-sprint-NNN.yaml
-      .forge/sprints/sprint-sequence.yaml
+Old: .forge/sprints/sprint-status.yaml
+New: .forge/sprints/active/sprint-NNN.yaml (one per sprint)
+     .forge/sprints/completed/YYYY-MM-DD-sprint-NNN.yaml
+     .forge/sprints/sprint-sequence.yaml
 
-Benefits:
-✓ Track multiple concurrent sprints
-✓ Automatic archiving on close
-✓ Better velocity history tracking
-✓ Cleaner separation of active vs completed
+Benefits: multi-sprint, auto-archive, velocity history, clean separation.
 
-Migration is safe:
-- Your current sprint → active/sprint-NNN.yaml
-- Previous sprints → completed/YYYY-MM-DD-sprint-NNN.yaml
-- Old file renamed to sprint-status.yaml.bak (not deleted)
+Safe: current → active/; previous → completed/; old file renamed .bak.
 ```
 
-#### Step 2: Confirm Migration
+### Step 2 — Confirm
 
-Use `question` tool:
-- Options: "Migrate to new format" (recommended), "Continue with old format"
-- If user declines: Tool falls back to legacy parser (backward compatible)
+`question`: "Migrate to new format" (recommended) vs "Continue with old format". Decline → tool falls back to legacy parser.
 
-#### Step 3: Invoke Migration
+### Step 3 — Invoke Migration
 
-If user confirms:
-1. Call `sprint-status` tool's migration function (already implemented in tool)
-2. Tool will handle:
-   - Creating active/ and completed/ directories
-   - Converting current_sprint → active/sprint-NNN.yaml
-   - Converting previous_sprints → completed/YYYY-MM-DD-sprint-NNN.yaml
-   - Creating sprint-sequence.yaml
-   - Renaming old file to .bak
-3. Show migration result:
-   ```
-   ✓ Migration complete
-   
-   Created:
-   - .forge/sprints/active/sprint-NNN.yaml (current sprint)
-   - .forge/sprints/completed/YYYY-MM-DD-sprint-MMM.yaml (N files)
-   - .forge/sprints/sprint-sequence.yaml
-   
-   Backed up:
-   - .forge/sprints/sprint-status.yaml.bak
-   
-   You can now use multi-sprint commands:
-   - /forge-sprint start     -- Start new sprint
-   - /forge-sprint close     -- Close active sprint
-   - /forge-sprint list      -- Show all sprints
-   ```
+Call sprint-status tool's migration function. It creates dirs, converts current/previous sprints, creates sprint-sequence.yaml, renames old file `.bak`. Show:
 
-#### Step 4: Error Handling
+```
+✓ Migration complete
+Created: active/sprint-NNN.yaml, completed/YYYY-MM-DD-sprint-MMM.yaml (N files), sprint-sequence.yaml
+Backed up: sprint-status.yaml.bak
 
-Migration errors (already handled by tool):
-- **Missing end_date**: Warns user, uses current date as fallback
-- **Filename collision**: Appends -2, -3 suffixes
-- **Permission errors**: Shows actionable error message
+Use: /forge-sprint start | close | list
+```
 
-#### Rollback
+### Step 4 — Errors (handled by tool)
 
-If user needs to rollback:
-1. Delete `.forge/sprints/active/` and `completed/` directories
-2. Rename `.forge/sprints/sprint-status.yaml.bak` → `sprint-status.yaml`
-3. Old format will work via legacy parser
+Missing `end_date` → fallback to today + warn. Collision → `-2`, `-3` suffix. Permission → actionable error.
 
-See: `../.opencode/docs/MIGRATION-SPRINT-FORMAT.md` for detailed guide.
+### Rollback
+
+Delete `active/` + `completed/`; rename `sprint-status.yaml.bak` → `sprint-status.yaml`; old parser takes over.
+
+See `../.opencode/docs/MIGRATION-SPRINT-FORMAT.md` for full guide.

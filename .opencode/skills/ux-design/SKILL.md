@@ -10,42 +10,39 @@ metadata:
 
 ## Purpose
 
-You are now operating under the FORGE UX design protocol. This skill provides
-the structured methodology, conventions, and checklists for producing
-complete, traceable UX/UI design artifacts in Markdown format.
+FORGE UX design protocol. Structured methodology, conventions, and checklists for producing complete, traceable UX/UI design artifacts in Markdown.
 
-## The UX Design Process
+## Process
 
-Execute design in this order. Each step produces an artifact that feeds the next.
+Execute in order. Each step produces an artifact that feeds the next.
 
 ### Step 1: Persona Definition
 
-Define 2-3 personas per feature. Each persona must include:
+2-3 personas per feature. Each:
 
 ```
 ### Persona: [Name]
 Role: [Job title or user type]
-Goal: [Primary goal when using this feature]
+Goal: [Primary goal using this feature]
 Pain points: [Top 2-3 frustrations with current solution]
 Tech literacy: [Low / Medium / High]
 Device preference: [Desktop / Mobile / Both]
 Accessibility needs: [None / Screen reader / Motor / Visual]
-Quote: "[A sentence that captures their perspective]"
+Quote: "[A sentence capturing their perspective]"
 ```
 
 **Rules:**
-- Base personas on the user stories in the spec. Do NOT invent demographics
-  unrelated to the feature.
-- At least one persona should represent a lower-tech-literacy user.
-- If accessibility needs are present, they drive WCAG requirements.
+- Base on user stories in spec. Don't invent unrelated demographics.
+- ≥ 1 persona represents a lower-tech-literacy user.
+- Accessibility needs drive WCAG requirements.
 
 ### Step 2: User Journey Mapping
 
-For each persona, map their journey through the feature:
+Per persona:
 
 ```
 ### Journey: [Persona Name] — [Journey Name]
-Trigger: [What makes them start this journey]
+Trigger: [What makes them start]
 
 Steps:
   1. [Action] → [Outcome/feedback]
@@ -61,35 +58,35 @@ Emotional Map:
   Outcome: 🎉 Satisfied — [why]
 
 Edge Cases from this journey:
-  - Error: [What happens if step N fails]
-  - Empty: [What if there is no data]
-  - Permission denied: [What if access is restricted]
+  - Error: [If step N fails]
+  - Empty: [If no data]
+  - Permission denied: [If access restricted]
 ```
 
 ### Step 3: Screen Inventory
 
-Before wireframing, list all screens in the feature:
+Before wireframing, list all screens:
 
 | # | Screen Name | Triggered By | Primary Action | FR Ref |
 |---|-------------|-------------|----------------|--------|
 | 1 | [Name] | [Entry point] | [Main task] | FR-NNN |
 | 2 | ... | | | |
 
-Identify: which screens are NEW vs. which are EXISTING screens being modified.
+Identify: NEW vs EXISTING screens being modified.
 
 ### Step 4: Wireframing
 
-See the wireframe convention in the `/forge-wireframe` command. Key rules:
+See `/forge-wireframe` for convention. Key rules:
 
-1. **One wireframe per screen.** Do not combine multiple screens in one frame.
-2. **Mobile-first** unless the project is desktop-only.
+1. **One wireframe per screen.** Don't combine multiple in one frame.
+2. **Mobile-first** unless project is desktop-only.
 3. **Show all states**: default, loading, error, empty, success, disabled.
-4. **Label everything**: every element needs a label, even if "TBD".
+4. **Label everything** (even "TBD").
 5. **Reference FRs**: annotate which requirement each component addresses.
 
 ### Step 5: Component Specification
 
-For each reusable component identified in wireframes:
+Per reusable component identified in wireframes:
 
 ```
 ### Component: [Component Name]
@@ -108,7 +105,7 @@ Slot / Content:
 
 Behavior:
   - On click: [what happens]
-  - On keyboard Enter/Space: [same as click / different behavior]
+  - On keyboard Enter/Space: [same as click / different]
   - On focus: [focus ring style, aria announcement]
 
 A11y:
@@ -119,9 +116,7 @@ A11y:
 
 ### Step 6: Design Token Specification
 
-If the project has an existing design system at `.forge/ux/design-system.md`,
-reference existing tokens. Otherwise define tokens using CSS custom property
-format across these categories:
+If existing design system at `.forge/ux/design-system.md`, reference its tokens. Otherwise define tokens using CSS custom property format:
 
 | Category | Tokens to define |
 |----------|-----------------|
@@ -131,74 +126,67 @@ format across these categories:
 | Border Radius | sm=4px, md=8px, lg=16px, full=9999px |
 | Shadows | sm (subtle), md (cards), lg (modals/dropdowns) |
 
-Use `--token-category-scale` naming convention (e.g., `--color-primary-500`,
-`--space-4`, `--radius-md`).
+Naming: `--token-category-scale` (e.g., `--color-primary-500`, `--space-4`, `--radius-md`).
 
 ## Accessibility Checklist (WCAG 2.1 AA)
 
-Apply to every screen before finalizing:
+Apply per screen before finalizing.
 
 **Perceivable**
-- [ ] All images have `alt` text (decorative: `alt=""`)
-- [ ] Color is not the only way to convey information
-- [ ] Text contrast ≥ 4.5:1 (body), ≥ 3:1 (large text ≥ 18px bold); interactive elements ≥ 3:1
-- [ ] Text resizable to 200% without horizontal scrolling; no flashing > 3/sec
+- [ ] All images have `alt` (decorative: `alt=""`).
+- [ ] Color is not the only way to convey info.
+- [ ] Text contrast ≥ 4.5:1 (body), ≥ 3:1 (large text ≥ 18px bold); interactive elements ≥ 3:1.
+- [ ] Text resizable to 200% without horizontal scroll; no flashing > 3/sec.
 
 **Operable**
-- [ ] All functionality accessible by keyboard; no keyboard traps (except intentional: modals trap, Esc releases)
-- [ ] Skip navigation link provided; tab order logical and matches visual order
-- [ ] Focus indicator visible; touch targets ≥ 44×44px (mobile); no time limits (or user can extend)
+- [ ] All functionality keyboard-accessible; no keyboard traps (except intentional: modals trap, Esc releases).
+- [ ] Skip-nav link; tab order logical and matches visual order.
+- [ ] Focus indicator visible; touch targets ≥ 44×44px (mobile); no time limits (or user can extend).
 
 **Understandable**
-- [ ] Page language declared; error messages identify field and describe the issue
-- [ ] All inputs have visible labels (not only placeholders); required fields indicated beyond color
-- [ ] Consistent navigation and component behavior across pages
+- [ ] Page language declared; error messages identify field + describe issue.
+- [ ] All inputs have visible labels (not only placeholders); required fields indicated beyond color.
+- [ ] Consistent navigation + component behavior across pages.
 
 **Robust**
-- [ ] Valid HTML structure (headings, landmarks, lists used correctly)
-- [ ] All form elements have associated labels; status updates announced via `aria-live`
-- [ ] Modals: focus trap + `role="dialog"` + `aria-labelledby`; custom components have correct ARIA roles
+- [ ] Valid HTML structure (headings, landmarks, lists used correctly).
+- [ ] All form elements have associated labels; status updates announced via `aria-live`.
+- [ ] Modals: focus trap + `role="dialog"` + `aria-labelledby`; custom components have correct ARIA roles.
 
 ## Platform-Specific Conventions
 
 ### Web (SPA/SSR)
-- Navigation: `<nav>` landmark, keyboard-navigable
-- Loading states: skeleton screens preferred over spinners for content
-- SSR: define loading skeleton in wireframe to prevent layout shift
-- Forms: validate on blur, not on keystroke (less disruptive)
+- Navigation: `<nav>` landmark, keyboard-navigable.
+- Loading: skeleton screens preferred over spinners for content.
+- SSR: define loading skeleton in wireframe to prevent layout shift.
+- Forms: validate on blur, not on keystroke.
 
-### Mobile (React Native / Flutter)
-- iOS: Follow Apple Human Interface Guidelines
-  - Navigation: NavigationController pattern, back gesture
-  - Tap targets: minimum 44pt
-  - Modal: sheet from bottom (not full screen)
-- Android / Material: Follow Material Design 3
-  - FAB for primary action
-  - Bottom navigation for 3-5 sections
-  - Snackbar for non-critical feedback (not Toast)
-- Both: define safe area insets in wireframe
+### Mobile
+- **iOS** (Apple HIG): NavigationController pattern + back gesture; tap targets ≥ 44pt; modal as bottom sheet (not full screen).
+- **Android / Material 3**: FAB for primary action; bottom nav for 3-5 sections; Snackbar for non-critical feedback (not Toast).
+- **Both**: define safe area insets in wireframe.
 
 ### API (DX Design)
-- Error response format: `{ "error": { "code": "...", "message": "...", "field": "..." } }`
-- Pagination: prefer cursor-based over page-number for large datasets
-- Field naming: consistent casing (camelCase for JSON)
-- Document all 4xx responses in the design spec
+- Error format: `{ "error": { "code": "...", "message": "...", "field": "..." } }`.
+- Pagination: cursor-based preferred for large datasets.
+- Field naming: consistent casing (camelCase for JSON).
+- Document all 4xx responses in design spec.
 
 ### Design System
-- Component inventory before adding new: search existing first
-- Variants over new components: prefer extending existing components
-- Document usage guidelines AND anti-patterns
-- Include visual regression test targets in component spec
+- Component inventory before adding new: search existing first.
+- Variants over new components: prefer extending.
+- Document usage guidelines AND anti-patterns.
+- Include visual regression test targets in component spec.
 
 ## Quality Gates
 
-Before handing off to `/forge-plan`:
+Before handoff to `/forge-plan`:
 
-- [ ] All screens in Screen Inventory have wireframes
-- [ ] All wireframes have state inventory (min: default, error, empty)
-- [ ] All screens have accessibility annotations
-- [ ] All FRs from spec are covered by at least one wireframe element
-- [ ] Design tokens are defined or referenced
-- [ ] No `[NEEDS CLARIFICATION]` markers remain (or are explicitly deferred)
-- [ ] user-journey.md saved
-- [ ] design-spec.md saved
+- [ ] All screens in Screen Inventory have wireframes.
+- [ ] All wireframes have state inventory (min: default, error, empty).
+- [ ] All screens have accessibility annotations.
+- [ ] All FRs from spec covered by ≥ 1 wireframe element.
+- [ ] Design tokens defined or referenced.
+- [ ] No `[NEEDS CLARIFICATION]` markers remain (or explicitly deferred).
+- [ ] `user-journey.md` saved.
+- [ ] `design-spec.md` saved.

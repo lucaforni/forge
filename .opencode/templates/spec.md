@@ -1,33 +1,32 @@
 # Spec: [NNN] - [Feature Name]
 
-> Feature specification for the Feature or Epic track.
-> Created by the `forge-pm` agent via `/forge-specify`.
+> Feature specification for Feature/Epic track. Created by `forge-pm` via `/forge-specify`.
 
-| Field   | Value             |
-| ------- | ----------------- |
-| Status  | Draft             |
-| Author  | forge-pm          |
-| Date    | YYYY-MM-DD        |
-| Track   | Feature           |
-| Spec ID | NNN               |
+| Field   | Value      |
+| ------- | ---------- |
+| Status  | Draft      |
+| Author  | forge-pm   |
+| Date    | YYYY-MM-DD |
+| Track   | Feature    |
+| Spec ID | NNN        |
 
 ---
 
 ## 1. Overview
 
-<!-- One-paragraph summary of the feature -->
+<!-- One-paragraph summary. -->
 
 ## 2. Problem Statement
 
-<!-- What problem does this feature solve? Why now? -->
+<!-- What problem, why now. -->
 
 ## 3. User Stories
 
+<!-- Repeat the US block per story. -->
+
 ### US-001: [Title]
 
-**As a** [persona],
-**I want** [action],
-**so that** [benefit].
+**As a** [persona], **I want** [action], **so that** [benefit].
 
 **Acceptance Criteria:**
 - Given [precondition], when [action], then [result].
@@ -35,113 +34,94 @@
 
 ### US-002: [Title]
 
-**As a** [persona],
-**I want** [action],
-**so that** [benefit].
-
-**Acceptance Criteria:**
-- Given [precondition], when [action], then [result].
-- Given [precondition], when [action], then [result].
-
-<!-- Add more user stories as needed -->
+<!-- As a / I want / so that + Given/When/Then criteria -->
 
 ## 4. Functional Requirements
 
-| ID     | Requirement                              | Priority   | Story Ref |
-| ------ | ---------------------------------------- | ---------- | --------- |
-| FR-001 |                                          | Must       | US-001    |
-| FR-002 |                                          | Must       | US-001    |
-| FR-003 |                                          | Should     | US-002    |
+| ID     | Requirement | Priority | Story Ref |
+| ------ | ----------- | -------- | --------- |
+| FR-001 |             | Must     | US-001    |
+| FR-002 |             | Should   | US-002    |
 
 ## 5. Non-Functional Requirements
 
-| ID      | Category      | Requirement                        | Target             |
-| ------- | ------------- | ---------------------------------- | ------------------ |
-| NFR-001 | Performance   |                                    |                    |
-| NFR-002 | Security      |                                    |                    |
+| ID      | Category    | Requirement | Target |
+| ------- | ----------- | ----------- | ------ |
+| NFR-001 | Performance |             |        |
+| NFR-002 | Security    |             |        |
 
 ## 6. Edge Cases & Error Scenarios
 
-| #  | Scenario                                   | Expected Behavior                  |
-| -- | ------------------------------------------ | ---------------------------------- |
-| 1  |                                            |                                    |
-| 2  |                                            |                                    |
+| #  | Scenario | Expected Behavior |
+| -- | -------- | ----------------- |
+| 1  |          |                   |
 
 ## 7. Data Requirements
 
-<!-- New or modified data entities, fields, relationships -->
+<!-- New/modified entities, fields, relationships. -->
 
 ## 8. API Requirements
 
-<!-- New or modified endpoints, if applicable -->
-
-| Method | Path                | Description                        |
-| ------ | ------------------- | ---------------------------------- |
-|        |                     |                                    |
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+|        |      |             |
 
 ## 9. UX/UI Notes
 
-<!-- Wireframe references, interaction notes, accessibility requirements -->
+<!-- Wireframe refs, interaction notes, a11y requirements. -->
 
 ## 10. Out of Scope
 
-<!-- What is explicitly NOT part of this feature -->
-
-- 
+-
 
 ## 11. Open Questions
 
-<!-- Mark unresolved items with [NEEDS CLARIFICATION] -->
-
-- [NEEDS CLARIFICATION] <!-- Question here -->
+- [NEEDS CLARIFICATION] <!-- Question -->
 
 ## 12. Implementation Scope
 
-> **Note**: All paths are relative to the working directory (typically project root or `dev/` for FORGE meta-development).
+> Paths relative to working directory (project root, or `dev/` for FORGE meta-dev).
 
 ### New Components
 
 | Component Type | Path | Description |
 |----------------|------|-------------|
-| [Type] | `path/to/component` | [Purpose and responsibilities] |
-| <!-- Add more components as needed --> | | |
+| [Type] | `path/to/component` | [Purpose] |
 
 ### Modified Components
 
 | Path | Modification Type | Description |
 |------|-------------------|-------------|
-| `path/to/existing/component` | [Enhancement/Refactor/Fix] | [What changes and why] |
-| <!-- Add more components as needed --> | | |
+| `path/to/existing` | [Enhancement/Refactor/Fix] | [What & why] |
 
 ### Documentation Updates
 
 | Path | Section | Update Description |
-|------|---------|---------------------|
-| `docs/file.md` | Section X.Y | [What documentation needs updating] |
-| <!-- Add more files as needed --> | | |
+|------|---------|--------------------|
+| `docs/file.md` | Section X.Y | [What to update] |
 
 ## 13. Constitution Compliance
 
-| Article | Status | Notes                                     |
-| ------- | ------ | ----------------------------------------- |
-| Art. 1  |        |                                           |
-| Art. 2  |        |                                           |
-| Art. 3  |        |                                           |
-| Art. 4  |        |                                           |
-| Art. 5  |        |                                           |
-| Art. 6  |        |                                           |
-| Art. 7  |        |                                           |
-| Art. 8  |        |                                           |
-| Art. 9  |        |                                           |
+| Article | Status | Notes |
+| ------- | ------ | ----- |
+| Art. 1  |        |       |
+| Art. 2  |        |       |
+| Art. 3  |        |       |
+| Art. 4  |        |       |
+| Art. 5  |        |       |
+| Art. 6  |        |       |
+| Art. 7  |        |       |
+| Art. 8  |        |       |
+| Art. 9  |        |       |
 
 ---
 
 ## Cross-References
 
-| Document             | Path                                |
-| -------------------- | ----------------------------------- |
-| Constitution         | `.forge/constitution.md`            |
-| Architecture         | `.forge/architecture/architecture.md` |
-| Plan                 | <!-- Created by /forge-plan -->     |
-| Tasks                | <!-- Created by /forge-tasks -->    |
-| PRD                  | <!-- If Epic track -->              |
+| Document     | Path                                  |
+| ------------ | ------------------------------------- |
+| Constitution | `.forge/constitution.md`              |
+| Architecture | `.forge/architecture/architecture.md` |
+| Plan         | <!-- /forge-plan -->                  |
+| Tasks        | <!-- /forge-tasks -->                 |
+| PRD          | <!-- If Epic track -->                |

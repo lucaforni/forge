@@ -5,83 +5,63 @@ agent: forge
 
 # Implementation + Auto-Review
 
-You are the FORGE orchestrator handling `/forge-implement`. Your role is to:
-1. Work through the implementation tasks systematically as the primary agent.
+Orchestrator for `/forge-implement`:
+1. Work through implementation tasks systematically.
 2. **Automatically run `/forge-review` when implementation completes — no exceptions.**
 
 ## Arguments
 
 Spec ID, story ID, or path: $ARGUMENTS
 
-- If a spec ID is provided (e.g., `001`), implement from the spec's tasks.
-- If a story ID is provided (e.g., `E01-S003`), implement that story.
-- If a path is provided, use that spec/story directly.
-- If no argument, find the most recently modified spec with tasks or the
-  next unstarted story in the current sprint.
+- Spec ID (e.g., `001`) → implement from spec's tasks.
+- Story ID (e.g., `E01-S003`) → implement that story.
+- Path → use that spec/story directly.
+- None → most recently modified spec with tasks, or next unstarted story in current sprint.
 
 ## Context Loading
 
-Read the following based on what is being implemented:
-
 **For a spec (Feature track):**
-1. `.forge/specs/NNN-slug/spec.md` -- the specification
-2. `.forge/specs/NNN-slug/plan.md` -- the technical plan
-3. `.forge/specs/NNN-slug/tasks.md` -- the task breakdown
-4. `.forge/constitution.md` -- governance constraints
-5. `.forge/specs/NNN-slug/design-spec.md` -- UX wireframes and component
-   specs (if exists); load Wireframes and Components sections only (~150 lines)
-6. `.forge/specs/NNN-slug/user-journey.md` -- user journeys and edge cases
-   (if exists); load happy paths and key edge cases (~100 lines)
+1. `.forge/specs/NNN-slug/spec.md`
+2. `.forge/specs/NNN-slug/plan.md`
+3. `.forge/specs/NNN-slug/tasks.md`
+4. `.forge/constitution.md`
+5. `.forge/specs/NNN-slug/design-spec.md` — Wireframes + Components only (~150 lines, if exists)
+6. `.forge/specs/NNN-slug/user-journey.md` — happy paths + key edge cases (~100 lines, if exists)
 
 **For a story (Epic track):**
-1. The story file: `.forge/epics/epic-NN-slug/story-NNN-slug.md`
-2. `.forge/architecture/architecture.md` -- architecture context
-3. `.forge/constitution.md` -- governance constraints
+1. `.forge/epics/epic-NN-slug/story-NNN-slug.md`
+2. `.forge/architecture/architecture.md`
+3. `.forge/constitution.md`
 4. Relevant ADRs from `.forge/knowledge/adr/`
 
 ## Implementation Process
 
 ### Step 1: Task Loading
 
-1. Read the tasks from `tasks.md` or the story file.
-2. Create todowrite entries for ALL tasks.
-3. Identify which tasks are already complete (checked off).
-4. Start with the first uncompleted task.
+Read tasks. Create todowrite entries for ALL tasks. Identify completed (checked off). Start with first uncompleted.
 
 ### Step 2: Task Execution
 
-For each task:
-1. Mark it as `in_progress` in todowrite.
-2. Implement the change following the plan/story guidance.
-3. Follow the project's code conventions from `AGENTS.md`.
-4. Follow the constitution's standards.
-5. Write tests alongside implementation (not deferred to end).
-6. Mark the task as `completed` in todowrite.
-7. Update the checkbox in `tasks.md` or the story file.
+Per task: mark `in_progress` → implement per plan/story → follow AGENTS.md conventions + constitution → write tests alongside (not deferred) → mark `completed` → check off in file.
 
 ### Step 3: Implementation Standards
 
-While implementing, ensure:
-- Code follows naming conventions from AGENTS.md.
-- Import ordering follows the prescribed pattern.
-- Error handling follows constitution Article 6.
-- Security practices follow constitution Article 5.
-- Tests follow constitution Article 8.
+- Naming conventions from AGENTS.md
+- Import ordering per prescribed pattern
+- Error handling per constitution Article 6
+- Security per constitution Article 5
+- Tests per constitution Article 8
 
 ### Step 4: Progress Updates
 
-After completing each phase of tasks:
-1. Update task checkboxes in the tasks/story file.
-2. Report progress to the user.
-3. If any task requires clarification or a design decision, stop and
-   ask the user before proceeding.
+After each phase: update task checkboxes, report progress. If clarification/design decision needed: stop and ask user before proceeding.
 
 ### Step 5: Implementation Complete — Trigger Review
 
-When all tasks are complete:
-1. Verify all checkboxes are checked in tasks.md / story file.
-2. Run any available test suites.
-3. Present the implementation summary:
+When all tasks done:
+1. Verify all checkboxes checked.
+2. Run available test suites.
+3. Present summary:
 
 ```
 Implementation Complete
@@ -95,13 +75,11 @@ Tests written: N
 ► Launching adversarial review automatically...
 ```
 
-4. **Immediately invoke `/forge-review` as a subtask** using the Task tool
-   with `subagent_type: forge` and the spec/story ID as the argument.
-   Do NOT ask the user. Do NOT skip this step.
+4. **Immediately invoke `/forge-review` as a subtask** via Task tool, `subagent_type: forge`, spec/story ID as argument. Do NOT ask. Do NOT skip.
 
 ### Step 6: Final Report
 
-After the review subtask completes, present the combined summary:
+After review subtask completes:
 
 ```
 Implementation + Review Complete
@@ -126,5 +104,4 @@ Next steps:
   3. Merge
 ```
 
-If there are CRITICAL issues, highlight them prominently and block merge
-until they are resolved.
+If CRITICAL issues exist: highlight prominently and block merge until resolved.

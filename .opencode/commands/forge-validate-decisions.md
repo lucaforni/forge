@@ -1,6 +1,6 @@
 # /forge-validate-decisions
 
-Validate decision log entries for proper format and completeness.
+Validate decision log entries for format and completeness.
 
 ## Usage
 
@@ -8,25 +8,17 @@ Validate decision log entries for proper format and completeness.
 /forge-validate-decisions [options]
 ```
 
-### Options
+| Option           | Effect                                                                 |
+| ---------------- | ---------------------------------------------------------------------- |
+| `--strict`       | Fail on warnings, not only errors                                      |
+| `--fix`          | Auto-fix common safe issues                                            |
+| `--file <path>`  | Validate specific file (default `.forge/knowledge/decision-log.md`)    |
 
-- `--strict` - Fail on warnings, not just errors
-- `--fix` - Attempt to auto-fix common issues (e.g., add missing fields)
-- `--file <path>` - Validate specific file (default: `.forge/knowledge/decision-log.md`)
-
-### Examples
-
+Examples:
 ```bash
-# Standard validation
 /forge-validate-decisions
-
-# Strict mode (warnings treated as errors)
 /forge-validate-decisions --strict
-
-# Auto-fix common issues
 /forge-validate-decisions --fix
-
-# Validate archived file
 /forge-validate-decisions --file .forge/knowledge/archives/2026-01/decisions-2026-01.md
 ```
 
@@ -34,97 +26,37 @@ Validate decision log entries for proper format and completeness.
 
 ## What It Validates
 
-### Required Fields
-
-Every entry MUST have:
+**Required per entry**:
 - ✅ Date in header (`## YYYY-MM-DD | Session: ...`)
 - ✅ Status field (`**Status:** \`value\``)
-- ✅ Valid status value (pending, in-progress, blocked, completed, resolved, cancelled, superseded)
+- ✅ Valid status: `pending`, `in-progress`, `blocked`, `completed`, `resolved`, `cancelled`, `superseded`
 
-### Optional but Recommended
+**Recommended (warnings)**: Tags field, Context section, Decisions section.
 
-- ⚠️ Tags field (helps with organization)
-- ⚠️ Context section (provides background)
-- ⚠️ Decisions section (lists actual decisions)
-
-### Format Checks
-
-- ✅ Proper markdown structure
-- ✅ Status markers in decisions (`[PENDING]`, `[COMPLETED]`, etc.)
-- ✅ Valid spec refs format (if present)
-- ✅ Consistent separator lines (`---`)
+**Format**: markdown structure, status markers in decisions (`[PENDING]`, `[COMPLETED]`, etc.), valid spec refs, consistent `---` separators.
 
 ---
 
-## Validation Rules
+## Rules
 
-### Error-Level Issues (❌)
+### Errors (❌ — must fix before archive)
 
-**Must be fixed before archiviation:**
+1. **Missing Status field**
+2. **Invalid status value** (e.g., `done` → `completed`, `wip` → `in-progress`)
+3. **Malformed date** in header (e.g., `02/17/2026` instead of `2026-02-17`)
+4. **Duplicate Decision IDs** (e.g., two `DEC-2026-042`)
 
-1. **Missing Status Field**
-   ```markdown
-   ## 2026-02-17 | Session: Example
-   <!-- Missing: **Status:** `pending` -->
-   ```
-   
-2. **Invalid Status Value**
-   ```markdown
-   **Status:** `done`  <!-- Invalid, use: completed -->
-   **Status:** `wip`   <!-- Invalid, use: in-progress -->
-   ```
+### Warnings (⚠️ — recommended)
 
-3. **Malformed Date in Header**
-   ```markdown
-   ## 02/17/2026 | Session: Example  <!-- Wrong format -->
-   ## Session: Example                <!-- Missing date -->
-   ```
-
-4. **Duplicate Decision IDs**
-   ```markdown
-   **Decision ID:** `DEC-2026-042`
-   ...
-   **Decision ID:** `DEC-2026-042`  <!-- Duplicate! -->
-   ```
-
-### Warning-Level Issues (⚠️)
-
-**Recommended to fix:**
-
-1. **Missing Tags**
-   ```markdown
-   **Status:** `completed`
-   <!-- Consider adding: **Tags:** `architecture`, `api` -->
-   ```
-
-2. **Missing Context Section**
-   ```markdown
-   ### Decisions
-   1. Decision without context...
-   ```
-
-3. **Stale Pending Status**
-   ```markdown
-   ## 2025-06-15 | Session: Old Decision
-   **Status:** `pending`  <!-- Pending for 8 months? -->
-   ```
-
-4. **Empty Decisions Section**
-   ```markdown
-   ### Decisions
-   <!-- No actual decisions listed -->
-   ```
-
-5. **Unrecognized Decision Status Marker**
-   ```markdown
-   1. [WIP] Decision  <!-- Use [IN-PROGRESS] instead -->
-   ```
+1. Missing Tags
+2. Missing Context section
+3. Stale `pending` status (e.g., pending 8 months)
+4. Empty Decisions section
+5. Unrecognized decision status marker (`[WIP]` → `[IN-PROGRESS]`)
 
 ---
 
-## Example Output
-
-### Successful Validation
+## Example Output — Success
 
 ```
 ✅ Decision Log Validation Complete
@@ -145,7 +77,7 @@ Status distribution:
 ✅ Ready for archiviation
 ```
 
-### With Issues
+## Example Output — Issues
 
 ```
 ⚠️ Decision Log Validation Found Issues
@@ -197,7 +129,7 @@ Entry at line 891 (2026-02-12 | API Design):
    This will automatically fix 2/4 errors
 ```
 
-### Auto-Fix Output
+## Example Output — Auto-Fix
 
 ```
 🔧 Auto-fixing decision log issues...
@@ -220,67 +152,50 @@ Entry at line 891 (2026-02-12 | API Design):
 
 ## Auto-Fix Capabilities
 
-When using `--fix`, the validator can automatically correct:
+**Can auto-fix**: add missing status (default `pending`), correct unambiguous date formats, standardize decision markers (`[WIP]` → `[IN-PROGRESS]`), add missing section headers (Context, Decisions), fix minor markdown.
 
-✅ **Can auto-fix:**
-- Add missing status field with default `pending`
-- Correct date format in headers (if unambiguous)
-- Standardize decision status markers (`[WIP]` → `[IN-PROGRESS]`)
-- Add missing section headers (Context, Decisions)
-- Fix minor markdown formatting issues
-
-❌ **Cannot auto-fix (requires manual review):**
-- Invalid status values (need human judgment)
-- Duplicate decision IDs (need unique resolution)
-- Missing spec refs (need domain knowledge)
-- Ambiguous dates or malformed content
+**Cannot auto-fix** (manual review): invalid status values, duplicate Decision IDs, missing spec refs, ambiguous/malformed content.
 
 ---
 
 ## Integration with Archiviation
 
-Before running `/forge-archive-decisions`, the archiver automatically runs
-validation in strict mode:
+`/forge-archive-decisions` runs validation in strict mode first:
 
 ```
 🔍 Pre-archiviation validation...
    ⚠️ Found 2 errors in decision-log.md
-   
+
    Archiviation blocked until issues are resolved.
    Run: /forge-validate-decisions
-   Fix reported issues and try again.
 ```
-
-This prevents archiving malformed entries that could cause parsing issues.
 
 ---
 
 ## Configuration
 
-Customize validation in `.forge/config.yml`:
-
+`.forge/config.yml`:
 ```yaml
 knowledge:
   decision_log:
     validation:
-      require_status: true              # Default: true
-      require_tags: false               # Default: false (warning only)
-      require_context: false            # Default: false (warning only)
-      warn_stale_pending_days: 90       # Default: 90
-      auto_fix_safe: true               # Default: true (allow safe auto-fixes)
+      require_status: true              # default: true
+      require_tags: false               # default: false (warning only)
+      require_context: false            # default: false (warning only)
+      warn_stale_pending_days: 90       # default: 90
+      auto_fix_safe: true               # default: true
 ```
 
 ---
 
-## Exit Codes
+## Exit Codes (for CI/CD)
 
-For CI/CD integration:
+| Code | Meaning                                  |
+| ---- | ---------------------------------------- |
+| 0    | Passed (no errors)                       |
+| 1    | Failed (errors found)                    |
+| 2    | Passed with warnings (no errors)         |
 
-- `0` - Validation passed (no errors)
-- `1` - Validation failed (errors found)
-- `2` - Validation passed with warnings (no errors, but warnings present)
-
-Use in CI:
 ```bash
 # Block merge if decision log has errors
 /forge-validate-decisions --strict || exit 1
@@ -288,20 +203,19 @@ Use in CI:
 
 ---
 
-## Related Commands
+## Related
 
-- `/forge-archive-decisions` - Archive completed decisions (runs validation first)
-- `/forge-adr` - Promote important decisions to formal ADRs
+- `/forge-archive-decisions` — archive completed decisions (runs validation first)
+- `/forge-adr` — promote important decisions to formal ADRs
 
 ---
 
-## Implementation Notes
+## Implementation
 
-The validator:
-1. Parses decision-log.md line by line
-2. Identifies entry boundaries (`## YYYY-MM-DD`)
-3. Extracts and validates required fields
-4. Checks status values against allowed list
-5. Detects common formatting issues
-6. Optionally applies safe auto-fixes
-7. Reports findings with actionable suggestions
+1. Parse decision-log.md line by line.
+2. Identify entry boundaries (`## YYYY-MM-DD`).
+3. Extract and validate required fields.
+4. Check status values against allowed list.
+5. Detect common formatting issues.
+6. Optionally apply safe auto-fixes.
+7. Report findings with actionable suggestions.

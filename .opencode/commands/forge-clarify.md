@@ -7,74 +7,57 @@ model: github-copilot/claude-opus-4.7
 
 # Specification Clarification
 
-You are handling `/forge-clarify` to review a feature specification and
-resolve any ambiguities or open questions.
+Resolve ambiguities in a feature spec.
 
 ## Arguments
 
-Optional spec path or ID: $ARGUMENTS
-
-If no argument is provided, find the most recently modified spec in
-`.forge/specs/`.
+`$ARGUMENTS` — spec path/ID, or empty (most recently modified spec).
 
 ## Context Loading
 
-1. Read the target spec file (`.forge/specs/NNN-slug/spec.md`).
-2. Read `.forge/constitution.md` for governance context.
-3. Read any existing plan (`.forge/specs/NNN-slug/plan.md`) if it exists.
+1. Target spec: `.forge/specs/NNN-slug/spec.md`
+2. `.forge/constitution.md`
+3. `.forge/specs/NNN-slug/plan.md` (if exists)
 
-## Clarification Process
+## Process
 
-### Step 1: Identify Ambiguities
+### 1. Identify Ambiguities
 
-Scan the spec for:
-1. All `[NEEDS CLARIFICATION]` markers (explicit ambiguities).
-2. User stories without acceptance criteria.
-3. Requirements without measurable success criteria.
-4. Vague language ("should", "might", "could", "usually", "etc.").
-5. Missing edge case coverage.
-6. Implicit assumptions not stated explicitly.
-7. Potential conflicts between requirements.
+Scan for:
+- `[NEEDS CLARIFICATION]` markers
+- User stories without ACs
+- Requirements without measurable criteria
+- Vague language ("should", "might", "could", "usually", "etc.")
+- Missing edge cases
+- Implicit assumptions
+- Conflicting requirements
 
-### Step 2: Structured Questioning
+### 2. Structured Questioning
 
-For each ambiguity found:
-1. Present it to the user with context.
-2. Explain why it matters (what could go wrong if left unclear).
-3. Suggest a specific resolution if possible.
-4. Use the `question` tool for choices where applicable.
+For each ambiguity:
+1. Present with context
+2. Explain stakes (what could go wrong)
+3. Suggest specific resolution if possible
+4. Use `question` tool for choices
 
-Work through ambiguities one at a time or in small related batches.
+Work one at a time or in small related batches.
 
-### Step 3: Update Spec
+### 3. Update Spec
 
-After resolving each ambiguity:
-1. Remove the `[NEEDS CLARIFICATION]` marker.
-2. Replace it with the resolved requirement.
-3. Add acceptance criteria where they were missing.
-4. Make vague language specific and measurable.
+- Remove `[NEEDS CLARIFICATION]` markers
+- Replace with resolved requirements
+- Add missing ACs
+- Make vague language specific and measurable
 
-### Step 4: Constitution Compliance
+### 4. Constitution Compliance
 
-Load the `constitution-compliance` skill and verify the updated spec
-against the project constitution:
-- Does the spec comply with all relevant articles?
-- Are there any tensions between spec requirements and constitution rules?
-- If so, surface them to the user for resolution.
+Load `constitution-compliance` skill; verify updated spec. Surface tensions between spec and constitution.
 
-### Step 5: Summary
+### 5. Summary
 
-Present a clarification report:
-- Number of ambiguities found
-- Number resolved
-- Number remaining (if any)
-- Any new requirements discovered during clarification
-- Constitution compliance status
+Report: ambiguities found, resolved, remaining, new requirements discovered, constitution status.
 
-Recommend next steps:
-- If all resolved and the feature has UI components or user-facing screens:
-  `/forge-ux` to produce personas, user journeys, wireframes, and
-  accessibility specs before the technical plan.
-- If all resolved and no UI is involved: `/forge-plan` to create the
-  technical plan.
-- If some remain: schedule another `/forge-clarify` session
+Next:
+- All resolved + UI/user-facing → `/forge-ux`
+- All resolved + no UI → `/forge-plan`
+- Some remain → another `/forge-clarify` session

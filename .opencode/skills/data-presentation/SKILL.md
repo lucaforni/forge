@@ -10,42 +10,33 @@ metadata:
 
 ## Purpose
 
-You are now operating under the FORGE **data presentation protocol**. This
-skill specializes UX design for data-heavy interfaces: dashboards, analytics
-views, admin panels, list/detail systems, reports, and any UI whose primary
-purpose is to let users **understand, navigate, filter, and act on data**.
+FORGE **data presentation protocol**. Specializes UX design for data-heavy interfaces: dashboards, analytics, admin panels, list/detail systems, reports — any UI whose primary purpose is to **understand, navigate, filter, and act on data**.
 
-This skill is complementary to `ux-design`. Load it together when the feature
-involves significant data presentation. It does NOT replace personas,
-accessibility, or component spec work — it sharpens five specific dimensions:
+Complementary to `ux-design`. Load together when the feature involves significant data presentation. Does NOT replace personas, accessibility, or component spec work — it sharpens five dimensions:
 
 1. Visualization choice (chart / table / form / card / map / timeline)
-2. Information architecture and hierarchical navigation
-3. Dashboard design and view composition
+2. Information architecture + hierarchical navigation
+3. Dashboard design + view composition
 4. Filters, search, segmentation, query building
 5. Data storytelling
 
 ## When to Apply
 
-Apply this skill when ANY of the following is true:
+Apply if ANY:
+- Feature surfaces collections (lists/tables/grids) of > 10 items.
+- Aggregated metrics, KPIs, or charts.
+- Drill-down or master-detail navigation.
+- Filtering, sorting, faceted search, or query building.
+- User's primary task is exploration, comparison, or decision-making on data.
+- Any dashboard, report, or analytics view.
 
-- The feature surfaces collections (lists, tables, grids) of > 10 items
-- The feature includes aggregated metrics, KPIs, or charts
-- The feature includes drill-down or master-detail navigation
-- The feature requires filtering, sorting, faceted search, or query building
-- The user's primary task is exploration, comparison, or decision-making
-  based on data
-- The feature includes any form of dashboard, report, or analytics view
-
-If the feature is purely transactional (e.g., a single form, a checkout),
-this skill is not needed and you should rely on `ux-design` alone.
+If purely transactional (single form, checkout) → use `ux-design` alone.
 
 ---
 
-## Step 0: Data Discovery (run BEFORE wireframing)
+## Step 0: Data Discovery (BEFORE wireframing)
 
-Before choosing visualizations, you MUST understand the data. Produce a
-**Data Inventory** section in `design-spec.md` answering these questions:
+Produce a **Data Inventory** section in `design-spec.md`.
 
 ### 0.1 Entity and Attribute Map
 
@@ -53,7 +44,7 @@ Before choosing visualizations, you MUST understand the data. Produce a
 |--------|---------------|------------|-----------|
 | [Name] | [field: type] | [1, many, N×M] | FR-NNN |
 
-For each attribute, classify the data type — this drives visualization:
+Classify each attribute — drives visualization:
 
 | Type | Examples | Best fits |
 |------|----------|-----------|
@@ -71,33 +62,29 @@ For each attribute, classify the data type — this drives visualization:
 
 | Question | Answer | Design implication |
 |---------|--------|-------------------|
-| How many records typical? | [N] | Determines pagination, virtualization, sampling |
-| How many records max? | [N] | Determines indexing, search-first vs browse-first |
-| How fresh is the data? | [real-time / minutes / daily / static] | Determines refresh affordance, loading patterns |
-| How often does it change? | [continuous / batch / rare] | Determines push vs pull, change indicators |
+| Records typical? | [N] | Pagination, virtualization, sampling |
+| Records max? | [N] | Indexing, search-first vs browse-first |
+| Data freshness? | [real-time / minutes / daily / static] | Refresh affordance, loading patterns |
+| Change frequency? | [continuous / batch / rare] | Push vs pull, change indicators |
 
 ### 0.3 Density Scenarios
 
-Every data view must be designed for THREE density scenarios:
+Every data view designed for THREE density scenarios:
 
-- **Empty** — 0 records (first run, no permissions, post-filter no match)
-- **Sparse** — 1–5 records (early state, niche query)
-- **Dense** — typical and maximum expected volumes
+- **Empty** — 0 records (first run, no permissions, post-filter no match).
+- **Sparse** — 1–5 records (early state, niche query).
+- **Dense** — typical and maximum expected volumes.
 
-Wireframes MUST show all three; sparse is the most often forgotten.
+Wireframes MUST show all three; sparse is most often forgotten.
 
 ---
 
 ## Step 1: Visualization Choice
 
-Apply this decision framework before drawing any chart or table.
+### 1.1 Match user intent to chart family
 
-### 1.1 What is the user's question?
-
-Match the user's primary intent to a chart family:
-
-| User intent | Recommended visualizations | Avoid |
-|------------|---------------------------|-------|
+| User intent | Recommended | Avoid |
+|------------|-------------|-------|
 | Compare values across categories | Horizontal bar, grouped bar, table with bars | Pie chart with > 5 slices |
 | See change over time | Line chart, area chart, sparkline in row | Bar chart for many time points |
 | See distribution | Histogram, box plot, violin | Pie chart |
@@ -113,38 +100,36 @@ Match the user's primary intent to a chart family:
 
 ### 1.2 Table vs Chart vs Card
 
-| Use a table when | Use a chart when | Use cards when |
+| Table when | Chart when | Cards when |
 |-----------------|------------------|----------------|
 | User needs exact values | User needs patterns or trends | Items are heterogeneous and visual |
 | User compares many attributes at once | User compares 1–3 measures across a dimension | Each item warrants more space |
 | User exports / cites data | User communicates a single insight | Item identity matters more than position |
 | User sorts / filters / searches | Density would harm readability | Mobile-first browsing |
 
-### 1.3 Chart Hygiene Rules (non-negotiable)
+### 1.3 Chart Hygiene (non-negotiable)
 
-- Axes always labeled, units always specified
-- Zero baseline for bar charts; explicit baseline annotation otherwise
-- Maximum 7 categorical series on a single chart (use small multiples beyond that)
-- Color encodes ONE dimension; never overload color with size and shape on the same axis
-- Provide a textual/tabular alternative for every chart (a11y requirement)
-- Tooltips must show exact values; chart alone shows the shape
-- Time axes ascending left-to-right; latest period highlighted if relevant
-- Currency, percentage, and units explicitly indicated on every value
+- Axes always labeled; units always specified.
+- Zero baseline for bar charts; explicit baseline annotation otherwise.
+- Max 7 categorical series per chart (small multiples beyond).
+- Color encodes ONE dimension; don't overload with size + shape on same axis.
+- Provide tabular alternative for every chart (a11y).
+- Tooltips show exact values; chart alone shows the shape.
+- Time axes ascending left-to-right; latest period highlighted if relevant.
+- Currency, percentage, units always explicit on every value.
 
 ### 1.4 Anti-patterns
 
-- Pie chart with more than 5 slices, or comparing two pie charts side-by-side
-- Dual y-axis line charts (use small multiples instead)
-- 3D charts of any kind
-- Truncated y-axes that exaggerate small differences
-- "Donut with center label" used as a glorified KPI (use a KPI card)
-- Chart-when-table: showing 4 values as a bar chart instead of just 4 numbers
+- Pie chart with > 5 slices, or two pie charts side-by-side.
+- Dual y-axis line charts (use small multiples).
+- 3D charts, any kind.
+- Truncated y-axes exaggerating small differences.
+- "Donut with center label" as a glorified KPI (use a KPI card).
+- Chart-when-table: showing 4 values as a bar chart instead of 4 numbers.
 
 ---
 
-## Step 2: Information Architecture and Hierarchical Navigation
-
-Data products live or die on their IA. Define it explicitly.
+## Step 2: Information Architecture + Hierarchical Navigation
 
 ### 2.1 IA Hierarchy
 
@@ -161,17 +146,16 @@ Produce a hierarchy tree in `design-spec.md`:
 └── [Section B]
 ```
 
-For each level, specify:
+For each level specify:
+- **View type**: list, table, dashboard, detail, form, wizard.
+- **Entry points**: nav, search, link.
+- **Exit points**: drill-down, related, back.
+- **URL pattern**: deep-linkable and shareable.
 
-- **View type**: list, table, dashboard, detail, form, wizard
-- **Entry points**: how the user arrives here (nav, search, link)
-- **Exit points**: where they can go from here (drill-down, related, back)
-- **URL pattern**: routes must be deep-linkable and shareable
+### 2.2 Navigation Patterns
 
-### 2.2 Navigation Patterns (data-specific)
-
-| Pattern | When to use | Key requirements |
-|--------|-------------|-----------------|
+| Pattern | When | Key requirements |
+|--------|------|-----------------|
 | Master-detail (side-by-side) | Frequent context switches, comparing items | Persisted selection, keyboard nav between items |
 | List → Detail (drill-down) | Long workflows on one item at a time | Breadcrumb, "back to list" preserves filters/scroll |
 | Tabs within detail | Multiple facets of one entity | Tab state in URL, lazy-load expensive tabs |
@@ -183,40 +167,35 @@ For each level, specify:
 
 ### 2.3 Preserving Context Across Navigation
 
-This is the single most violated principle in data UIs. Mandatory rules:
+Most violated principle in data UIs. Mandatory:
 
-- **Filters in URL.** Every filter, sort, page, and selection must be in the
-  URL. Sharing a link must reproduce the exact view.
-- **Back returns to the same scroll position and selection.** Not the top.
+- **Filters in URL.** Every filter, sort, page, selection must be in URL. Sharing a link reproduces the exact view.
+- **Back returns to same scroll position and selection.** Not the top.
 - **Breadcrumbs reflect data hierarchy, not navigation history.**
-- **Selection persistence.** A selected row stays selected when the user
-  drills in and returns.
-- **Filter persistence across drill-down.** Going into a detail and back
-  must not reset filters.
+- **Selection persistence.** Selected row stays selected when user drills in and returns.
+- **Filter persistence across drill-down.** Detail-and-back must not reset filters.
 
-### 2.4 Empty / Loading / Error States in the IA
+### 2.4 Empty / Loading / Error States
 
-For each node in the hierarchy, define:
+For each node in the hierarchy:
 
 | State | Required design |
 |-------|----------------|
 | First-visit empty | Onboarding affordance (CTA to create / import / connect) |
 | Filtered empty | "No results match" + clear filters CTA + suggestion |
-| Loading (initial) | Skeleton matching the final layout (no spinner-only) |
+| Loading (initial) | Skeleton matching final layout (no spinner-only) |
 | Loading (refresh) | Inline indicator, keep stale data visible |
-| Error (recoverable) | Inline error + retry + technical detail collapsible |
+| Error (recoverable) | Inline error + retry + collapsible technical detail |
 | Error (permission) | Explanation + who to contact / how to request access |
-| Partial failure | Show what loaded + flag what didn't, never blank out everything |
+| Partial failure | Show what loaded + flag what didn't; never blank everything |
 
 ---
 
-## Step 3: Dashboard Design and View Composition
+## Step 3: Dashboard Design + View Composition
 
-Dashboards are not "a bunch of charts on a page". Apply this structure.
+Dashboards are not "a bunch of charts on a page".
 
-### 3.1 Dashboard Anatomy
-
-A well-formed dashboard has FIVE zones, top to bottom:
+### 3.1 Dashboard Anatomy — FIVE zones, top to bottom
 
 ```
 +--------------------------------------------------+
@@ -225,7 +204,6 @@ A well-formed dashboard has FIVE zones, top to bottom:
 | 2. KPI ROW       [KPI 1] [KPI 2] [KPI 3] [KPI 4] |  ← 3–5 leading metrics
 +--------------------------------------------------+
 | 3. PRIMARY VIEW  [Main chart / trend]            |  ← The "headline" insight
-|                                                  |
 +--------------------------------------------------+
 | 4. SUPPORTING    [Chart] [Chart] [Chart]         |  ← Decompositions, segments
 +--------------------------------------------------+
@@ -233,89 +211,74 @@ A well-formed dashboard has FIVE zones, top to bottom:
 +--------------------------------------------------+
 ```
 
-Not every dashboard has all five zones, but zones must appear in this order.
-**KPIs above charts above tables.** Never the reverse.
+Not every dashboard has all five, but zones must appear in this order. **KPIs above charts above tables.** Never the reverse.
 
 ### 3.2 KPI Design Rules
 
 Each KPI card must include:
+- Current value (large, prominent).
+- Unit (currency, %, count, duration).
+- Comparison (vs previous period / target / benchmark).
+- Directional indicator (↑ ↓ →) with semantic color (improvement, not just direction).
+- Sparkline or micro-trend (optional, recommended).
+- Click-through to underlying data view.
 
-- The current value (large, prominent)
-- The unit (currency, %, count, duration)
-- A comparison (vs previous period, vs target, vs benchmark)
-- A directional indicator (↑ ↓ →) with semantic color (improvement, not just direction)
-- A sparkline or micro-trend showing the path (optional but recommended)
-- A click-through to the underlying data view
-
-Anti-patterns to avoid:
-
-- KPI without comparison ("Revenue: $42,300" — vs what?)
-- Green-up-arrow when up is bad (errors, churn, latency)
-- Too many KPIs (> 6 dilutes attention; pick the 3–5 that drive decisions)
-- Vanity metrics (totals that never change meaningfully)
+Anti-patterns:
+- KPI without comparison ("Revenue: $42,300" — vs what?).
+- Green-up-arrow when up is bad (errors, churn, latency).
+- > 6 KPIs (dilutes attention; pick 3–5 that drive decisions).
+- Vanity metrics (totals that never change meaningfully).
 
 ### 3.3 Composition Principles
 
-- **Grid alignment.** Use a 12-column grid. Charts span 4, 6, 8, or 12 columns.
-- **Visual weight matches business weight.** The most important chart is the
-  largest and topmost.
-- **Same dimension → same encoding.** If "region" is blue in chart A, it must
-  be blue in chart B. Consistent legends across the dashboard.
-- **Cross-filtering.** If feasible, clicking a segment in one chart filters
-  the others. Document the interaction explicitly in the wireframe.
-- **Time-range coherence.** A single time-range control affects all
-  time-series in the dashboard unless explicitly noted.
-- **Refresh model.** Specify per dashboard: is it live, periodic, on-demand?
-  Show last-updated timestamp.
+- **Grid alignment.** 12-column grid. Charts span 4, 6, 8, or 12.
+- **Visual weight = business weight.** Most important chart = largest, topmost.
+- **Same dimension → same encoding.** If "region" is blue in chart A, must be blue in chart B. Consistent legends.
+- **Cross-filtering.** Where feasible, clicking a segment in one chart filters the others. Document explicitly in wireframe.
+- **Time-range coherence.** Single time-range control affects all time-series unless noted.
+- **Refresh model.** Specify: live / periodic / on-demand. Show last-updated timestamp.
 
-### 3.4 Responsive Dashboards
+### 3.4 Responsive Dashboards (mandatory)
 
-Dashboards are the worst offenders for responsive UX. Mandatory rules:
-
-- Below 768px: collapse to single-column stack, KPIs become a horizontal scroll
-- Charts must be readable at 320px width OR provide a "view in landscape" prompt
-- Tables must use horizontal scroll with a sticky first column, never reflow into cards (loses comparability)
-- Filter bar collapses into a single "Filters (N)" button opening a sheet
+- < 768px: single-column stack; KPIs become horizontal scroll.
+- Charts readable at 320px OR "view in landscape" prompt.
+- Tables: horizontal scroll with sticky first column; never reflow into cards (loses comparability).
+- Filter bar collapses to single "Filters (N)" button opening a sheet.
 
 ---
 
 ## Step 4: Filters, Search, Segmentation, Query Building
 
-Choose the right filter pattern for the data volume and user expertise.
-
 ### 4.1 Filter Pattern Decision Tree
 
 ```
-Is the user a casual user or a power user?
-├── Casual → use simple filters: chips, dropdowns, faceted sidebar
-└── Power user → consider advanced filters: query builder, search syntax
+User type?
+├── Casual → simple filters: chips, dropdowns, faceted sidebar
+└── Power  → advanced: query builder, search syntax
 
-How many filterable dimensions?
-├── 1–3   → inline filter chips above the data
-├── 4–8   → filter sidebar (left on desktop, bottom-sheet on mobile)
-└── 9+    → query builder + saved views
+# filterable dimensions?
+├── 1–3 → inline filter chips above data
+├── 4–8 → filter sidebar (left desktop, bottom-sheet mobile)
+└── 9+  → query builder + saved views
 
-Is filtering exclusive (AND) or inclusive (OR)?
-├── AND   → checkboxes (within facet OR between facets) — be explicit
-└── OR    → multi-select chips, segmented controls
+AND vs OR?
+├── AND → checkboxes (explicit within/between facets)
+└── OR  → multi-select chips, segmented controls
 
-Is data finite or open-ended?
-├── Finite (known options) → dropdown / multi-select / facet with counts
-└── Open-ended (free text) → search input + autocomplete + recent searches
+Data finite or open-ended?
+├── Finite       → dropdown / multi-select / facet with counts
+└── Open-ended   → search input + autocomplete + recent searches
 ```
 
 ### 4.2 Filter UX Rules
 
-- **Always show the active filter state.** A "Filters (3)" badge or chip row.
-- **Always provide "Clear all".** Reaching "no results" should never be a trap.
-- **Show counts per facet option.** "Region: EU (1,243)". If counts are
-  expensive, show them lazily but show them.
-- **Empty filter result must offer recovery.** Show which filter to relax.
-- **Filter state in URL.** Always. No exceptions.
-- **Apply on change vs explicit "Apply"?** Apply on change for fast queries;
-  explicit Apply for multi-step or expensive queries. Pick one per view and
-  be consistent.
-- **Persist user filter preferences** for return visits (where appropriate).
+- **Always show active filter state.** "Filters (3)" badge or chip row.
+- **Always provide "Clear all".** Reaching "no results" must never be a trap.
+- **Show counts per facet option.** "Region: EU (1,243)". If expensive, lazy but show them.
+- **Empty filter result offers recovery.** Show which filter to relax.
+- **Filter state in URL.** Always.
+- **Apply on change vs explicit Apply?** On-change for fast queries; explicit Apply for multi-step/expensive. Pick one per view, be consistent.
+- **Persist user filter preferences** where appropriate.
 
 ### 4.3 Search Patterns
 
@@ -324,68 +287,60 @@ Is data finite or open-ended?
 | Global search | Cross-entity, top-of-app | Categorize results by entity type |
 | Scoped search | Within current view | "Search this table…" placeholder |
 | Autocomplete | Known vocabulary, taxonomies | Show category of each suggestion |
-| Faceted search | Combine free text with filters | Filters refine the search results |
+| Faceted search | Free text + filters | Filters refine search results |
 | Command palette | Power users, action+navigation | Ctrl/Cmd-K, keyboard-first |
 
-Document at least:
-- What fields are searched
-- Whether matching is exact, prefix, fuzzy, or semantic
-- Debounce delay (typical: 250–400ms for client-side, 400–600ms for server)
-- Empty-query state (recent searches, suggestions, top results)
+Document:
+- Fields searched.
+- Match type: exact, prefix, fuzzy, semantic.
+- Debounce: 250–400ms client-side, 400–600ms server.
+- Empty-query state (recent searches, suggestions, top results).
 
 ### 4.4 Query Builders (advanced)
 
-Reserve for power-user tools (analytics, admin, observability). Required:
-
-- Visual representation of the query (nested AND/OR groups)
-- Field selector with types (so operators are valid per type)
-- Operators appropriate to the field type (`=`, `contains`, `between`, `in`,
-  `is null`, `regex`)
-- Live preview of result count
-- Save / load / share named queries (URL-shareable)
-- Plain-text equivalent (read-only) for advanced users and accessibility
+For power-user tools (analytics, admin, observability). Required:
+- Visual query representation (nested AND/OR groups).
+- Field selector with types (operators valid per type).
+- Operators per field type (`=`, `contains`, `between`, `in`, `is null`, `regex`).
+- Live result-count preview.
+- Save / load / share named queries (URL-shareable).
+- Plain-text equivalent (read-only) for power users + a11y.
 
 ### 4.5 Segmentation
 
-Segmentation is filtering elevated to a first-class concept. When users
-repeatedly view the same filtered slices, design:
-
-- **Saved views / segments** — named, persisted, optionally shared
-- **Comparison mode** — compare 2–3 segments side-by-side (small multiples)
-- **Cohort definition UI** — explicit time-anchor and inclusion criteria
+Filtering elevated to first-class. When users repeatedly view same slices:
+- **Saved views / segments** — named, persisted, optionally shared.
+- **Comparison mode** — 2–3 segments side-by-side (small multiples).
+- **Cohort definition UI** — explicit time-anchor + inclusion criteria.
 
 ---
 
 ## Step 5: Data Storytelling
 
-The goal is to lead the user from "here is data" to "here is what to do".
+Lead user from "here is data" to "here is what to do".
 
-### 5.1 The Storytelling Order
+### 5.1 Storytelling Order
 
-Apply this order within a view, a section, or even a single chart:
+Apply within a view, section, or single chart:
 
-1. **Context** — what time range, what scope, what is being measured
-2. **Headline** — the one number or trend the user should notice
-3. **Decomposition** — why that headline number is what it is
-4. **Comparison** — vs goal, vs prior period, vs peers, vs forecast
-5. **Action** — what the user can do about it (CTA, drill-down, alert)
+1. **Context** — time range, scope, what's measured.
+2. **Headline** — the one number or trend to notice.
+3. **Decomposition** — why that headline is what it is.
+4. **Comparison** — vs goal, prior period, peers, forecast.
+5. **Action** — what the user can do (CTA, drill-down, alert).
 
-A dashboard that ends at step 3 is a report. A dashboard that ends at step 5
-is a tool. Design for step 5.
+Stopping at step 3 = report. Reaching step 5 = tool. **Design for step 5.**
 
-### 5.2 Annotation as a First-Class Element
+### 5.2 Annotation as First-Class Element
 
-- **Inline annotations on charts.** Mark known events (launch, outage,
-  policy change) so trends are interpretable.
-- **Threshold lines.** Visualize targets, SLAs, budgets directly on the chart.
-- **Narrative text near charts.** A single-sentence "what this means" is
-  more useful than a chart title.
-- **Anomaly callouts.** If a value is statistically unusual, the UI says so
-  (badge, color, or text) — do not rely on the user to spot it.
+- **Inline chart annotations.** Mark known events (launch, outage, policy change) so trends are interpretable.
+- **Threshold lines.** Targets, SLAs, budgets directly on chart.
+- **Narrative text near charts.** One-sentence "what this means" beats a chart title.
+- **Anomaly callouts.** Statistically unusual values flagged in UI (badge, color, text) — don't rely on user to spot.
 
-### 5.3 Progressive Disclosure of Detail
+### 5.3 Progressive Disclosure
 
-Lead with the answer; let the user descend into evidence:
+Lead with the answer; let user descend into evidence:
 
 ```
 KPI card               ← the answer
@@ -394,53 +349,46 @@ KPI card               ← the answer
           └─ click → entity detail ← the record itself
 ```
 
-At each level, preserve the context (time range, filters, segment) so the
-user never feels they have "lost" the question they were asking.
+Preserve context (time range, filters, segment) at each level so the user never feels they "lost" the question.
 
-### 5.4 Voice and Microcopy in Data UIs
+### 5.4 Voice + Microcopy
 
-- Avoid jargon unless the persona is technical
-- Numbers are written: thousands separators, locale-aware decimals
-- Time is written contextually: "2 hours ago" near real-time data,
-  full timestamps in audit logs and exports
-- Currency and units are always present; never assume
-- Empty states are written warmly: "Nothing here yet — start by [action]"
-  not "No data."
-- Errors are written constructively: what failed, what the user can try,
-  who to contact
+- Avoid jargon unless persona is technical.
+- Numbers: thousands separators, locale-aware decimals.
+- Time: contextual ("2 hours ago" for real-time; full timestamps in audit logs/exports).
+- Currency and units always present.
+- Empty states warm: "Nothing here yet — start by [action]" not "No data."
+- Errors constructive: what failed, what to try, who to contact.
 
 ### 5.5 Storytelling Anti-patterns
 
-- "Dashboard zoo" — many charts, no narrative, no priority
-- "Mystery meat KPIs" — large numbers without units or context
-- "Look how much data we have" — visualizations that show breadth without insight
-- Charts that require the user to do mental math (use derived measures explicitly)
-- Charts whose conclusion changes based on filter state but the conclusion text doesn't update
+- "Dashboard zoo" — many charts, no narrative or priority.
+- "Mystery meat KPIs" — large numbers without units or context.
+- "Look how much data we have" — breadth without insight.
+- Charts requiring mental math (use derived measures explicitly).
+- Charts whose conclusion changes with filter state but conclusion text doesn't update.
 
 ---
 
-## Integration with Wireframes and User Journeys
+## Integration with Wireframes + User Journeys
 
 This skill does NOT introduce new artifacts. It enhances existing ones.
 
 ### Wireframe enhancements (mandatory for data views)
 
-Every wireframe of a data view must include, beyond the standard `ux-design`
-requirements:
+Beyond standard `ux-design` requirements:
 
-- **Density variants**: separate frames for Empty / Sparse / Dense states
-- **Filter bar / state**: explicit, even if collapsed
-- **Sort / column controls**: visible, with default and active states
-- **Pagination / virtualization affordance**: "1–50 of 1,243" or infinite
-  scroll sentinel
-- **Selection model**: single, multi, none — and where selection lives (row
-  checkbox, click-to-select)
-- **Action affordance for selection**: bulk action bar, contextual menu
-- **Refresh / freshness indicator**: last-updated timestamp
-- **Drill-down affordance**: how a row/segment/cell becomes a detail view
-- **Export / share affordance** where appropriate
+- **Density variants**: separate frames for Empty / Sparse / Dense.
+- **Filter bar / state**: explicit, even if collapsed.
+- **Sort / column controls**: visible, with default + active states.
+- **Pagination / virtualization affordance**: "1–50 of 1,243" or infinite scroll sentinel.
+- **Selection model**: single, multi, none — and where selection lives (row checkbox, click-to-select).
+- **Action affordance for selection**: bulk action bar, contextual menu.
+- **Refresh / freshness indicator**: last-updated timestamp.
+- **Drill-down affordance**: how row/segment/cell becomes detail view.
+- **Export / share affordance** where appropriate.
 
-Annotate the wireframe with:
+Annotate wireframes with:
 
 ```
 Data binding:
@@ -463,43 +411,39 @@ States:
 
 ### User journey enhancements (mandatory for data-driven journeys)
 
-Every journey involving data exploration must explicitly map:
+Every data-exploration journey explicitly maps:
 
-- **Exploration paths**: not just the happy linear path, but the branching
-  paths the user takes to investigate
-- **Drill-down loops**: zoom in → understand → zoom out → compare → zoom in elsewhere
-- **Filter / refine iterations**: how the user narrows scope progressively
-- **Comparison flows**: how the user pivots from "what" to "vs what"
-- **Decision points**: where the data leads to an action (and what that action is)
-- **Dead ends and recoveries**: filtered to empty, permission denied, stale data,
-  search no-match — and how the user recovers
+- **Exploration paths**: not just happy linear path; branching investigation.
+- **Drill-down loops**: zoom in → understand → zoom out → compare → zoom elsewhere.
+- **Filter / refine iterations**: how user narrows scope progressively.
+- **Comparison flows**: pivot from "what" to "vs what".
+- **Decision points**: where data leads to action (and what action).
+- **Dead ends + recoveries**: filtered to empty, permission denied, stale data, search no-match — and how user recovers.
 
 Annotate emotional states for data-specific moments:
 
-- 🤔 Curious — exploring without a precise goal
-- 🔍 Investigating — hunting a specific answer
-- 😵 Overwhelmed — too much data, too many options
-- 💡 Insight — discovered something useful
-- 🎯 Decisive — ready to act on what the data shows
-- 😤 Frustrated — can't find or can't filter to what they need
+- 🤔 Curious — exploring without a precise goal.
+- 🔍 Investigating — hunting a specific answer.
+- 😵 Overwhelmed — too much data, too many options.
+- 💡 Insight — discovered something useful.
+- 🎯 Decisive — ready to act.
+- 😤 Frustrated — can't find or can't filter to what they need.
 
 ---
 
 ## Quality Gates (data-presentation specific)
 
-Before handing off to `/forge-plan`, in addition to the `ux-design` gates:
+Before handoff to `/forge-plan`, beyond `ux-design` gates:
 
-- [ ] Data Inventory section exists with entity/attribute/type/cardinality
-- [ ] Each visualization choice is justified against Step 1.1 (user intent table)
-- [ ] No anti-pattern visualizations present (pie>5, 3D, dual-axis, etc.)
-- [ ] Information architecture hierarchy is documented with view types per level
-- [ ] Context preservation rules (URL state, scroll, selection, filters) are explicit
-- [ ] Every data view has Empty / Sparse / Dense wireframe variants
-- [ ] Every data view has Loading / Error / Partial-failure states
-- [ ] Filter pattern is justified against Step 4.1 decision tree
-- [ ] If dashboard: five-zone anatomy respected, KPIs include comparison + direction
-- [ ] Storytelling order (Context → Headline → Decomposition → Comparison → Action)
-      is present in every dashboard or analytics view
-- [ ] Charts have a tabular alternative for accessibility
-- [ ] User journeys include exploration / drill-down / comparison paths,
-      not just linear happy path
+- [ ] Data Inventory section with entity/attribute/type/cardinality.
+- [ ] Each visualization choice justified against Step 1.1 (intent table).
+- [ ] No anti-pattern visualizations (pie>5, 3D, dual-axis, etc.).
+- [ ] IA hierarchy documented with view types per level.
+- [ ] Context preservation rules (URL state, scroll, selection, filters) explicit.
+- [ ] Every data view has Empty / Sparse / Dense wireframe variants.
+- [ ] Every data view has Loading / Error / Partial-failure states.
+- [ ] Filter pattern justified against Step 4.1 decision tree.
+- [ ] If dashboard: five-zone anatomy respected; KPIs include comparison + direction.
+- [ ] Storytelling order (Context → Headline → Decomposition → Comparison → Action) present in every dashboard/analytics view.
+- [ ] Charts have tabular alternative for accessibility.
+- [ ] User journeys include exploration / drill-down / comparison paths, not just linear happy path.

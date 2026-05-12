@@ -7,130 +7,68 @@ model: github-copilot/claude-opus-4.7
 
 # Technical Plan
 
-You are handling `/forge-plan` to create a detailed technical implementation
-plan for a Feature, Epic, or Product track workflow.
+Handle `/forge-plan` to create a technical implementation plan for Feature/Epic/Product tracks.
 
 ## Arguments
 
-Optional spec path or ID: $ARGUMENTS
-
-If no argument is provided, find the most recently modified spec in
-`.forge/specs/` that does not yet have a `plan.md`.
+Optional spec path or ID: $ARGUMENTS. If none, find the most recently modified spec in `.forge/specs/` without a `plan.md`.
 
 ## Context Loading
 
-Before starting, read the following upstream documents:
+1. `.forge/constitution.md` (REQUIRED)
+2. `.forge/specs/NNN-slug/spec.md` (REQUIRED)
+3. `.forge/architecture/architecture.md` (if exists)
+4. `.forge/knowledge/adr/` — scan relevant ADRs
+5. `.forge/knowledge/decision-log.md`
+6. `.forge/specs/NNN-slug/design-spec.md` — Wireframes + Components sections (~150 lines, if exists)
+7. `.forge/specs/NNN-slug/user-journey.md` — happy paths + key edge cases (~100 lines, if exists)
 
-1. `.forge/constitution.md` -- governance constraints (REQUIRED)
-2. The target spec: `.forge/specs/NNN-slug/spec.md` (REQUIRED)
-3. `.forge/architecture/architecture.md` -- system architecture (if exists)
-4. `.forge/knowledge/adr/` -- scan for relevant ADRs
-5. `.forge/knowledge/decision-log.md` -- prior decisions
-6. `.forge/specs/NNN-slug/design-spec.md` -- UX wireframes and component
-   inventory (if exists); load Wireframes and Components sections (~150 lines)
-7. `.forge/specs/NNN-slug/user-journey.md` -- user journeys and edge cases
-   (if exists); load happy paths and key edge cases (~100 lines)
-
-If the spec does not exist, stop and tell the user to run `/forge-specify`
-first.
+If spec missing: stop and tell user to run `/forge-specify` first.
 
 ## Planning Process
 
 ### Step 1: Requirements Analysis
 
-Review the spec and extract:
+Extract from spec: FRs, NFRs with targets, acceptance criteria, edge/error scenarios.
 
-1. All functional requirements (FR-NNN) to be addressed.
-2. All non-functional requirements with their targets.
-3. All acceptance criteria from user stories.
-4. All edge cases and error scenarios.
+### Step 2: Data Model
 
-### Step 2: Data Model Design
-
-Design the data layer for this feature:
-
-1. New database tables/collections with full schema.
-2. Modified existing tables (columns added, indexes needed).
-3. Migration strategy.
-4. Data validation rules.
+New tables/collections (full schema); modified tables (columns, indexes); migration strategy; validation rules.
 
 ### Step 3: API Design
 
-Design the API endpoints:
-
-1. Full endpoint contracts (method, path, request/response bodies).
-2. Authentication/authorization requirements per endpoint.
-3. Error response formats.
-4. Rate limiting considerations.
+Endpoint contracts (method, path, request/response); auth/authz per endpoint; error formats; rate limiting.
 
 ### Step 4: Component Design
 
-Design the implementation:
-
-1. New classes/modules with responsibilities.
-2. Key methods with signatures and behavior descriptions.
-3. Integration points with existing code.
-4. Design patterns to apply.
+New classes/modules + responsibilities; key methods (signatures + behavior); integration points; design patterns.
 
 ### Step 5: File Map
 
-Create a complete file map showing:
-
-1. New files to create (with purpose).
-2. Existing files to modify (with description of changes).
-3. Test files to create.
+New files (purpose); existing files to modify (changes); test files to create.
 
 ### Step 6: Dependencies
 
-Identify:
-
-1. New npm/pip packages needed (with version constraints).
-2. Internal module dependencies.
-3. External service dependencies.
-4. Configuration changes needed.
+New packages (version constraints); internal module deps; external service deps; config changes.
 
 ### Step 7: Testing Strategy
 
-Define the testing approach:
-
-1. Unit test scope (what to test, what to mock).
-2. Integration test scope.
-3. Test data requirements.
-4. Coverage targets per requirement.
+Unit scope (what to test/mock); integration scope; test data; coverage targets per requirement.
 
 ### Step 8: Requirement Traceability
 
-Create a traceability table mapping each FR/NFR to:
-
-- Plan section where it is addressed.
-- Files where it will be implemented.
-- Test files where it will be verified.
+Map each FR/NFR → plan section → files → test files.
 
 ### Step 9: Constitution Compliance
 
-Load the `constitution-compliance` skill and verify:
-
-- Technical choices comply with the constitution.
-- Patterns match prescribed architecture.
-- Testing approach meets standards.
+Load `constitution-compliance` skill. Verify: tech choices, patterns, testing approach.
 
 ### Step 10: Plan Authoring
 
-Read the template from `.opencode/templates/plan.md` and create the plan
-at `.forge/specs/NNN-slug/plan.md`.
+Read template from `.opencode/templates/plan.md`. Write to `.forge/specs/NNN-slug/plan.md`.
 
-### Step 11: Summary and Next Steps
+### Step 11: Summary
 
-Present a plan summary:
+Report: # new files, # modified, # new deps, # endpoints, FR coverage, constitution status.
 
-- Number of new files
-- Number of modified files
-- Number of new dependencies
-- Number of API endpoints
-- Requirement coverage (FRs addressed / total FRs)
-- Constitution compliance status
-
-Recommend next steps:
-
-- `/forge-analyze` to validate plan against spec and architecture
-- `/forge-tasks` to generate task breakdown from the plan
+Next: `/forge-analyze` (validate); `/forge-tasks` (breakdown).

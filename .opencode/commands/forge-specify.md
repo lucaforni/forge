@@ -7,100 +7,66 @@ model: github-copilot/claude-opus-4.7
 
 # Feature Specification
 
-You are handling `/forge-specify` to create a feature specification for a
-Feature, Epic, or Product track workflow.
+Create a feature spec for Feature/Epic/Product workflows.
 
 ## Arguments
 
-The user's feature description: $ARGUMENTS
+`$ARGUMENTS` — feature description.
 
 ## Context Loading
 
-Before starting, read the following upstream documents if they exist:
+Read if present:
+1. `.forge/constitution.md`
+2. `.forge/architecture/architecture.md`
+3. `.forge/product/prd.md` (Epic/Product)
+4. `.forge/knowledge/decision-log.md`
+5. `.forge/knowledge/adr/` — scan for relevant ADRs
 
-1. `.forge/constitution.md` -- governance constraints
-2. `.forge/architecture/architecture.md` -- existing architecture
-3. `.forge/product/prd.md` -- product requirements (if Epic/Product track)
-4. `.forge/knowledge/decision-log.md` -- prior decisions
-5. `.forge/knowledge/adr/` -- scan for relevant ADRs
+## Process
 
-## Discovery Process
+### 1. Requirements Discovery
 
-### Step 1: Requirements Discovery
+Use the `question` tool conversationally (NOT all at once):
+- Feature goal and user benefit
+- Target personas
+- Functional requirements
+- NFRs (perf, security, accessibility)
+- Edge cases and errors
 
-Engage the user in structured requirements discovery:
+### 2. Advanced Elicitation (Optional)
 
-1. Understand the feature goal and user benefit.
-2. Identify the target user personas.
-3. Explore functional requirements systematically.
-4. Identify non-functional requirements (performance, security, accessibility).
-5. Surface edge cases and error scenarios.
+Load `advanced-elicitation` skill; suggest 3 techniques:
+Pre-mortem · First Principles · Red Team/Blue Team · Socratic · Constraint Removal · Inversion.
 
-Use the `question` tool to ask focused questions. Do NOT ask everything at
-once -- work through it conversationally.
+### 3. Spec Number
 
-### Step 2: Advanced Elicitation (Optional)
+Scan `.forge/specs/`, take max NNN+1 (3 digits). Confirm slug with user. Create `.forge/specs/NNN-slug/`.
 
-After initial discovery, load the `advanced-elicitation` skill and suggest
-3 relevant analysis techniques to the user:
-- Pre-mortem Analysis (what could go wrong?)
-- First Principles (are we solving the right problem?)
-- Red Team / Blue Team (how could this be exploited or broken?)
-- Socratic Questioning (why do we need this specifically?)
-- Constraint Removal (what if we had no constraints?)
-- Inversion Analysis (what would make this fail?)
+### 4. Authoring
 
-Let the user choose which technique(s) to apply, if any.
+Use `.opencode/templates/spec.md`. Write to `.forge/specs/NNN-slug/spec.md`. Fill:
+- Overview/objectives
+- User stories (As a / I want / So that) + Given/When/Then ACs
+- FRs with unique IDs (FR-001…)
+- NFRs with measurable targets
+- Edge cases, error handling
+- Data/API requirements (if applicable)
+- Open questions: `[NEEDS CLARIFICATION]`
+- Constitution compliance
+- Cross-refs to upstream docs
 
-### Step 3: Spec Number Assignment
+### 5. Validation
 
-Determine the next available spec number:
-1. Scan `.forge/specs/` for existing spec directories.
-2. Find the highest NNN number.
-3. Assign NNN+1 (zero-padded to 3 digits).
-4. Ask the user to confirm or provide a slug name.
+- Every user story has ACs
+- Every FR has a unique ID
+- NFRs measurable
+- Count `[NEEDS CLARIFICATION]` markers
 
-Create the directory: `.forge/specs/NNN-slug/`
+### 6. Summary & Next Steps
 
-### Step 4: Spec Authoring
+Report: stories, FRs, NFRs, open questions, constitution status.
 
-Read the template from `.opencode/templates/spec.md` and create the
-specification at `.forge/specs/NNN-slug/spec.md`.
-
-Fill in all sections:
-- Overview and objectives
-- User stories (As a... I want... So that...) with acceptance criteria
-  (Given/When/Then)
-- Functional requirements with unique IDs (FR-001, FR-002, ...)
-- Non-functional requirements with measurable targets
-- Edge cases and error handling
-- Data requirements (if applicable)
-- API requirements (if applicable)
-- Open questions marked with `[NEEDS CLARIFICATION]`
-- Constitution compliance check
-- Cross-references to upstream documents
-
-### Step 5: Validation
-
-After writing the spec:
-1. Verify every user story has acceptance criteria.
-2. Verify every FR has a unique ID.
-3. Verify NFRs have measurable metrics.
-4. Count `[NEEDS CLARIFICATION]` markers and report them.
-
-### Step 6: Summary and Next Steps
-
-Present a summary:
-- Number of user stories
-- Number of functional requirements
-- Number of NFRs
-- Number of open questions (`[NEEDS CLARIFICATION]`)
-- Constitution compliance status
-
-Recommend next steps:
-- If there are `[NEEDS CLARIFICATION]` markers: `/forge-clarify`
-- If the feature has UI components or user-facing screens: `/forge-ux`
-  to produce personas, user journeys, wireframes, and accessibility specs
-  before the technical plan.
-- If spec is complete and no UI is involved: `/forge-plan` to create
-  the technical plan.
+Next:
+- `[NEEDS CLARIFICATION]` present → `/forge-clarify`
+- UI/user-facing → `/forge-ux` (personas, journeys, wireframes, a11y) before planning
+- No UI, spec complete → `/forge-plan`

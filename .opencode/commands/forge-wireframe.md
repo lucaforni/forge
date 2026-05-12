@@ -7,31 +7,25 @@ model: github-copilot/claude-opus-4.7
 
 # Wireframe Generation
 
-You are handling `/forge-wireframe` to produce focused ASCII wireframes and
-interaction specifications for specific screens or UI components.
+Handle `/forge-wireframe` to produce focused ASCII wireframes and interaction specs.
 
 ## Arguments
 
-Screen or component description: $ARGUMENTS
+Screen/component description: $ARGUMENTS
 
-- If a screen name or description is provided, generate wireframe(s) for that.
-- If a spec ID is provided (e.g. `001-user-auth`), read the spec and generate
-  wireframes for all screens listed in it.
-- If `--all` is provided, generate wireframes for every screen/flow in the
-  most recent spec.
+- Screen name/description → wireframe(s) for that.
+- Spec ID (e.g. `001-user-auth`) → wireframes for all screens in spec.
+- `--all` → every screen/flow in most recent spec.
 
 ## Context Loading
 
-Before starting, read:
-
-1. `.forge/specs/NNN-slug/spec.md` — source of truth for screen requirements.
-2. `.forge/specs/NNN-slug/design-spec.md` — existing design spec to append to
-   (if it exists).
-3. `.forge/ux/design-system.md` — available components and tokens (optional).
+1. `.forge/specs/NNN-slug/spec.md` — screen requirements (source of truth).
+2. `.forge/specs/NNN-slug/design-spec.md` — append target (if exists).
+3. `.forge/ux/design-system.md` — components/tokens (optional).
 
 ## Wireframe Protocol
 
-For each screen or component requested:
+For each screen:
 
 ### 1. Screen Header
 
@@ -43,7 +37,7 @@ Platform: [Web / Mobile / Both]
 
 ### 2. ASCII Wireframe
 
-Use this convention:
+Convention:
 
 ```
 +--------------------------------------------------+  W: 1440px (desktop)
@@ -66,17 +60,9 @@ Use this convention:
 Footer: [links]
 ```
 
-Legend:
-- `[Text]` = text element / label
-- `[___Field___]` = text input
-- `[▾]` = dropdown
-- `[○]` = radio / `[☐]` = checkbox / `[●]` = selected
-- `[CTA]` = button (Primary) / `[ btn ]` = button (Secondary)
-- `[!]` = validation error indicator
-- `[≡]` = hamburger / menu
-- `[×]` = close / dismiss
+Legend: `[Text]` text/label · `[___Field___]` input · `[▾]` dropdown · `[○]`/`[☐]`/`[●]` radio/checkbox/selected · `[CTA]`/`[ btn ]` primary/secondary button · `[!]` validation error · `[≡]` menu · `[×]` close.
 
-For mobile (375px), show a separate narrowed layout:
+Mobile (375px) — separate narrowed layout:
 
 ```
 +------------------+  W: 375px (mobile)
@@ -94,8 +80,6 @@ For mobile (375px), show a separate narrowed layout:
 
 ### 3. State Inventory
 
-For each screen, list all states:
-
 | State | Trigger | Visual Change | User Feedback |
 |-------|---------|---------------|---------------|
 | Default | Page load | Normal layout | — |
@@ -106,8 +90,6 @@ For each screen, list all states:
 | Disabled | Permission / condition | Grayed out, no pointer | Tooltip on hover |
 
 ### 4. Interactive Elements
-
-List every element a user can interact with:
 
 | Element | Type | Action | Outcome |
 |---------|------|--------|---------|
@@ -135,28 +117,22 @@ Accessibility: Screen "[Screen Name]"
 
 ### 6. Responsive Notes
 
-If the screen has responsive variations, note the key layout changes:
-
 ```
 Responsive Behavior:
   - 1440px (desktop): Two-column layout, sidebar visible
   - 1024px (tablet): Single column, sidebar collapses to drawer
-  - 768px (tablet-portrait): Same as 1024px but tighter spacing
+  - 768px (tablet-portrait): Same as 1024px, tighter spacing
   - 375px (mobile): Full-width cards, stacked inputs, sticky CTA
 ```
 
-## Saving the Output
+## Saving
 
-1. If `.forge/specs/NNN-slug/design-spec.md` exists: **append** the new
-   wireframes to the `## Wireframes` section.
-2. If it does not exist: save to `.forge/specs/NNN-slug/design-spec.md`
-   with only the wireframes section filled, and note that a full design
-   spec should be produced with `/forge-ux`.
+- If `design-spec.md` exists: **append** to `## Wireframes` section.
+- Else: create `.forge/specs/NNN-slug/design-spec.md` with only wireframes section; note that `/forge-ux` should produce the full design spec.
 
 ## Anti-Patterns
 
-- Do NOT produce wireframes without linking them to at least one FR.
-- Do NOT skip the states inventory. Empty and error states are as important
-  as the happy path.
-- Do NOT skip accessibility annotations. They are required for every screen.
-- Do NOT use external image references. All design is in text/markdown.
+- No wireframes without linking to ≥1 FR.
+- No skipping the states inventory (empty/error states required).
+- No skipping a11y annotations (required per screen).
+- No external image references — all design in text/markdown.

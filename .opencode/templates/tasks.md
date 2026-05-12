@@ -1,61 +1,50 @@
 # Tasks: [NNN] - [Feature Name]
 
 > Ordered task breakdown with parallelism markers and requirement traceability.
-> Created by the `forge-scrum` agent via `/forge-tasks`.
+> Created by `forge-scrum` via `/forge-tasks`.
 
-| Field   | Value             |
-| ------- | ----------------- |
-| Status  | Pending           |
-| Author  | forge-scrum       |
-| Date    | YYYY-MM-DD        |
-| Spec    | <!-- Link to spec --> |
-| Plan    | <!-- Link to plan --> |
+| Field   | Value       |
+| ------- | ----------- |
+| Status  | Pending     |
+| Author  | forge-scrum |
+| Date    | YYYY-MM-DD  |
+| Spec    | <!-- Link --> |
+| Plan    | <!-- Link --> |
 
 ---
 
 ## Legend
 
-- `[FR-NNN]` -- Requirement being implemented (traceability)
-- `[P]` -- Parallelizable with other `[P]` tasks in the same phase
-- Status: `[ ]` pending, `[x]` done, `[-]` skipped
-- **Path**: Explicit file path relative to working directory
+- `[FR-NNN]` — Requirement implemented (traceability)
+- `[P]` — Parallelizable with other `[P]` tasks in the same phase
+- Status: `[ ]` pending · `[x]` done · `[-]` skipped
+- **File**: Explicit path relative to working directory
+
+Each task specifies: requirement ref `[FR-NNN]`, optional `[P]`, file path,
+type (Create/Modify), description, spec reference, dependencies, estimate.
 
 ---
 
 ## Phase 1: [Phase Name]
 
-<!-- Group related tasks into phases. Each task should specify:
-     1. Requirement traceability [FR-NNN]
-     2. Parallelizability [P] if applicable
-     3. File path being created/modified
-     4. Clear description of what to do
--->
-
 - [ ] **1.1** `[FR-001]` Create [component name]
   - **File**: `path/to/new/file.ext`
   - **Type**: Create new file
   - **Description**: [What this file does and its purpose]
-  - **Spec Reference**: [Section in spec that defines this]
+  - **Spec Reference**: [Section in spec]
   - **Dependencies**: None
-  - **Estimated**: [Time estimate]
+  - **Estimated**: [Time]
 
 - [ ] **1.2** `[FR-001]` `[P]` Update [component name]
   - **File**: `path/to/existing/file.ext`
   - **Type**: Modify existing
   - **Location**: Section X.Y or Lines XXX-YYY
-  - **Description**: [What needs to change and why]
-  - **Spec Reference**: [Section in spec]
+  - **Description**: [What changes and why]
+  - **Spec Reference**: [Section]
   - **Dependencies**: Task 1.1
-  - **Estimated**: [Time estimate]
+  - **Estimated**: [Time]
 
-- [ ] **1.3** `[FR-002]` `[P]` Add [feature/function]
-  - **File**: `path/to/file.ext`
-  - **Type**: Modify existing
-  - **Location**: [Specific location]
-  - **Description**: [What to add]
-  - **Spec Reference**: [Section in spec]
-  - **Dependencies**: None
-  - **Estimated**: [Time estimate]
+<!-- Add more tasks following the same structure. -->
 
 ## Phase 2: [Phase Name]
 
@@ -63,18 +52,9 @@
   - **File**: `path/to/file.ext`
   - **Type**: Create new file
   - **Description**: [What this implements]
-  - **Spec Reference**: [Section in spec]
+  - **Spec Reference**: [Section]
   - **Dependencies**: Phase 1 completion
-  - **Estimated**: [Time estimate]
-
-- [ ] **2.2** `[FR-003]` Integrate [component] with [system]
-  - **File**: `path/to/integration.ext`
-  - **Type**: Modify existing
-  - **Location**: [Specific location]
-  - **Description**: [How to integrate]
-  - **Spec Reference**: [Section in spec]
-  - **Dependencies**: Task 2.1
-  - **Estimated**: [Time estimate]
+  - **Estimated**: [Time]
 
 ## Phase 3: [Phase Name]
 
@@ -82,9 +62,9 @@
   - **File**: `path/to/test.ext`
   - **Type**: Create new file
   - **Description**: [What to test]
-  - **Spec Reference**: [Section in spec]
-  - **Dependencies**: Task 2.2
-  - **Estimated**: [Time estimate]
+  - **Spec Reference**: [Section]
+  - **Dependencies**: Task 2.1
+  - **Estimated**: [Time]
 
 ## Phase 4: Testing & Review
 
@@ -108,18 +88,18 @@
 
 ## Summary
 
-| Metric               | Value  |
-| -------------------- | ------ |
-| Total tasks          |        |
-| Total phases         |        |
-| Parallelizable tasks |        |
-| Requirements covered |        |
+| Metric               | Value |
+| -------------------- | ----- |
+| Total tasks          |       |
+| Total phases         |       |
+| Parallelizable tasks |       |
+| Requirements covered |       |
 
 ---
 
 ## Cross-References
 
-| Document             | Path                                           |
-| -------------------- | ---------------------------------------------- |
-| Spec                 | `.forge/specs/NNN-slug/spec.md`                |
-| Plan                 | `.forge/specs/NNN-slug/plan.md`                |
+| Document | Path                            |
+| -------- | ------------------------------- |
+| Spec     | `.forge/specs/NNN-slug/spec.md` |
+| Plan     | `.forge/specs/NNN-slug/plan.md` |
