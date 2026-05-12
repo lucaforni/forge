@@ -23,11 +23,7 @@
             "thinking": { "budgetTokens": 16000 }
           }
         },
-        "claude-sonnet-4.6": {
-          "options": {
-            "thinking": { "budgetTokens": 8000 }
-          }
-        }
+        "claude-sonnet-4.6": {}
       }
     }
   },
@@ -45,6 +41,9 @@
   // "forge-reviewer":  { "model": "github-copilot/claude-opus-4.6" },
   // "forge-ux":        { "model": "github-copilot/claude-opus-4.6" }
   "agent": {
+    "forge": {
+      "variant": "high"
+    },
     "forge-pm": {
       "model": "github-copilot/claude-opus-4.7"
     },

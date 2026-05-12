@@ -2,6 +2,7 @@
 description: "FORGE scrum master: sprint planning, story management, task breakdown, velocity tracking, and retrospectives"
 mode: subagent
 model: github-copilot/claude-sonnet-4.6
+variant: high
 tools:
   read: true
   write: true

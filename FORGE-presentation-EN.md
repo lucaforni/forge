@@ -701,7 +701,7 @@ opencode
 |-------|------|--------|
 | **Claude Opus 4.6** | Deep reasoning, architectural decisions, adversarial review | forge-pm, forge-architect, forge-reviewer |
 | **Claude Sonnet 4.5** | Speed, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa, Build, Plan |
-| **GPT-5.2-Codex** | Independent adversarial review (second model) | forge-reviewer-codex |
+| **GPT-5.3-Codex** | Independent adversarial review (second model) | forge-reviewer-codex |
 
 **Models provided via GitHub Copilot subscription**
 
