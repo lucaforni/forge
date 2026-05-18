@@ -132,7 +132,7 @@ if [ "$UPDATE_FLAG" == "--update" ]; then
     UPDATE_ARG="--update"
 fi
 
-npx tsx install-forge.ts "$TARGET_DIR" $UPDATE_ARG
+npm exec -- tsx install-forge.ts "$TARGET_DIR" $UPDATE_ARG
 
 # Success
 log_success "Installation complete!"
