@@ -1,7 +1,20 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  // FORGE - Framework for Orchestrated Requirements, Governance & Engineering
-  // Project configuration template
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FORGE — Framework for Orchestrated Requirements, Governance & Engineering
+  //
+  // This is the FALLBACK template. During installation, FORGE generates a
+  // customized opencode.json based on your selected model provider.
+  //
+  // Supported providers: github-copilot, opencode-anthropic, opencode-deepseek, opencode-free, openai, google
+  //
+  // To reconfigure models after install:
+  //   npx tsx install-forge.ts . --reconfigure
+  //
+  // For manual customization, edit the "model", "provider", and "agent"
+  // sections below. See: .opencode/docs/FORGE-CUSTOMIZATION.md
+  // ═══════════════════════════════════════════════════════════════════════════
 
   // Default model for all agents unless overridden
   "model": "github-copilot/claude-sonnet-4.6",

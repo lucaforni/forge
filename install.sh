@@ -50,8 +50,19 @@ cleanup() {
 trap cleanup EXIT
 
 # Parse arguments
-TARGET_DIR="${1:-.}"
-UPDATE_FLAG="${2}"
+# Collect all args after target directory to forward to install-forge.ts
+TARGET_DIR=""
+FORWARD_ARGS=()
+
+for arg in "$@"; do
+    if [ -z "$TARGET_DIR" ] && [ "${arg:0:1}" != "-" ]; then
+        TARGET_DIR="$arg"
+    else
+        FORWARD_ARGS+=("$arg")
+    fi
+done
+
+TARGET_DIR="${TARGET_DIR:-.}"
 
 # Validate target directory
 if [ ! -d "$TARGET_DIR" ]; then
@@ -63,18 +74,30 @@ TARGET_DIR=$(cd "$TARGET_DIR" && pwd)  # Get absolute path
 
 log_info "FORGE Quick Installer v${VERSION}"
 log_info "Target directory: $TARGET_DIR"
+if [ ${#FORWARD_ARGS[@]} -gt 0 ]; then
+    log_info "Options: ${FORWARD_ARGS[*]}"
+fi
 echo ""
 
 # Check if FORGE is already installed
+# Check if --update or --reconfigure is in the forward args
+IS_UPDATE="no"
+for arg in "${FORWARD_ARGS[@]}"; do
+    if [ "$arg" == "--update" ]; then
+        IS_UPDATE="yes"
+        break
+    fi
+done
+
 if [ -f "$TARGET_DIR/.opencode/agents/forge.md" ]; then
-    if [ "$UPDATE_FLAG" != "--update" ]; then
+    if [ "$IS_UPDATE" != "yes" ]; then
         log_warn "FORGE is already installed in this project."
         log_info "To update, run: $0 $TARGET_DIR --update"
         exit 1
     fi
     log_info "Updating existing FORGE installation..."
 else
-    if [ "$UPDATE_FLAG" == "--update" ]; then
+    if [ "$IS_UPDATE" == "yes" ]; then
         log_warn "FORGE is not installed in this project."
         log_info "Remove --update flag to perform fresh installation."
         exit 1
@@ -127,12 +150,7 @@ echo ""
 log_info "Running installation script..."
 cd "$TEMP_DIR"
 
-UPDATE_ARG=""
-if [ "$UPDATE_FLAG" == "--update" ]; then
-    UPDATE_ARG="--update"
-fi
-
-npm exec -- tsx install-forge.ts "$TARGET_DIR" $UPDATE_ARG
+npm exec -- tsx install-forge.ts "$TARGET_DIR" "${FORWARD_ARGS[@]}"
 
 # Success
 log_success "Installation complete!"

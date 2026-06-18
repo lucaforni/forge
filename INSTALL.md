@@ -82,6 +82,68 @@ Before overwriting any file, a timestamped backup is created:
 file.md → file.md.backup-2026-02-14T15-30-45-123Z
 ```
 
+### Choosing Your Model Provider
+
+Starting from v1.0.0, FORGE supports multiple model providers and asks you to
+choose during installation.
+
+**Interactive mode (default):**
+
+```bash
+npx tsx install-forge.ts /path/to/your/project
+# → You'll be prompted to select a provider and review the configuration
+```
+
+**Non-interactive mode (use defaults):**
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --non-interactive
+# → Uses github-copilot with recommended defaults
+```
+
+**Specify provider explicitly:**
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --provider opencode-deepseek
+# → Uses OpenCode Zen (no prompts)
+```
+
+**Reconfigure provider during update:**
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --update --reconfigure
+# → Opens provider selection again while preserving other settings
+```
+
+**Supported providers:**
+
+| Provider ID | Name | Model Family | Best For |
+|---|---|---|---|
+| `github-copilot` | GitHub Copilot | Claude (Anthropic) | Default, most users |
+| `opencode-anthropic` | OpenCode Anthropic | Claude (Anthropic) via Zen | Maximum quality |
+| `opencode-deepseek` | OpenCode DeepSeek | DeepSeek V4 via Zen | Cost-effective quality |
+| `opencode-free` | OpenCode Free | Free-tier models via Zen | Zero-cost experimentation |
+| `openai` | OpenAI | GPT / o-series | OpenAI ecosystem |
+| `google` | Google | Gemini | Google ecosystem |
+
+**Model tiers:**
+
+FORGE assigns agents to two tiers:
+
+| Tier | Agents | Recommended Model |
+|---|---|---|
+| **Reasoning** | `forge-pm`, `forge-architect`, `forge-reviewer`, `forge-ux` | Premium (Opus / o3 / Gemini Pro) |
+| **Execution** | `forge`, `forge-scrum`, `forge-qa`, `forge-analyst` | Standard (Sonnet / GPT-4o / Gemini Flash) |
+
+You can override individual tier models with CLI flags:
+
+```bash
+npx tsx install-forge.ts /path/to/project \
+  --provider opencode-anthropic \
+  --reasoning-model opencode/claude-opus-4.6 \
+  --execution-model opencode/claude-sonnet-4.6
+```
+
 ---
 
 ## Prerequisites

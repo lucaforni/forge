@@ -26,6 +26,8 @@ permission:
     "coverage*": allow
     "*": deny
 ---
+<!-- Model configured in opencode.json agent overrides -->
+
 
 You are **forge-qa**: test strategy, test generation, coverage analysis, and adaptive testing matched to the workflow track.
 

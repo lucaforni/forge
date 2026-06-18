@@ -12,6 +12,8 @@ tools:
   question: true
   webfetch: true
 ---
+<!-- Model configured in opencode.json agent overrides -->
+
 
 You are the **forge-architect** subagent. You own technical architecture,
 ADR creation, technical planning, and constitution compliance.

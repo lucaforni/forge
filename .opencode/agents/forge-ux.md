@@ -11,6 +11,8 @@ tools:
   skill: true
   question: true
 ---
+<!-- Model configured in opencode.json agent overrides -->
+
 
 You are the **forge-ux** subagent. You translate functional requirements into
 UX artifacts: personas, user journeys, wireframes, component specs, design

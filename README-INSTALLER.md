@@ -10,21 +10,54 @@ This directory contains scripts for installing and updating FORGE in other proje
 
 ## Quick Start
 
-### Install FORGE in a Project
+### Install FORGE in a Project (Interactive)
 
 ```bash
 cd /path/to/forge
 npx tsx install-forge.ts /path/to/your/project
+# → Select your model provider interactively
+```
+
+### Install with Specific Provider
+
+```bash
+# OpenCode Anthropic (curated Claude models)
+npx tsx install-forge.ts /path/to/your/project --provider opencode-anthropic
+
+# OpenCode DeepSeek (cost-effective)
+npx tsx install-forge.ts /path/to/your/project --provider opencode-deepseek
+
+# OpenCode Free (zero-cost)
+npx tsx install-forge.ts /path/to/your/project --provider opencode-free
+
+# GitHub Copilot (default)
+npx tsx install-forge.ts /path/to/your/project --provider github-copilot
+
+# OpenAI
+npx tsx install-forge.ts /path/to/your/project --provider openai
+
+# Non-interactive (uses github-copilot defaults)
+npx tsx install-forge.ts /path/to/your/project --non-interactive
 ```
 
 ### Update FORGE in a Project
 
 ```bash
-cd /path/to/forge
+# Standard update (preserves model config)
 npx tsx install-forge.ts /path/to/your/project --update
+
+# Update and reconfigure models
+npx tsx install-forge.ts /path/to/your/project --update --reconfigure
 ```
 
 ## Features
+
+✅ **Multi-Provider Support (NEW)**
+- Interactive model provider selection during install
+- Support for GitHub Copilot, OpenCode Zen (Anthropic / DeepSeek / Free), OpenAI, and Google
+- Automatic agent-to-model tier assignment (reasoning vs execution)
+- Non-interactive mode for CI/CD pipelines
+- Model reconfiguration during updates (`--reconfigure`)
 
 ✅ **Fresh Installation**
 - Copies all FORGE components (.opencode/ and .forge/)

@@ -11,6 +11,8 @@ tools:
   skill: true
   question: true
 ---
+<!-- Model configured in opencode.json agent overrides -->
+
 
 You are **forge-pm**: requirements definition, specification creation, PRD authoring.
 

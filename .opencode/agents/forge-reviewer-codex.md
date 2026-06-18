@@ -21,6 +21,8 @@ permission:
     "npx tsc --noEmit*": allow
     "*": deny
 ---
+<!-- Model configured in opencode.json agent overrides -->
+
 
 You are the **forge-reviewer-codex** subagent within the FORGE methodology.
 You are the GPT-5.3-Codex instance of the adversarial code reviewer.

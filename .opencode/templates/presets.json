@@ -1,0 +1,215 @@
+{
+  "$schema": "https://forge.opencode.ai/presets.json",
+  "_comment": "FORGE Provider Presets — defines available model providers and their agent assignments.\n\nHOW TO CUSTOMIZE:\n  1. Copy this file to .forge/presets.json in your project\n  2. Edit, add, or remove presets as needed\n  3. The .forge/presets.json takes precedence over this file\n  4. Presets with the same 'id' in .forge/presets.json completely replace FORGE defaults\n\nPRESET STRUCTURE:\n  id           — unique identifier (used with --provider flag)\n  name         — display name shown during selection\n  description  — short description\n  defaultModel — model used when no specific agent override exists\n  providers    — provider configurations with model options\n  agentModels  — model assignments by tier:\n    reasoning  — PM, Architect, Reviewer, UX (deep analysis agents)\n    execution  — Forge, Scrum, QA, Analyst (task execution agents)\n    codex      — Reviewer-Codex (optional, dual-model review)\n  alternatives — alternative models available for each tier (used in custom mode)",
+
+  "order": ["github-copilot", "opencode-anthropic", "opencode-deepseek", "opencode-free", "openai", "google"],
+
+  "presets": {
+    "github-copilot": {
+      "name": "GitHub Copilot",
+      "description": "Anthropic Claude models via GitHub Copilot",
+      "defaultModel": "github-copilot/claude-sonnet-4.6",
+      "providers": {
+        "github-copilot": {
+          "models": {
+            "claude-opus-4.7": {},
+            "claude-opus-4.6": {
+              "options": {
+                "thinking": { "budgetTokens": 16000 }
+              }
+            },
+            "claude-sonnet-4.6": {},
+            "gpt-5.3-codex": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "github-copilot/claude-opus-4.7",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "github-copilot/claude-sonnet-4.6",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        },
+        "codex": {
+          "model": "github-copilot/gpt-5.3-codex",
+          "agents": ["forge-reviewer-codex"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["github-copilot/claude-opus-4.7", "github-copilot/claude-opus-4.6"],
+        "execution": ["github-copilot/claude-sonnet-4.6"],
+        "codex": ["github-copilot/gpt-5.3-codex"]
+      }
+    },
+
+    "opencode-anthropic": {
+      "name": "OpenCode Anthropic",
+      "description": "Anthropic Claude models via OpenCode Zen — managed and optimized for you",
+      "defaultModel": "opencode/claude-sonnet-4.6",
+      "providers": {
+        "opencode": {
+          "models": {
+            "claude-sonnet-4.6": {},
+            "claude-opus-4.6": {
+              "options": {
+                "thinking": { "budgetTokens": 16000 }
+              }
+            },
+            "claude-opus-4.7": {},
+            "gpt-5.3-codex": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "opencode/claude-opus-4.7",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "opencode/claude-sonnet-4.6",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        },
+        "codex": {
+          "model": "opencode/gpt-5.3-codex",
+          "agents": ["forge-reviewer-codex"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["opencode/claude-opus-4.7", "opencode/claude-opus-4.6"],
+        "execution": ["opencode/claude-sonnet-4.6"],
+        "codex": ["opencode/gpt-5.3-codex"]
+      }
+    },
+
+    "opencode-deepseek": {
+      "name": "OpenCode DeepSeek",
+      "description": "DeepSeek models via OpenCode Zen — V4 Pro for reasoning, V4 Flash for execution",
+      "defaultModel": "opencode/deepseek-v4-flash",
+      "providers": {
+        "opencode": {
+          "models": {
+            "deepseek-v4-pro": {},
+            "deepseek-v4-flash": {},
+            "qwen-3.6-plus": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "opencode/deepseek-v4-pro",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "opencode/deepseek-v4-flash",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        },
+        "codex": {
+          "model": "opencode/qwen-3.6-plus",
+          "agents": ["forge-reviewer-codex"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["opencode/deepseek-v4-pro", "opencode/qwen-3.6-plus"],
+        "execution": ["opencode/deepseek-v4-flash"],
+        "codex": ["opencode/qwen-3.6-plus"]
+      }
+    },
+
+    "opencode-free": {
+      "name": "OpenCode Free",
+      "description": "Free-tier models via OpenCode Zen — MiniMax M3 free for reasoning, DeepSeek V4 Flash free for execution",
+      "defaultModel": "opencode/deepseek-v4-flash-free",
+      "providers": {
+        "opencode": {
+          "models": {
+            "minimax-m3-free": {},
+            "deepseek-v4-flash-free": {},
+            "qwen-3.6-plus-free": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "opencode/minimax-m3-free",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "opencode/deepseek-v4-flash-free",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        },
+        "codex": {
+          "model": "opencode/qwen-3.6-plus-free",
+          "agents": ["forge-reviewer-codex"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["opencode/minimax-m3-free", "opencode/deepseek-v4-flash-free"],
+        "execution": ["opencode/deepseek-v4-flash-free"],
+        "codex": ["opencode/qwen-3.6-plus-free"]
+      }
+    },
+
+    "openai": {
+      "name": "OpenAI",
+      "description": "GPT and o-series models via OpenAI",
+      "defaultModel": "openai/gpt-4o",
+      "providers": {
+        "openai": {
+          "models": {
+            "gpt-4o": {},
+            "o3": {
+              "options": {
+                "reasoningEffort": "high"
+              }
+            },
+            "gpt-4.1": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "openai/o3",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "openai/gpt-4o",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["openai/o3", "openai/gpt-4.1"],
+        "execution": ["openai/gpt-4o", "openai/gpt-4.1"]
+      }
+    },
+
+    "google": {
+      "name": "Google",
+      "description": "Gemini models via Google AI",
+      "defaultModel": "google/gemini-2.5-flash",
+      "providers": {
+        "google": {
+          "models": {
+            "gemini-2.5-pro": {},
+            "gemini-2.5-flash": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "google/gemini-2.5-pro",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "google/gemini-2.5-flash",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["google/gemini-2.5-pro"],
+        "execution": ["google/gemini-2.5-flash"]
+      }
+    }
+  }
+}

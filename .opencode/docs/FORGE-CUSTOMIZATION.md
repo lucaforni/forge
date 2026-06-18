@@ -1013,16 +1013,115 @@ For agents that need more (or less) extended thinking:
 
 ### 8.4 Using OpenCode Zen Models
 
-If you want to use OpenCode's curated model selection:
+OpenCode Zen provides a **curated model selection** managed by OpenCode.
+Instead of choosing specific models per provider, Zen routes your requests
+to the best available model automatically.
+
+FORGE ships with **three Zen presets** for different model families and budgets:
+
+| Preset | Reasoning | Execution | Codex | Best For |
+|---|---|---|---|---|
+| `opencode-anthropic` | Claude Opus 4.7 | Claude Sonnet 4.6 | GPT-5.3-Codex | Maximum quality |
+| `opencode-deepseek` | DeepSeek V4 Pro | DeepSeek V4 Flash | Qwen 3.6 Plus | Cost-effective quality |
+| `opencode-free` | MiniMax M3 Free | DeepSeek V4 Flash Free | Qwen 3.6 Plus Free | Zero-cost experimentation |
+
+Select a preset during install:
+
+```bash
+npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
+```
+
+**Full Zen-Anthropic configuration:**
 
 ```json
 {
   "model": "opencode/claude-sonnet-4.6",
+  "provider": {
+    "opencode": {
+      "models": {
+        "claude-sonnet-4.6": {},
+        "claude-opus-4.7": {},
+        "claude-opus-4.6": {
+          "options": {
+            "thinking": { "budgetTokens": 16000 }
+          }
+        },
+        "gpt-5.3-codex": {}
+      }
+    }
+  },
   "agent": {
-    "forge-architect": { "model": "opencode/claude-opus-4.6" }
+    "forge": { "variant": "high" },
+    "forge-pm":        { "model": "opencode/claude-opus-4.7" },
+    "forge-architect": { "model": "opencode/claude-opus-4.7" },
+    "forge-reviewer":  { "model": "opencode/claude-opus-4.7" },
+    "forge-ux":        { "model": "opencode/claude-opus-4.7" },
+    "forge-scrum":     { "model": "opencode/claude-sonnet-4.6" },
+    "forge-qa":        { "model": "opencode/claude-sonnet-4.6" },
+    "forge-analyst":   { "model": "opencode/claude-sonnet-4.6" },
+    "forge-reviewer-codex": { "model": "opencode/gpt-5.3-codex" }
   }
 }
 ```
+
+**Full Zen-DeepSeek configuration:**
+
+```json
+{
+  "model": "opencode/deepseek-v4-flash",
+  "provider": {
+    "opencode": {
+      "models": {
+        "deepseek-v4-pro": {},
+        "deepseek-v4-flash": {},
+        "qwen-3.6-plus": {}
+      }
+    }
+  },
+  "agent": {
+    "forge": { "variant": "high" },
+    "forge-pm":        { "model": "opencode/deepseek-v4-pro" },
+    "forge-architect": { "model": "opencode/deepseek-v4-pro" },
+    "forge-reviewer":  { "model": "opencode/deepseek-v4-pro" },
+    "forge-ux":        { "model": "opencode/deepseek-v4-pro" },
+    "forge-scrum":     { "model": "opencode/deepseek-v4-flash" },
+    "forge-qa":        { "model": "opencode/deepseek-v4-flash" },
+    "forge-analyst":   { "model": "opencode/deepseek-v4-flash" },
+    "forge-reviewer-codex": { "model": "opencode/qwen-3.6-plus" }
+  }
+}
+```
+
+**Full Zen-Free configuration:**
+
+```json
+{
+  "model": "opencode/deepseek-v4-flash-free",
+  "provider": {
+    "opencode": {
+      "models": {
+        "minimax-m3-free": {},
+        "deepseek-v4-flash-free": {},
+        "qwen-3.6-plus-free": {}
+      }
+    }
+  },
+  "agent": {
+    "forge": { "variant": "high" },
+    "forge-pm":        { "model": "opencode/minimax-m3-free" },
+    "forge-architect": { "model": "opencode/minimax-m3-free" },
+    "forge-reviewer":  { "model": "opencode/minimax-m3-free" },
+    "forge-ux":        { "model": "opencode/minimax-m3-free" },
+    "forge-scrum":     { "model": "opencode/deepseek-v4-flash-free" },
+    "forge-qa":        { "model": "opencode/deepseek-v4-flash-free" },
+    "forge-analyst":   { "model": "opencode/deepseek-v4-flash-free" },
+    "forge-reviewer-codex": { "model": "opencode/qwen-3.6-plus-free" }
+  }
+}
+```
+
+> **Tip:** Switch between Zen variants anytime with:
+> `npx tsx install-forge.ts . --update --reconfigure --provider opencode-free`
 
 ### 8.5 Model Variants
 
@@ -1039,6 +1138,198 @@ Configure variants for agents that need them:
   }
 }
 ```
+
+### 8.6 Provider Presets Reference
+
+FORGE ships with predefined model configurations for 4 providers.
+Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
+
+#### GitHub Copilot (github-copilot)
+
+| Agent Tier | Model | Agents |
+|---|---|---|
+| Default | `github-copilot/claude-sonnet-4.6` | All |
+| Reasoning | `github-copilot/claude-opus-4.7` | PM, Architect, Reviewer, UX |
+| Execution | `github-copilot/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
+| Codex | `github-copilot/gpt-5.3-codex` | Reviewer-Codex |
+
+**Fallback:** If `claude-opus-4.7` is not available, use `claude-opus-4.6`.
+
+#### OpenCode Anthropic (opencode-anthropic)
+
+| Agent Tier | Model | Agents |
+|---|---|---|
+| Default | `opencode/claude-sonnet-4.6` | All |
+| Reasoning | `opencode/claude-opus-4.7` | PM, Architect, Reviewer, UX |
+| Execution | `opencode/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
+| Codex | `opencode/gpt-5.3-codex` | Reviewer-Codex |
+
+**Fallback:** If `claude-opus-4.7` is not available, use `claude-opus-4.6`.
+
+#### OpenCode DeepSeek (opencode-deepseek)
+
+| Agent Tier | Model | Agents |
+|---|---|---|
+| Default | `opencode/deepseek-v4-flash` | All |
+| Reasoning | `opencode/deepseek-v4-pro` | PM, Architect, Reviewer, UX |
+| Execution | `opencode/deepseek-v4-flash` | Forge, Scrum, QA, Analyst |
+| Codex | `opencode/qwen-3.6-plus` | Reviewer-Codex |
+
+#### OpenCode Free (opencode-free)
+
+| Agent Tier | Model | Agents |
+|---|---|---|
+| Default | `opencode/deepseek-v4-flash-free` | All |
+| Reasoning | `opencode/minimax-m3-free` | PM, Architect, Reviewer, UX |
+| Execution | `opencode/deepseek-v4-flash-free` | Forge, Scrum, QA, Analyst |
+| Codex | `opencode/qwen-3.6-plus-free` | Reviewer-Codex |
+
+#### OpenAI (openai)
+
+| Agent Tier | Model | Agents |
+|---|---|---|
+| Default | `openai/gpt-4o` | All |
+| Reasoning | `openai/o3` | PM, Architect, Reviewer, UX |
+| Execution | `openai/gpt-4o` | Forge, Scrum, QA, Analyst |
+
+> OpenAI preset does not include a Codex reviewer agent.
+
+#### Google (google)
+
+| Agent Tier | Model | Agents |
+|---|---|---|
+| Default | `google/gemini-2.5-flash` | All |
+| Reasoning | `google/gemini-2.5-pro` | PM, Architect, Reviewer, UX |
+| Execution | `google/gemini-2.5-flash` | Forge, Scrum, QA, Analyst |
+
+> Google preset does not include a Codex reviewer agent.
+
+### 8.7 Reconfiguring After Install
+
+If you installed with one provider and want to switch:
+
+```bash
+# Re-run the installer with --reconfigure
+npx tsx install-forge.ts . --reconfigure
+```
+
+This opens the provider selection flow while preserving your constitution,
+specs, knowledge base, and other project files.
+
+To switch providers manually, edit these sections in `opencode.json`:
+- `model` — default model
+- `provider` — provider configuration
+- `agent` — per-agent model overrides
+
+### 8.8 Customizing Provider Presets
+
+FORGE provider presets are defined in JSON files — not hardcoded in the
+installer. You can customize existing presets or add entirely new ones.
+
+#### Preset File Locations
+
+| File | Purpose | Overwritten on Update? |
+|---|---|---|
+| `.opencode/templates/presets.json` | FORGE default presets | Yes (updated with FORGE) |
+| `.forge/presets.json` | Your custom overrides | **No** (protected) |
+
+#### How It Works
+
+1. FORGE loads presets from `.opencode/templates/presets.json` (shipped presets)
+2. If `.forge/presets.json` exists, it **merges** on top:
+   - Same preset `id` → your version **completely replaces** the FORGE default
+   - New preset `id` → **added** to the available list
+   - Optional `order` field → controls display order in interactive selection
+
+#### Example: Override GitHub Copilot
+
+Create `.forge/presets.json`:
+
+```json
+{
+  "presets": {
+    "github-copilot": {
+      "name": "GitHub Copilot (Custom)",
+      "description": "Claude Opus 4.6 with higher thinking budget",
+      "defaultModel": "github-copilot/claude-sonnet-4.6",
+      "providers": {
+        "github-copilot": {
+          "models": {
+            "claude-opus-4.6": {
+              "options": { "thinking": { "budgetTokens": 32000 } }
+            },
+            "claude-sonnet-4.6": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "github-copilot/claude-opus-4.6",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "github-copilot/claude-sonnet-4.6",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["github-copilot/claude-opus-4.6"],
+        "execution": ["github-copilot/claude-sonnet-4.6"]
+      }
+    }
+  }
+}
+```
+
+Then reconfigure:
+
+```bash
+npx tsx install-forge.ts . --reconfigure
+```
+
+#### Example: Add a Brand New Provider
+
+```json
+{
+  "presets": {
+    "my-org": {
+      "name": "My Organization",
+      "description": "Internal proxy with custom models",
+      "defaultModel": "my-org/gpt-4o",
+      "providers": {
+        "my-org": {
+          "models": {
+            "gpt-4o": {},
+            "claude-sonnet": {}
+          }
+        }
+      },
+      "agentModels": {
+        "reasoning": {
+          "model": "my-org/claude-sonnet",
+          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
+        },
+        "execution": {
+          "model": "my-org/gpt-4o",
+          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
+        }
+      },
+      "alternatives": {
+        "reasoning": ["my-org/claude-sonnet"],
+        "execution": ["my-org/gpt-4o"]
+      }
+    }
+  },
+  "order": ["my-org", "github-copilot", "opencode-anthropic", "opencode-deepseek", "opencode-free", "openai", "google"]
+}
+```
+
+Now `my-org` appears first in the interactive selection and works with
+`--provider my-org`.
+
+> **Tip:** Use `.forge/presets.json` to pin specific model versions,
+> adjust thinking budgets, or add providers for internal API proxies.
+> The file is never overwritten during FORGE updates.
 
 ---
 

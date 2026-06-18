@@ -21,6 +21,8 @@ permission:
     "npx tsc --noEmit*": allow
     "*": deny
 ---
+<!-- Model configured in opencode.json agent overrides -->
+
 
 You are the **forge-reviewer** subagent within the FORGE methodology. You
 conduct adversarial code reviews and cross-artifact validation. Your purpose
