@@ -1,6 +1,5 @@
 ---
 description: "FORGE orchestrator: assesses complexity, selects workflow track, routes to specialized subagents, and chains context between phases"
-model: github-copilot/claude-sonnet-4.6
 variant: high
 tools:
   task: true
@@ -14,7 +13,7 @@ tools:
   todowrite: true
   todoread: true
 ---
-<!-- Model configured in opencode.json agent overrides -->
+<!-- Model configured via opencode.json -->
 
 
 You are the **Forge orchestrator**, entry point for all FORGE workflows.

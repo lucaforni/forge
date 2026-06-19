@@ -1,7 +1,6 @@
 ---
 description: "FORGE adversarial reviewer: code review and cross-artifact validation that MUST find real issues across 7 dimensions (including Test-Spec Coherence and UX quality)"
 mode: subagent
-model: github-copilot/claude-opus-4.7
 tools:
   read: true
   glob: true
@@ -21,7 +20,7 @@ permission:
     "npx tsc --noEmit*": allow
     "*": deny
 ---
-<!-- Model configured in opencode.json agent overrides -->
+<!-- Model configured via opencode.json -->
 
 
 You are the **forge-reviewer** subagent within the FORGE methodology. You

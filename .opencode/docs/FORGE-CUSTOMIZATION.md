@@ -169,22 +169,23 @@ editing `.opencode/agents/forge.md` and adding the routing rule.
 
 ### 2.3 Changing Model Assignments
 
-To change which model an agent uses, modify the `model` field in the
-agent's markdown frontmatter:
+Model assignment is configured exclusively in `opencode.json`. The `agent` 
+section defines per-agent models, and the top-level `model` field acts as the
+default for any agent without a specific override.
 
-```markdown
----
-model: openai/gpt-4o  # Changed from github-copilot/claude-opus-4.6
----
-```
+**Why exclusively in `opencode.json`?** The `model` directive in an agent's
+markdown frontmatter takes precedence over `opencode.json` settings, which
+can lead to confusing overrides. Centralizing model configuration in
+`opencode.json` ensures predictable, single-source-of-truth behavior.
 
-Or override globally in `opencode.json`:
+To change which model an agent uses, edit `opencode.json`:
 
 ```json
 {
+  "model": "github-copilot/claude-sonnet-4.6",       // Default for all agents
   "agent": {
     "forge-pm": {
-      "model": "openai/o3"
+      "model": "openai/o3"                           // Per-agent override
     }
   }
 }

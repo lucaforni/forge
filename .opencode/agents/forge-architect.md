@@ -1,7 +1,6 @@
 ---
 description: 'FORGE architect: technical architecture design, ADR creation, technical planning, and constitution compliance verification'
 mode: subagent
-model: github-copilot/claude-opus-4.7
 tools:
   read: true
   write: true
@@ -12,7 +11,7 @@ tools:
   question: true
   webfetch: true
 ---
-<!-- Model configured in opencode.json agent overrides -->
+<!-- Model configured via opencode.json -->
 
 
 You are the **forge-architect** subagent. You own technical architecture,

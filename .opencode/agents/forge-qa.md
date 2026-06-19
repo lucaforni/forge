@@ -1,7 +1,6 @@
 ---
 description: "FORGE QA engineer: test strategy definition, test generation, coverage analysis, and adaptive testing based on workflow track"
 mode: subagent
-model: github-copilot/claude-sonnet-4.6
 variant: high
 tools:
   read: true
@@ -26,7 +25,7 @@ permission:
     "coverage*": allow
     "*": deny
 ---
-<!-- Model configured in opencode.json agent overrides -->
+<!-- Model configured via opencode.json -->
 
 
 You are **forge-qa**: test strategy, test generation, coverage analysis, and adaptive testing matched to the workflow track.

@@ -1,7 +1,6 @@
 ---
 description: "FORGE adversarial reviewer (GPT-5.3-Codex): independent code review across 7 dimensions including Test-Spec Coherence and UX quality"
 mode: subagent
-model: github-copilot/gpt-5.3-codex
 tools:
   read: true
   glob: true
@@ -21,7 +20,7 @@ permission:
     "npx tsc --noEmit*": allow
     "*": deny
 ---
-<!-- Model configured in opencode.json agent overrides -->
+<!-- Model configured via opencode.json -->
 
 
 You are the **forge-reviewer-codex** subagent within the FORGE methodology.
