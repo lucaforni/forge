@@ -132,7 +132,7 @@ FORGE assigns agents to two tiers:
 
 | Tier | Agents | Recommended Model |
 |---|---|---|
-| **Reasoning** | `forge-pm`, `forge-architect`, `forge-reviewer`, `forge-ux` | Premium (Opus / o3 / Gemini Pro) |
+| **Reasoning** | `forge-pm`, `forge-architect`, `forge-reviewer`, `forge-ux` | Premium reasoning model (e.g., Claude Opus, o3, Gemini Pro) |
 | **Execution** | `forge`, `forge-scrum`, `forge-qa`, `forge-analyst` | Standard (Sonnet / GPT-4o / Gemini Flash) |
 
 You can override individual tier models with CLI flags:

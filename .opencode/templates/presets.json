@@ -1,6 +1,6 @@
 {
   "$schema": "https://forge.opencode.ai/presets.json",
-  "_comment": "FORGE Provider Presets — defines available model providers and their agent assignments.\n\nHOW TO CUSTOMIZE:\n  1. Copy this file to .forge/presets.json in your project\n  2. Edit, add, or remove presets as needed\n  3. The .forge/presets.json takes precedence over this file\n  4. Presets with the same 'id' in .forge/presets.json completely replace FORGE defaults\n\nPRESET STRUCTURE:\n  id           — unique identifier (used with --provider flag)\n  name         — display name shown during selection\n  description  — short description\n  defaultModel — model used when no specific agent override exists\n  providers    — provider configurations with model options\n  agentModels  — model assignments by tier:\n    reasoning  — PM, Architect, Reviewer, UX (deep analysis agents)\n    execution  — Forge, Scrum, QA, Analyst (task execution agents)\n    codex      — Reviewer-Codex (optional, dual-model review)\n  alternatives — alternative models available for each tier (used in custom mode)",
+  "_comment": "FORGE Provider Presets — defines available model providers and their agent assignments.\n\nHOW TO CUSTOMIZE:\n  1. Copy this file to .forge/presets.json in your project\n  2. Edit, add, or remove presets as needed\n  3. The .forge/presets.json takes precedence over this file\n  4. Presets with the same 'id' in .forge/presets.json completely replace FORGE defaults\n\nPRESET STRUCTURE:\n  id           — unique identifier (used with --provider flag)\n  name         — display name shown during selection\n  description  — short description\n  defaultModel — model used when no specific agent override exists\n  providers    — provider configurations with model options\n  agentModels  — model assignments by tier:\n    reasoning  — PM, Architect, Reviewer, UX (deep analysis agents)\n    execution  — Forge, Scrum, QA, Analyst (task execution agents)\n    peer      — Peer reviewer (optional, dual-model review)\n  alternatives — alternative models available for each tier (used in custom mode)",
 
   "order": ["github-copilot", "opencode-anthropic", "opencode-deepseek", "opencode-free", "openai", "google"],
 
@@ -32,15 +32,15 @@
           "model": "github-copilot/claude-sonnet-4.6",
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
-        "codex": {
+        "peer": {
           "model": "github-copilot/gpt-5.3-codex",
-          "agents": ["forge-reviewer-codex"]
+          "agents": ["forge-reviewer-peer"]
         }
       },
       "alternatives": {
         "reasoning": ["github-copilot/claude-opus-4.7", "github-copilot/claude-opus-4.6"],
         "execution": ["github-copilot/claude-sonnet-4.6"],
-        "codex": ["github-copilot/gpt-5.3-codex"]
+        "peer": ["github-copilot/gpt-5.3-codex"]
       }
     },
 
@@ -71,15 +71,15 @@
           "model": "opencode/claude-sonnet-4.6",
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
-        "codex": {
+        "peer": {
           "model": "opencode/gpt-5.3-codex",
-          "agents": ["forge-reviewer-codex"]
+          "agents": ["forge-reviewer-peer"]
         }
       },
       "alternatives": {
         "reasoning": ["opencode/claude-opus-4.7", "opencode/claude-opus-4.6"],
         "execution": ["opencode/claude-sonnet-4.6"],
-        "codex": ["opencode/gpt-5.3-codex"]
+        "peer": ["opencode/gpt-5.3-codex"]
       }
     },
 
@@ -105,15 +105,15 @@
           "model": "opencode/deepseek-v4-flash",
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
-        "codex": {
+        "peer": {
           "model": "opencode/qwen3.6-plus",
-          "agents": ["forge-reviewer-codex"]
+          "agents": ["forge-reviewer-peer"]
         }
       },
       "alternatives": {
         "reasoning": ["opencode/deepseek-v4-pro", "opencode/qwen3.6-plus"],
         "execution": ["opencode/deepseek-v4-flash"],
-        "codex": ["opencode/qwen3.6-plus"]
+        "peer": ["opencode/qwen3.6-plus"]
       }
     },
 
@@ -139,15 +139,15 @@
           "model": "opencode/deepseek-v4-flash-free",
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
-        "codex": {
+        "peer": {
           "model": "opencode/qwen3.6-plus-free",
-          "agents": ["forge-reviewer-codex"]
+          "agents": ["forge-reviewer-peer"]
         }
       },
       "alternatives": {
         "reasoning": ["opencode/minimax-m3-free", "opencode/deepseek-v4-flash-free"],
         "execution": ["opencode/deepseek-v4-flash-free"],
-        "codex": ["opencode/qwen3.6-plus-free"]
+        "peer": ["opencode/qwen3.6-plus-free"]
       }
     },
 

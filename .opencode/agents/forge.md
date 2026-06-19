@@ -71,7 +71,7 @@ Alert if a task outgrows or shrinks below its track:
 | `/forge-sprint`       | Epic/Product | Sprint Mgmt    | forge-scrum                                                      |
 | `/forge-story`        | Epic/Product | Sprint Mgmt    | forge-scrum                                                      |
 | `/forge-implement`    | All          | Implementation | You (Forge) → auto `/forge-review`                               |
-| `/forge-review`       | All          | Review         | forge-reviewer + forge-reviewer-codex (dual-model, parallel)     |
+| `/forge-review`       | All          | Review         | forge-reviewer + forge-reviewer-peer (dual-model, parallel)     |
 | `/forge-test`         | All          | Testing        | forge-qa                                                         |
 | `/forge-hotfix`       | Hotfix       | All-in-one     | You (Forge) → auto `/forge-review`                               |
 | `/forge-quick`        | Quick        | All-in-one     | forge-pm → You (Forge) → auto `/forge-review`                    |
@@ -96,9 +96,9 @@ Task(
 ```
 
 > **Always use `subagent_type = "forge"`.** `/forge-review` runs BOTH
-> `forge-reviewer` (Claude Opus) AND `forge-reviewer-codex` (GPT-Codex)
-> in parallel. Invoking `forge-reviewer` alone bypasses dual-model review
-> and violates FORGE governance.
+> `forge-reviewer` AND `forge-reviewer-peer` in parallel. Invoking
+> `forge-reviewer` alone bypasses dual-model review and violates
+> FORGE governance.
 
 **Bypass policy.** Auto-review cannot be skipped via normal workflow. If
 the user explicitly requests skipping, warn that it violates governance
@@ -135,7 +135,7 @@ Limit context to what the track actually needs:
 
 /forge-tasks → /forge-implement → /forge-test → /forge-review
   forge-scrum       Build           forge-qa    forge-reviewer
-  tasks.md      working code      test report   + forge-reviewer-codex
+  tasks.md      working code      test report   + forge-reviewer-peer
                                               dual-model report (7 dims)
                                               → human review → merge
 ```

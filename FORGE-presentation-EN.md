@@ -97,7 +97,7 @@ A structured software development system for OpenCode
 ┌──────────────────────────────────────────────────────┐
 │                  SUBAGENTS (8)                        │
 │  analyst | pm | ux | architect | scrum               │
-│  reviewer(Opus) | reviewer-codex(Codex) | qa          │
+│  reviewer | reviewer-peer | qa          │
 └────────────────────┬─────────────────────────────────┘
                      │
         ┌────────────┼────────────┐
@@ -175,7 +175,7 @@ No docs     Tech spec   Spec+Plan    Full chain  Full chain
 /forge-analyze    # Cross-validate spec vs plan
 /forge-tasks      # Task breakdown with dependencies
 /forge-implement  # Implement
-/forge-review     # Adversarial review (7 dimensions, dual-model: Claude Opus + GPT-Codex)
+/forge-review     # Adversarial review (7 dimensions, dual-model)
 ```
 
 **Output:** `spec.md`, `design-spec.md`, `user-journey.md`, `plan.md`, `tasks.md`, optional ADRs
@@ -258,15 +258,15 @@ Then follows the Epic workflow with the addition of:
 | Agent | Model | Role |
 |-------|-------|------|
 | **forge-analyst** | Sonnet 4.5 | Exploration, research, scope detection |
-| **forge-pm** | Opus 4.6 | Requirements, spec, PRD, user stories |
-| **forge-ux** | Opus 4.6 | User journeys, wireframes, accessibility, design spec |
-| **forge-architect** | Opus 4.6 | Architecture, ADR, technical planning |
+| **forge-pm** | | Requirements, spec, PRD, user stories |
+| **forge-ux** | | User journeys, wireframes, accessibility, design spec |
+| **forge-architect** | | Architecture, ADR, technical planning |
 | **forge-scrum** | Sonnet 4.5 | Sprint planning, story management |
-| **forge-reviewer** | Opus 4.6 | Adversarial review — Task A (7 dimensions) |
-| **forge-reviewer-codex** | GPT-Codex | Adversarial review — Task B, independent |
+| **forge-reviewer** | | Adversarial review — Task A (7 dimensions) |
+| **forge-reviewer-peer** | | Adversarial review — Task B, independent |
 | **forge-qa** | Sonnet 4.5 | Test strategy, test generation |
 
-> `/forge-review` launches **forge-reviewer + forge-reviewer-codex in parallel** and synthesises findings — *consensus findings* (both models) carry the highest priority
+> `/forge-review` launches **forge-reviewer + forge-reviewer-peer in parallel** and synthesises findings — *consensus findings* (both models) carry the highest priority
 
 ---
 
@@ -334,7 +334,7 @@ The **Constitution** is the highest-authority governance document
 
 ### Two Models in Parallel — Reviews that MUST Find Problems
 
-`forge-reviewer` (Claude Opus) + `forge-reviewer-codex` (GPT-Codex) examine across **7 dimensions:**
+`forge-reviewer` + `forge-reviewer-peer` examine across **7 dimensions:**
 
 1. **Correctness** - Logic, edge cases, errors
 2. **Security** - Vulnerabilities, input validation
@@ -360,13 +360,12 @@ Developer writes code
     ▼         ▼
 Task A      Task B
 forge-      forge-
-reviewer    reviewer-codex
-(Opus 4.6)  (GPT-Codex)
+reviewer    reviewer-peer
     └────┬────┘
          ▼
    Synthesise findings
    [CONSENSUS] = high priority
-   [OPUS] / [CODEX] = unique findings
+    [A] / [B] = unique findings
          ▼
 Fix blocking issues (HIGH severity)
          ▼
@@ -699,9 +698,9 @@ opencode
 
 | Model | When | Agents |
 |-------|------|--------|
-| **Claude Opus 4.6** | Deep reasoning, architectural decisions, adversarial review | forge-pm, forge-architect, forge-reviewer |
+| | Deep reasoning, architectural decisions, adversarial review | forge-pm, forge-architect, forge-reviewer |
 | **Claude Sonnet 4.5** | Speed, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa, Build, Plan |
-| **GPT-5.3-Codex** | Independent adversarial review (second model) | forge-reviewer-codex |
+| | Independent adversarial review (second model) | forge-reviewer-peer |
 
 **Models provided via GitHub Copilot subscription**
 
@@ -774,7 +773,7 @@ Knowledge:       /forge-adr      Create ADR
 # 7. Implement
 /forge-implement
 
-# 8. Adversarial review (7 dimensions, dual-model: Claude Opus + GPT-Codex)
+# 8. Adversarial review (7 dimensions, dual-model)
 /forge-review
 ```
 

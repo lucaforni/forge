@@ -97,7 +97,7 @@ Un sistema di sviluppo software strutturato per OpenCode
 ┌──────────────────────────────────────────────────────┐
 │                  SUBAGENTS (8)                        │
 │  analyst | pm | ux | architect | scrum               │
-│  reviewer(Opus) | reviewer-codex(Codex) | qa          │
+│  reviewer | reviewer-peer | qa          │
 └────────────────────┬─────────────────────────────────┘
                      │
         ┌────────────┼────────────┐
@@ -175,7 +175,7 @@ No docs     Tech spec   Spec+Plan    Full chain  Full chain
 /forge-analyze    # Cross-valida spec vs plan
 /forge-tasks      # Task breakdown con dipendenze
 /forge-implement  # Implementa
-/forge-review     # Adversarial review (7 dimensioni, dual-model: Claude Opus + GPT-Codex)
+/forge-review     # Adversarial review (7 dimensioni, dual-model)
 ```
 
 **Output:** `spec.md`, `design-spec.md`, `user-journey.md`, `plan.md`, `tasks.md`, ADR opzionali
@@ -258,15 +258,15 @@ Poi segue il workflow Epic con l'aggiunta di:
 | Agent | Modello | Ruolo |
 |-------|---------|-------|
 | **forge-analyst** | Sonnet 4.5 | Esplorazione, research, scope detection |
-| **forge-pm** | Opus 4.6 | Requirements, spec, PRD, user stories |
-| **forge-ux** | Opus 4.6 | User journeys, wireframe, accessibilità, design spec |
-| **forge-architect** | Opus 4.6 | Architettura, ADR, planning tecnico |
+| **forge-pm** | | Requirements, spec, PRD, user stories |
+| **forge-ux** | | User journeys, wireframe, accessibilità, design spec |
+| **forge-architect** | | Architettura, ADR, planning tecnico |
 | **forge-scrum** | Sonnet 4.5 | Sprint planning, story management |
-| **forge-reviewer** | Opus 4.6 | Adversarial review — Task A (7 dimensioni) |
-| **forge-reviewer-codex** | GPT-Codex | Adversarial review — Task B, indipendente |
+| **forge-reviewer** | | Adversarial review — Task A (7 dimensioni) |
+| **forge-reviewer-peer** | | Adversarial review — Task B, indipendente |
 | **forge-qa** | Sonnet 4.5 | Test strategy, test generation |
 
-> `/forge-review` lancia **forge-reviewer + forge-reviewer-codex in parallelo** e sintetizza i risultati — i *consensus findings* (entrambi i modelli) hanno la massima priorità
+> `/forge-review` lancia **forge-reviewer + forge-reviewer-peer in parallelo** e sintetizza i risultati — i *consensus findings* (entrambi i modelli) hanno la massima priorità
 
 ---
 
@@ -334,7 +334,7 @@ La **Constitution** è il documento di governance di massima autorità
 
 ### Due Modelli in Parallelo — Review che DEVONO trovare problemi
 
-`forge-reviewer` (Claude Opus) + `forge-reviewer-codex` (GPT-Codex) esaminano su **7 dimensioni:**
+`forge-reviewer` + `forge-reviewer-peer` esaminano su **7 dimensioni:**
 
 1. **Correctness** - Logica, edge cases, errori
 2. **Security** - Vulnerabilità, validazione input
@@ -360,13 +360,12 @@ Developer scrive codice
     ▼         ▼
 Task A      Task B
 forge-      forge-
-reviewer    reviewer-codex
-(Opus 4.6)  (GPT-Codex)
+reviewer    reviewer-peer
     └────┬────┘
          ▼
    Sintesi findings
    [CONSENSUS] = alta priorità
-   [OPUS] / [CODEX] = unici
+   [A] / [B] = unici
          ▼
 Fix blocking issues (HIGH severity)
          ▼
@@ -699,9 +698,9 @@ opencode
 
 | Model | Quando | Agenti |
 |-------|--------|--------|
-| **Claude Opus 4.6** | Deep reasoning, decisioni architetturali, adversarial review | forge-pm, forge-architect, forge-reviewer |
-| **Claude Sonnet 4.5** | Velocità, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa, Build, Plan |
-| **GPT-5.3-Codex** | Adversarial review indipendente (secondo modello) | forge-reviewer-codex |
+| **High-capability** | Deep reasoning, decisioni architetturali, adversarial review | forge-pm, forge-architect, forge-reviewer |
+| **Fast & efficient** | Velocità, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa, Build, Plan |
+| **Secondary reviewer** | Adversarial review indipendente (secondo modello) | forge-reviewer-peer |
 
 **Modelli forniti via GitHub Copilot subscription**
 
@@ -774,7 +773,7 @@ Knowledge:       /forge-adr      Create ADR
 # 7. Implementa
 /forge-implement
 
-# 8. Review adversarial (7 dimensioni, dual-model: Claude Opus + GPT-Codex)
+# 8. Review adversarial (7 dimensioni, dual-model)
 /forge-review
 ```
 

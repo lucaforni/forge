@@ -98,13 +98,13 @@ interface ProviderPreset {
   agentModels: {
     reasoning: ModelTierConfig;
     execution: ModelTierConfig;
-    codex?: ModelTierConfig;
+    peer?: ModelTierConfig;
   };
   /** Alternative models available for each tier */
   alternatives: {
     reasoning: string[];
     execution: string[];
-    codex?: string[];
+    peer?: string[];
   };
 }
 
@@ -589,12 +589,12 @@ function mergeJsonFile(source: string, target: string, isUpdate: boolean, create
 function generateOpenCodeJson(preset: ProviderPreset, overrides?: {
   reasoningModel?: string;
   executionModel?: string;
-  codexModel?: string;
+  peerModel?: string;
 }): string {
   const reasoningModel = overrides?.reasoningModel || preset.agentModels.reasoning.model;
   const executionModel = overrides?.executionModel || preset.agentModels.execution.model;
-  const codexTier = preset.agentModels.codex;
-  const codexModel = overrides?.codexModel || codexTier?.model;
+  const peerTier = preset.agentModels.peer;
+  const peerModel = overrides?.peerModel || peerTier?.model;
 
   // Build provider config section
   const providerSection: Record<string, any> = {};
@@ -624,10 +624,10 @@ function generateOpenCodeJson(preset: ProviderPreset, overrides?: {
     }
   }
 
-  // Codex reviewer (if present)
-  if (codexTier && codexModel) {
-    for (const agent of codexTier.agents) {
-      agentOverrides[agent] = { model: codexModel };
+  // Peer reviewer (if present)
+  if (peerTier && peerModel) {
+    for (const agent of peerTier.agents) {
+      agentOverrides[agent] = { model: peerModel };
     }
   }
 
@@ -706,8 +706,8 @@ function generateOpenCodeJson(preset: ProviderPreset, overrides?: {
   lines.push('  // Agent model overrides');
   lines.push('  // Reasoning agents (PM, Architect, Reviewer, UX): ' + reasoningModel);
   lines.push('  // Execution agents (Scrum, QA, Analyst): ' + executionModel);
-  if (codexModel) {
-    lines.push('  // Codex reviewer: ' + codexModel);
+  if (peerModel) {
+    lines.push('  // Peer reviewer: ' + peerModel);
   }
   lines.push(`  "agent": ${JSON.stringify(config.agent, null, 4).replace(/\n/g, '\n  ')},`);
   lines.push('');
@@ -732,7 +732,7 @@ function generateOpenCodeJson(preset: ProviderPreset, overrides?: {
  */
 async function interactiveProviderSelection(): Promise<{
   preset: ProviderPreset;
-  overrides?: { reasoningModel?: string; executionModel?: string; codexModel?: string };
+  overrides?: { reasoningModel?: string; executionModel?: string; peerModel?: string };
 } | null> {
   const presets = listPresets();
 
@@ -768,7 +768,7 @@ async function interactiveProviderSelection(): Promise<{
   // Show recommended configuration
   const rModel = preset.agentModels.reasoning.model;
   const eModel = preset.agentModels.execution.model;
-  const cTier = preset.agentModels.codex;
+  const pTier = preset.agentModels.peer;
 
   console.log('');
   console.log('─'.repeat(54));
@@ -780,9 +780,9 @@ async function interactiveProviderSelection(): Promise<{
   console.log(`    • ${preset.agentModels.reasoning.agents.join(', ')}`);
   console.log(`  Execution agents:      ${eModel}`);
   console.log(`    • ${preset.agentModels.execution.agents.join(', ')}`);
-  if (cTier) {
-    console.log(`  Codex reviewer:        ${cTier.model}`);
-    console.log(`    • ${cTier.agents.join(', ')}`);
+  if (pTier) {
+    console.log(`  Peer reviewer:        ${pTier.model}`);
+    console.log(`    • ${pTier.agents.join(', ')}`);
   }
   console.log('');
 
@@ -822,14 +822,14 @@ async function interactiveProviderSelection(): Promise<{
     eModel
   );
 
-  let customCodex: string | undefined;
-  if (cTier) {
-    customCodex = await askString(
-      `Codex reviewer model [${cTier.model}] (or "none" to skip)`,
-      cTier.model
+  let customPeerModel: string | undefined;
+  if (pTier) {
+    customPeerModel = await askString(
+      `Peer reviewer model [${pTier.model}] (or "none" to skip)`,
+      pTier.model
     );
-    if (customCodex.toLowerCase() === 'none') {
-      customCodex = undefined;
+    if (customPeerModel.toLowerCase() === 'none') {
+      customPeerModel = undefined;
     }
   }
 
@@ -837,8 +837,8 @@ async function interactiveProviderSelection(): Promise<{
   log('Custom configuration:', 'info');
   console.log(`  Reasoning:  ${customReasoning}`);
   console.log(`  Execution:  ${customExecution}`);
-  if (customCodex) {
-    console.log(`  Codex:      ${customCodex}`);
+  if (customPeerModel) {
+    console.log(`  Peer:      ${customPeerModel}`);
   }
   console.log('');
 
@@ -854,7 +854,7 @@ async function interactiveProviderSelection(): Promise<{
     overrides: {
       reasoningModel: customReasoning !== rModel ? customReasoning : undefined,
       executionModel: customExecution !== eModel ? customExecution : undefined,
-      codexModel: customCodex && cTier && customCodex !== cTier.model ? customCodex : undefined,
+      peerModel: customPeerModel && pTier && customPeerModel !== pTier.model ? customPeerModel : undefined,
     },
   };
 }
@@ -930,7 +930,7 @@ async function install(
   isUpdate: boolean,
   createBackups: boolean = true,
   preset?: ProviderPreset,
-  modelOverrides?: { reasoningModel?: string; executionModel?: string; codexModel?: string }
+  modelOverrides?: { reasoningModel?: string; executionModel?: string; peerModel?: string }
 ) {
   const startTime = Date.now();
   
@@ -1287,7 +1287,7 @@ ${PROTECTED_PATTERNS.map(p => `  • ${p}`).join('\n')}
   let modelOverrides: {
     reasoningModel?: string;
     executionModel?: string;
-    codexModel?: string;
+    peerModel?: string;
   } | undefined;
 
   // On update, skip provider selection unless --reconfigure is set

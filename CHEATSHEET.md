@@ -35,7 +35,7 @@ opencode
 | `/forge-analyze` | Feature+ | Review spec & plan | Consistency report |
 | `/forge-tasks` | Feature+ | Break down into tasks | `tasks.md` |
 | `/forge-implement` | All | Build the feature | Working code |
-| `/forge-review` | All | Dual-model adversarial review: Claude Opus + GPT-Codex in parallel (7 dimensions) | Synthesised issue report |
+| `/forge-review` | All | Dual-model adversarial review: forge-reviewer + forge-reviewer-peer in parallel (7 dimensions) | Synthesised issue report |
 | `/forge-test` | All | Generate tests | Test files |
 
 ---
@@ -67,7 +67,7 @@ opencode
 /forge-analyze   # Validate consistency
 /forge-tasks     # Break into tasks
 /forge-implement # Build feature
-/forge-review    # Dual-model review: Claude Opus + GPT-Codex, 7 dimensions
+/forge-review    # Dual-model review: forge-reviewer + forge-reviewer-peer, 7 dimensions
 /forge-test      # Generate tests
 
 # Epic workflow (with sprint management)

@@ -25,6 +25,8 @@
   // Provider configuration with thinking budgets
   // claude-opus-4.7 is the default for reasoning-heavy agents
   // claude-opus-4.6 remains available on GitHub Copilot Business/Enterprise accounts
+  // NOTE: Model IDs (e.g., claude-opus-4.7) are provider identifiers — replace
+  // with your preferred models when customizing.
   "provider": {
     "github-copilot": {
       "models": {
@@ -41,8 +43,9 @@
     }
   },
 
-  // Agent model overrides - Opus for deep reasoning, Sonnet for speed
-  // Default: claude-opus-4.7 (target model for all Opus-based agents)
+  // Agent model overrides — assign specific models to each agent role
+  // Default: claude-opus-4.7 (highest quality reasoning)
+  // Fallback: claude-opus-4.6 (GitHub Copilot Business/Enterprise)
   //
   // GITHUB COPILOT BUSINESS/ENTERPRISE FALLBACK:
   // If claude-opus-4.7 is not yet available on your account, uncomment the

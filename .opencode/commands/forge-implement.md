@@ -92,7 +92,7 @@ Tests written:   N
 
 ── Adversarial Review ──────────────────────────────
 Verdict:  [APPROVED WITH NOTES / NEEDS CHANGES]
-Issues:   N total  (X consensus · Y opus-only · Z codex-only)
+Issues:   N total  (X consensus · Y A-only · Z B-only)
   CRITICAL: N  ← must fix before merge
   WARNING:  N  ← should address
   INFO:     N  ← consider fixing

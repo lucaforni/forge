@@ -1020,7 +1020,7 @@ to the best available model automatically.
 
 FORGE ships with **three Zen presets** for different model families and budgets:
 
-| Preset | Reasoning | Execution | Codex | Best For |
+| Preset | Reasoning | Execution | Peer | Best For |
 |---|---|---|---|---|
 | `opencode-anthropic` | Claude Opus 4.7 | Claude Sonnet 4.6 | GPT-5.3-Codex | Maximum quality |
 | `opencode-deepseek` | DeepSeek V4 Pro | DeepSeek V4 Flash | Qwen 3.6 Plus | Cost-effective quality |
@@ -1060,7 +1060,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
     "forge-scrum":     { "model": "opencode/claude-sonnet-4.6" },
     "forge-qa":        { "model": "opencode/claude-sonnet-4.6" },
     "forge-analyst":   { "model": "opencode/claude-sonnet-4.6" },
-    "forge-reviewer-codex": { "model": "opencode/gpt-5.3-codex" }
+    "forge-reviewer-peer": { "model": "opencode/gpt-5.3-codex" }
   }
 }
 ```
@@ -1088,7 +1088,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
     "forge-scrum":     { "model": "opencode/deepseek-v4-flash" },
     "forge-qa":        { "model": "opencode/deepseek-v4-flash" },
     "forge-analyst":   { "model": "opencode/deepseek-v4-flash" },
-    "forge-reviewer-codex": { "model": "opencode/qwen3.6-plus" }
+    "forge-reviewer-peer": { "model": "opencode/qwen3.6-plus" }
   }
 }
 ```
@@ -1116,7 +1116,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
     "forge-scrum":     { "model": "opencode/deepseek-v4-flash-free" },
     "forge-qa":        { "model": "opencode/deepseek-v4-flash-free" },
     "forge-analyst":   { "model": "opencode/deepseek-v4-flash-free" },
-    "forge-reviewer-codex": { "model": "opencode/qwen3.6-plus-free" }
+    "forge-reviewer-peer": { "model": "opencode/qwen3.6-plus-free" }
   }
 }
 ```
@@ -1152,7 +1152,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Default | `github-copilot/claude-sonnet-4.6` | All |
 | Reasoning | `github-copilot/claude-opus-4.7` | PM, Architect, Reviewer, UX |
 | Execution | `github-copilot/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
-| Codex | `github-copilot/gpt-5.3-codex` | Reviewer-Codex |
+| Peer | `github-copilot/gpt-5.3-codex` | Reviewer-Peer |
 
 **Fallback:** If `claude-opus-4.7` is not available, use `claude-opus-4.6`.
 
@@ -1163,7 +1163,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Default | `opencode/claude-sonnet-4.6` | All |
 | Reasoning | `opencode/claude-opus-4.7` | PM, Architect, Reviewer, UX |
 | Execution | `opencode/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
-| Codex | `opencode/gpt-5.3-codex` | Reviewer-Codex |
+| Peer | `opencode/gpt-5.3-codex` | Reviewer-Peer |
 
 **Fallback:** If `claude-opus-4.7` is not available, use `claude-opus-4.6`.
 
@@ -1174,7 +1174,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Default | `opencode/deepseek-v4-flash` | All |
 | Reasoning | `opencode/deepseek-v4-pro` | PM, Architect, Reviewer, UX |
 | Execution | `opencode/deepseek-v4-flash` | Forge, Scrum, QA, Analyst |
-| Codex | `opencode/qwen3.6-plus` | Reviewer-Codex |
+| Peer | `opencode/qwen3.6-plus` | Reviewer-Peer |
 
 #### OpenCode Free (opencode-free)
 
@@ -1183,7 +1183,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Default | `opencode/deepseek-v4-flash-free` | All |
 | Reasoning | `opencode/minimax-m3-free` | PM, Architect, Reviewer, UX |
 | Execution | `opencode/deepseek-v4-flash-free` | Forge, Scrum, QA, Analyst |
-| Codex | `opencode/qwen3.6-plus-free` | Reviewer-Codex |
+| Peer | `opencode/qwen3.6-plus-free` | Reviewer-Peer |
 
 #### OpenAI (openai)
 
@@ -1193,7 +1193,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Reasoning | `openai/o3` | PM, Architect, Reviewer, UX |
 | Execution | `openai/gpt-4o` | Forge, Scrum, QA, Analyst |
 
-> OpenAI preset does not include a Codex reviewer agent.
+> OpenAI preset does not include a Peer reviewer agent.
 
 #### Google (google)
 
@@ -1203,7 +1203,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Reasoning | `google/gemini-2.5-pro` | PM, Architect, Reviewer, UX |
 | Execution | `google/gemini-2.5-flash` | Forge, Scrum, QA, Analyst |
 
-> Google preset does not include a Codex reviewer agent.
+> Google preset does not include a Peer reviewer agent.
 
 ### 8.7 Reconfiguring After Install
 

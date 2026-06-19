@@ -183,7 +183,7 @@ methodologies and adding what neither provides.
 | Spec watcher plugin         | Real-time consistency monitoring when specs are edited                        |
 | Native OpenCode integration | Uses agents, subagents, skills, tools, commands, plugins, MCP, and models    |
 | Brownfield analysis skill   | Structured approach for analyzing and onboarding existing codebases          |
-| Model differentiation       | Opus 4.6 for deep reasoning (PM, Architect, Reviewer), Sonnet 4.5 for speed (others) |
+| Model differentiation       | Stronger model for deep reasoning (PM, Architect, Reviewer), faster model for speed (others) |
 | Dual review process         | AI adversarial review + human review gate, not just one or the other         |
 
 ### 4.4 What We Deliberately Exclude
@@ -347,7 +347,7 @@ Product Brief ──> PRD ──> Architecture ──> Epics ──> Stories ─
 | `/forge-sprint`      | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-story`       | Epic/Product  | Sprint Mgmt    | forge-scrum       |
 | `/forge-implement`   | All           | Implementation | Build             |
-| `/forge-review`      | All           | Review         | forge-reviewer + forge-reviewer-codex (dual-model) |
+| `/forge-review`      | All           | Review         | forge-reviewer + forge-reviewer-peer (dual-model) |
 | `/forge-hotfix`      | Hotfix        | All-in-one     | Build             |
 | `/forge-quick`       | Quick         | All-in-one     | forge-pm -> Build |
 | `/forge-adr`         | Any           | Knowledge      | forge-architect   |
@@ -573,9 +573,8 @@ behind the recommendation. The user always has the final say.
 
 2. **Model differentiation by cognitive demand**: Tasks requiring deep
    reasoning (architecture, requirements analysis, adversarial review) use
-   Claude Opus 4.6. Tasks requiring speed and good-enough reasoning (analysis,
-   sprint management, test generation) use Claude Sonnet 4.5. Both models
-   are provided via GitHub Copilot.
+   a stronger model. Tasks requiring speed and good-enough reasoning (analysis,
+   sprint management, test generation) use a faster model.
 
 3. **Minimal tool permissions**: Each agent gets only the tools it needs.
    The analyst cannot write files. The reviewer cannot edit code. This prevents
@@ -1156,11 +1155,10 @@ agent's context, regardless of which agent or command is invoked.
 
 ### 16.3 Cost Optimization
 
-- Opus 4.6 is used only for 3 agents (PM, Architect, Reviewer) that require deep
+- The stronger model is used only for 3 agents (PM, Architect, Reviewer) that require deep
   reasoning and produce high-impact artifacts.
-- Sonnet 4.5 is used for 4 agents (Analyst, Scrum, QA, Orchestrator) and all
+- The faster model is used for 4 agents (Analyst, Scrum, QA, Orchestrator) and all
   implementation work, keeping costs manageable.
-- Both models are provided via GitHub Copilot.
 - Skills are loaded on-demand to minimize context window consumption.
 - The `context-chain` skill includes guidance on how much of each upstream
   document to include, preventing unnecessary token usage.
@@ -1562,7 +1560,7 @@ are consistent, relevant, and correctly formatted. No broken cross-references.
 | R4   | Constitution becomes stale or ignored              | Medium | Medium     | constitution-compliance skill loaded by reviewer; amendments logged |
 | R5   | Plugin system limitations in OpenCode              | Medium | Low        | Monitor OpenCode plugin API evolution; fallback to commands for critical features |
 | R6   | Team adoption resistance (too much process)        | High   | Medium     | Multi-track system lets teams start with Quick/Feature and scale up; clear ROI documentation |
-| R7   | Cost of Opus for 3 agents may be prohibitive       | Medium | Low        | All Opus agents can be overridden to Sonnet via customization; documented in FORGE-CUSTOMIZATION.md |
+| R7   | Cost of stronger model for 3 agents may be prohibitive       | Medium | Low        | All stronger-model agents can be overridden to faster model via customization; documented in FORGE-CUSTOMIZATION.md |
 | R8   | Session-knowledge plugin extracts irrelevant info  | Low    | Medium     | Conservative extraction rules; human review of decision-log.md |
 | R9   | Spec-code traceability breaks with refactoring     | Medium | Medium     | trace-requirements tool highlights broken links; forge-analyze catches them |
 | R10  | Brownfield analysis overwhelms context window      | Medium | Medium     | brownfield-analysis skill uses staged approach; analyze modules independently |

@@ -141,12 +141,12 @@ FORGE uses 9 specialized subagents, each with a distinct role and model:
 | forge-ux               | UX design: personas, journeys, wireframes, a11y   | UX Design phase (Feature+)        |
 | forge-architect        | Designs architecture, creates ADRs                | Architecture, Plan phases         |
 | forge-scrum            | Plans sprints, manages stories                    | Sprint, Story, Retro phases       |
-| forge-reviewer         | Adversarial reviewer — Claude Opus 4.6            | Review phase (dual-model, Task A) |
-| forge-reviewer-codex   | Adversarial reviewer — GPT-Codex (independent)   | Review phase (dual-model, Task B) |
+| forge-reviewer         | Adversarial reviewer (primary)                     | Review phase (dual-model, Task A) |
+| forge-reviewer-peer   | Adversarial reviewer (peer)                       | Review phase (dual-model, Task B) |
 | forge-qa               | Defines test strategy, generates tests            | Testing phases                    |
 
-> **Dual-model review**: `/forge-review` always runs `forge-reviewer` (Claude Opus) and
-> `forge-reviewer-codex` (GPT-Codex) **in parallel**. Their independent findings are
+> **Dual-model review**: `/forge-review` always runs `forge-reviewer` and
+> `forge-reviewer-peer` **in parallel**. Their independent findings are
 > synthesised into one report — consensus issues carry the highest confidence.
 
 ### 2.4 The Constitution
@@ -586,7 +586,7 @@ All 14 tasks complete. Running test suite...
 ```
 
 `/forge-review` runs two independent adversarial reviewers **in parallel** —
-`forge-reviewer` (Claude Opus 4.6) and `forge-reviewer-codex` (GPT-Codex) —
+`forge-reviewer` and `forge-reviewer-peer` —
 then synthesises their findings into one authoritative report:
 
 ```
@@ -594,12 +594,12 @@ FORGE Dual-Model Code Review
 =============================
 Scope:   003-oauth2-authentication
 Date:    2026-03-07
-Models:  Claude Opus 4.6 (forge-reviewer)
-         GPT-5.3-Codex (forge-reviewer-codex)
+Models:  forge-reviewer (primary)
+         forge-reviewer-peer (peer)
 Dimensions: Correctness · Security · Performance · Maintainability ·
             Constitution · Test-Spec Coherence · UX Quality
 
-Issues Found: 5 total  (2 consensus · 2 opus-only · 1 codex-only)
+Issues Found: 5 total  (2 consensus · 2 A-only · 1 B-only)
 ─────────────────────────────────────────────────────────────────
 
 [CONSENSUS][HIGH] SECURITY - src/routes/auth/oauth/callback.ts:47
@@ -607,26 +607,26 @@ Issues Found: 5 total  (2 consensus · 2 opus-only · 1 codex-only)
   token could be replayed within its expiry window.
   Suggestion: Delete the state token immediately after validation,
   before processing the callback.
-  Reported by: OPUS + CODEX
+  Reported by: A + B
 
 [CONSENSUS][MEDIUM] PERFORMANCE - src/repositories/oauth-provider.repository.ts:34
   Issue: findByProviderAndUserId query lacks a composite index.
   This will be called on every OAuth login.
   Suggestion: Add index on (provider, provider_user_id) in migration.
-  Reported by: OPUS + CODEX
+  Reported by: A + B
 
-[OPUS][MEDIUM] CORRECTNESS - src/services/oauth/google.ts:23
+[PRIMARY][MEDIUM] CORRECTNESS - src/services/oauth/google.ts:23
   Issue: The email scope is requested but email_verified is not checked.
   Google can return unverified emails, which would bypass the account
   linking security check.
   Suggestion: Add `if (!profile.email_verified) throw new Error(...)`
 
-[OPUS][LOW] MAINTAINABILITY - src/services/oauth/github.ts:15
+[PRIMARY][LOW] MAINTAINABILITY - src/services/oauth/github.ts:15
   Issue: GitHub API base URL is hardcoded. Enterprise GitHub uses a
   different URL.
   Suggestion: Extract to configuration constant.
 
-[CODEX][MEDIUM] TEST-SPEC COHERENCE - tests/auth/oauth.test.ts
+[PEER][MEDIUM] TEST-SPEC COHERENCE - tests/auth/oauth.test.ts
   Issue: Acceptance criterion AC-5 (CSRF state validation) has no
   corresponding test case.
   Suggestion: Add test: "should reject callback with mismatched state token".
@@ -634,8 +634,8 @@ Issues Found: 5 total  (2 consensus · 2 opus-only · 1 codex-only)
 ─────────────────────────────────────────────────────────────────
 Summary:
   CONSENSUS: 2  (flagged by both models — highest confidence)
-  OPUS only: 2
-  CODEX only: 1
+  PRIMARY only: 2
+  PEER only: 1
 
   Severity: HIGH 1 | MEDIUM 3 | LOW 1
 
@@ -949,7 +949,7 @@ The rest follows the Epic track workflow.
 
 | Command | Arguments | Description |
 | ------- | --------- | ----------- |
-| `/forge-review` | `[spec-id \| story-id \| --diff]` | **Dual-model** adversarial review: runs `forge-reviewer` (Claude Opus 4.6) and `forge-reviewer-codex` (GPT-Codex) in parallel across **7 dimensions**, then synthesises a single authoritative report. Consensus findings (raised by both models) carry the highest confidence. |
+| `/forge-review` | `[spec-id \| story-id \| --diff]` | **Dual-model** adversarial review: runs `forge-reviewer` and `forge-reviewer-peer` in parallel across **7 dimensions**, then synthesises a single authoritative report. Consensus findings (raised by both models) carry the highest confidence. |
 
 ### 4.3 Track Shortcuts
 
@@ -1063,15 +1063,15 @@ Developer writes code
   /forge-review
   ┌─────────────────────────────────────────┐
   │  Parallel                               │
-  │  Task A: forge-reviewer (Claude Opus)   │
-  │  Task B: forge-reviewer-codex (Codex)   │
+   │  Task A: forge-reviewer                  │
+   │  Task B: forge-reviewer-peer             │
   └──────────────┬──────────────────────────┘
                  │  Synthesis
                  v
   Dual-model report:
    · CONSENSUS issues (both models) — highest confidence
-   · OPUS-only findings
-   · CODEX-only findings
+   · PRIMARY-only findings
+   · PEER-only findings
   7 dimensions: Correctness · Security · Performance
                 Maintainability · Constitution
                 Test-Spec Coherence · UX Quality
@@ -1098,7 +1098,7 @@ Developer writes code
 The AI review is NOT a substitute for human review. It is a first pass that
 catches mechanical issues (security, performance, correctness, test gaps) so
 that human reviewers can focus on design, readability, and business logic.
-Consensus findings — raised by both Claude Opus and GPT-Codex independently —
+Consensus findings — raised by both reviewers independently —
 deserve the highest attention.
 
 ### 5.5 Onboarding New Team Members
@@ -1749,7 +1749,7 @@ The reviewer agents can create pull requests with structured review output:
 /forge-review src/auth/
 
 > The orchestrator will:
-> 1. Run forge-reviewer (Claude Opus) and forge-reviewer-codex (GPT-Codex) in parallel
+> 1. Run forge-reviewer and forge-reviewer-peer in parallel
 > 2. Synthesise findings across 7 dimensions (Correctness, Security, Performance,
 >    Maintainability, Constitution, Test-Spec Coherence, UX Quality)
 > 3. Optionally create a PR with the dual-model review summary in the body
@@ -1858,7 +1858,7 @@ review and tune the `scope-detection` skill.
 7 dimensions combined, which can surface low-quality findings in simple code.
 
 **Fix**: Focus on CRITICAL and HIGH severity, especially CONSENSUS findings
-(raised by both Claude Opus and GPT-Codex). MEDIUM and LOW findings from only
+(raised by both reviewers). MEDIUM and LOW findings from only
 one model can be treated as advisory. If the problem persists, adjust the
 minimum issue count in the `adversarial-review` skill.
 

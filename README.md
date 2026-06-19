@@ -47,8 +47,8 @@ Nine purpose-built agents handle different phases:
 - **forge-ux** - UX Designer: User journeys, wireframes, accessibility, design specs
 - **forge-scrum** - Scrum Master: Sprint planning, task breakdown
 - **forge-analyst** - Business Analyst: Codebase exploration, product briefs
-- **forge-reviewer** - Adversarial Reviewer (Claude Opus 4.6): Find real issues, not praise
-- **forge-reviewer-codex** - Adversarial Reviewer (GPT-Codex): Independent second opinion
+- **forge-reviewer** - Adversarial Reviewer (primary): Find real issues, not praise
+- **forge-reviewer-peer** - Adversarial Reviewer (peer): Independent second opinion
 - **forge-qa** - QA Engineer: Test strategy, coverage analysis
 - **forge** (orchestrator) - Routes to the right agent based on complexity
 
@@ -187,7 +187,7 @@ opencode
 # Builds the feature
 
 /forge-review
-# Dual-model adversarial review across 7 dimensions (Claude Opus + GPT-Codex in parallel)
+# Dual-model adversarial review across 7 dimensions (forge-reviewer + forge-reviewer-peer in parallel)
 
 /forge-test
 # Generates comprehensive tests
@@ -297,7 +297,7 @@ UX Phase         → Spec, existing design system
 Architecture     → Constitution, PRD, design spec, existing ADRs
 Implementation   → Spec, design spec, plan, architecture, constitution
 Review           → Spec, design spec, architecture, diff, constitution
-                   (loaded by both forge-reviewer and forge-reviewer-codex independently)
+                   (loaded by both forge-reviewer and forge-reviewer-peer independently)
 ```
 
 Budget-aware loading prevents context window overflow.
@@ -305,7 +305,7 @@ Budget-aware loading prevents context window overflow.
 ### Adversarial Review
 
 `/forge-review` runs a **dual-model** adversarial review — `forge-reviewer`
-(Claude Opus 4.6) and `forge-reviewer-codex` (GPT-Codex) execute **in parallel**
+and `forge-reviewer-peer` execute **in parallel**
 and independently, then the orchestrator synthesises their findings.
 
 Each model reviews across **7 dimensions**:

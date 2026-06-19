@@ -28,8 +28,9 @@
     }
   },
 
-  // Agent model overrides - Opus for deep reasoning, Sonnet for speed
-  // Default: claude-opus-4.7 (available on all account types)
+  // Agent model overrides — assign specific models to each agent role
+  // Default: claude-opus-4.7 (highest quality reasoning)
+  // Fallback: claude-opus-4.6 (GitHub Copilot Business/Enterprise)
   // NOTE: For FORGE meta-development, we override agent paths to use meta versions
   //
   // GITHUB COPILOT BUSINESS/ENTERPRISE FALLBACK:
