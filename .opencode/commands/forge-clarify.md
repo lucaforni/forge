@@ -2,7 +2,6 @@
 description: "Review and resolve ambiguities in a feature specification"
 agent: forge-pm
 subtask: true
-model: github-copilot/claude-opus-4.7
 ---
 
 # Specification Clarification

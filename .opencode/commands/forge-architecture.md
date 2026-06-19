@@ -2,7 +2,6 @@
 description: "Design system architecture with components, data model, and ADRs"
 agent: forge-architect
 subtask: true
-model: github-copilot/claude-opus-4.7
 ---
 
 # Architecture Design

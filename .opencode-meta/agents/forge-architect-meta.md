@@ -1,7 +1,6 @@
 ---
 description: "FORGE architect: technical architecture design, ADR creation, technical planning, and constitution compliance verification"
 mode: subagent
-model: github-copilot/claude-opus-4.6
 tools:
   read: true
   write: true

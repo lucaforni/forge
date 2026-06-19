@@ -2,7 +2,6 @@
 description: "Create or update an Architecture Decision Record"
 agent: forge-architect
 subtask: true
-model: github-copilot/claude-opus-4.7
 ---
 
 # Architecture Decision Record
