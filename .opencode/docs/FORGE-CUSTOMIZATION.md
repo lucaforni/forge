@@ -1075,7 +1075,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
       "models": {
         "deepseek-v4-pro": {},
         "deepseek-v4-flash": {},
-        "qwen-3.6-plus": {}
+        "qwen3.6-plus": {}
       }
     }
   },
@@ -1088,7 +1088,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
     "forge-scrum":     { "model": "opencode/deepseek-v4-flash" },
     "forge-qa":        { "model": "opencode/deepseek-v4-flash" },
     "forge-analyst":   { "model": "opencode/deepseek-v4-flash" },
-    "forge-reviewer-codex": { "model": "opencode/qwen-3.6-plus" }
+    "forge-reviewer-codex": { "model": "opencode/qwen3.6-plus" }
   }
 }
 ```
@@ -1103,7 +1103,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
       "models": {
         "minimax-m3-free": {},
         "deepseek-v4-flash-free": {},
-        "qwen-3.6-plus-free": {}
+        "qwen3.6-plus-free": {}
       }
     }
   },
@@ -1116,7 +1116,7 @@ npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
     "forge-scrum":     { "model": "opencode/deepseek-v4-flash-free" },
     "forge-qa":        { "model": "opencode/deepseek-v4-flash-free" },
     "forge-analyst":   { "model": "opencode/deepseek-v4-flash-free" },
-    "forge-reviewer-codex": { "model": "opencode/qwen-3.6-plus-free" }
+    "forge-reviewer-codex": { "model": "opencode/qwen3.6-plus-free" }
   }
 }
 ```
@@ -1174,7 +1174,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Default | `opencode/deepseek-v4-flash` | All |
 | Reasoning | `opencode/deepseek-v4-pro` | PM, Architect, Reviewer, UX |
 | Execution | `opencode/deepseek-v4-flash` | Forge, Scrum, QA, Analyst |
-| Codex | `opencode/qwen-3.6-plus` | Reviewer-Codex |
+| Codex | `opencode/qwen3.6-plus` | Reviewer-Codex |
 
 #### OpenCode Free (opencode-free)
 
@@ -1183,7 +1183,7 @@ Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
 | Default | `opencode/deepseek-v4-flash-free` | All |
 | Reasoning | `opencode/minimax-m3-free` | PM, Architect, Reviewer, UX |
 | Execution | `opencode/deepseek-v4-flash-free` | Forge, Scrum, QA, Analyst |
-| Codex | `opencode/qwen-3.6-plus-free` | Reviewer-Codex |
+| Codex | `opencode/qwen3.6-plus-free` | Reviewer-Codex |
 
 #### OpenAI (openai)
 

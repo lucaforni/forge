@@ -92,7 +92,7 @@
           "models": {
             "deepseek-v4-pro": {},
             "deepseek-v4-flash": {},
-            "qwen-3.6-plus": {}
+            "qwen3.6-plus": {}
           }
         }
       },
@@ -106,14 +106,14 @@
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
         "codex": {
-          "model": "opencode/qwen-3.6-plus",
+          "model": "opencode/qwen3.6-plus",
           "agents": ["forge-reviewer-codex"]
         }
       },
       "alternatives": {
-        "reasoning": ["opencode/deepseek-v4-pro", "opencode/qwen-3.6-plus"],
+        "reasoning": ["opencode/deepseek-v4-pro", "opencode/qwen3.6-plus"],
         "execution": ["opencode/deepseek-v4-flash"],
-        "codex": ["opencode/qwen-3.6-plus"]
+        "codex": ["opencode/qwen3.6-plus"]
       }
     },
 
@@ -126,7 +126,7 @@
           "models": {
             "minimax-m3-free": {},
             "deepseek-v4-flash-free": {},
-            "qwen-3.6-plus-free": {}
+            "qwen3.6-plus-free": {}
           }
         }
       },
@@ -140,14 +140,14 @@
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
         "codex": {
-          "model": "opencode/qwen-3.6-plus-free",
+          "model": "opencode/qwen3.6-plus-free",
           "agents": ["forge-reviewer-codex"]
         }
       },
       "alternatives": {
         "reasoning": ["opencode/minimax-m3-free", "opencode/deepseek-v4-flash-free"],
         "execution": ["opencode/deepseek-v4-flash-free"],
-        "codex": ["opencode/qwen-3.6-plus-free"]
+        "codex": ["opencode/qwen3.6-plus-free"]
       }
     },
 
