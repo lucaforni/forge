@@ -1,16 +1,160 @@
-# FORGE Installation Guide
+# FORGE Installation Guide (v2.0.0)
 
 This guide explains how to install or update FORGE in your project.
+**FORGE 2.0 supports OpenCode, Claude Code, and Codex CLI** — the installer
+auto-detects your platform.
+
+---
 
 ## Quick Install
 
 ### Option 1: Direct Install (Recommended)
 
-If you have FORGE cloned locally:
-
 ```bash
 cd /path/to/forge
 npx tsx install-forge.ts /path/to/your/project
+```
+
+The installer auto-detects which platforms to install for by probing for
+`.opencode/`, `.claude/`, and `.codex/` directories.
+
+### Option 2: Force a Specific Platform
+
+```bash
+# Install only for Claude Code (even if other platforms detected)
+npx tsx install-forge.ts /path/to/your/project --platform=claude-code
+
+# Install for multiple specific platforms
+npx tsx install-forge.ts /path/to/your/project --platform=opencode,codex
+```
+
+### Option 3: Remote Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/forniluca/forge/main/install.sh | bash -s -- /path/to/your/project
+```
+
+### Option 4: Manual Download
+
+```bash
+git clone https://github.com/forniluca/forge.git
+cd forge
+npx tsx install-forge.ts /path/to/your/project
+```
+
+---
+
+## Cross-Platform Installation
+
+FORGE 2.0 auto-detects your platform by checking for these directories:
+
+| Platform | Detection | Install Target |
+|----------|-----------|----------------|
+| **OpenCode** | `.opencode/` exists | `.opencode/{agents,commands,skills,tools,plugins}/` |
+| **Claude Code** | `.claude/` exists | `.claude/{agents,commands,skills,hooks}/` |
+| **Codex CLI** | `.codex/` exists | `.codex/{agents,commands}/` + `.agents/skills/` |
+
+If **multiple** platform directories are detected, FORGE installs to **all of them**
+from the single canonical source. If **none** are detected, the installer exits
+with a message asking you to create one of the platform directories.
+
+### What Gets Installed Per Platform
+
+#### OpenCode
+- `.opencode/agents/` — 9 FORGE subagents
+- `.opencode/commands/` — 24 slash commands (`/forge-*`)
+- `.opencode/skills/` — 12 reusable skills
+- `.opencode/plugins/` — 3 event-driven plugins
+- `.opencode/tools/` — 3 custom tools (OpenCode SDK)
+- `.opencode/templates/` — Document templates
+- `.opencode/docs/` — Methodology documentation
+
+#### Claude Code
+- `.claude/agents/` — Same 9 subagents
+- `.claude/commands/` — Same 24 slash commands
+- `.claude/skills/` — Same 12 skills
+- `.claude/hooks/` — Adapted hook-based automation
+- `.claude/settings.json` — Claude Code config with MCP server reference
+- `CLAUDE.md` — Project instructions (imports `AGENTS.md`)
+
+#### Codex CLI
+- `.codex/agents/` — Codex-native agent definitions
+- `.codex/commands/` — Same 24 slash commands
+- `.agents/skills/` — Same 12 skills
+- `.codex/config.toml` — Codex CLI config with MCP server reference
+- `AGENTS.md` — Project instructions (native format)
+
+#### All Platforms
+- `.forge/` — Project data directory (specs, knowledge, epics, sprints, product)
+- `.forge/mcp-server/` — Shared MCP server for custom tools
+- `.forge/constitution.md` — Project constitution template
+- `AGENTS.md` — Project conventions template
+
+---
+
+## Installation Options
+
+### Fresh Installation
+
+```bash
+npx tsx install-forge.ts /path/to/your/project
+```
+
+### Preview Without Installing
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --dry-run
+# Shows what would be installed without writing any files
+```
+
+### Verify Projection Correctness
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --check
+# Verifies the install plan is coherent and exits
+```
+
+### Update Existing Installation
+
+Updates FORGE while preserving your project files:
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --update
+```
+
+**Protected files (never overwritten):**
+- `.forge/constitution.md` — Your project constitution
+- `.forge/specs/**` — All specifications
+- `.forge/knowledge/**` — Decision logs, ADRs, lessons learned
+- `.forge/epics/**` — Epic documents
+- `.forge/sprints/**` — Sprint documents
+- `.forge/product/**` — Product documents
+- `AGENTS.md` — Your project conventions
+- `CONTRIBUTING.md` — Your contribution guide
+
+**What gets updated (per platform):**
+- All agents, commands, skills (to each platform's location)
+- MCP server (`.forge/mcp-server/`)
+- Platform config files (opencode.json / settings.json / config.toml)
+- Project instructions (AGENTS.md / CLAUDE.md)
+
+**Backups:**
+Before overwriting any drifted file, a timestamped backup is created inside
+`.forge/.backups/<timestamp>/`. Backups are gitignored by default.
+
+### Choosing Your Model Provider
+
+FORGE supports multiple model providers:
+
+```bash
+# Interactive mode (default) — you'll be prompted
+npx tsx install-forge.ts /path/to/your/project
+
+# Non-interactive (uses default)
+npx tsx install-forge.ts /path/to/your/project --non-interactive
+
+# Specific provider
+npx tsx install-forge.ts /path/to/your/project --provider github-copilot
 ```
 
 ### Option 2: Remote Install

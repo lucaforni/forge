@@ -1,0 +1,20 @@
+{
+  "name": "forge",
+  "version": "2.0.0",
+  "private": true,
+  "description": "FORGE — Framework for Orchestrated Requirements, Governance & Engineering",
+  "type": "module",
+  "scripts": {
+    "install-forge": "npx tsx install-forge.ts",
+    "mcp-server": "npx tsx mcp-server/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0"
+  },
+  "dependencies": {}
+}

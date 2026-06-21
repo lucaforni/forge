@@ -1,23 +1,47 @@
-# FORGE Cheatsheet
+# FORGE Cheatsheet (v2.0.0)
 
 Quick reference for FORGE methodology commands, workflows, and conventions.
+Supports **OpenCode**, **Claude Code**, and **Codex CLI** — the installer auto-detects
+your platform.
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# Install FORGE in your project
+# Install FORGE in your project (auto-detects OpenCode / Claude Code / Codex)
 npx tsx /path/to/forge/install-forge.ts /path/to/your/project
 
 # Update existing installation
 npx tsx /path/to/forge/install-forge.ts /path/to/your/project --update
 
-# Start using FORGE
+# Preview install (writes nothing)
+npx tsx /path/to/forge/install-forge.ts /path/to/your/project --dry-run
+
+# Force a specific platform
+npx tsx /path/to/forge/install-forge.ts /path/to/your/project --platform=claude-code
+
+# Start using FORGE (in any supported runtime)
 cd /path/to/your/project
-opencode
+# opencode | claude | codex  — whichever runtime you use
 /forge-help
 ```
+
+---
+
+## 🖥️ Platform Notes
+
+All `/forge-*` commands work identically across platforms, but each has a
+different runtime:
+
+| Platform | CLI Command | Project Instructions | Config File |
+|----------|-------------|---------------------|-------------|
+| **OpenCode** | `opencode` | `AGENTS.md` | `opencode.json` |
+| **Claude Code** | `claude` | `CLAUDE.md` (→ `@AGENTS.md`) | `.claude/settings.json` |
+| **Codex CLI** | `codex` | `AGENTS.md` | `.codex/config.toml` |
+
+> **Tip:** All three runtimes can coexist in the same project. Use whichever
+> one fits your current workflow.
 
 ---
 
