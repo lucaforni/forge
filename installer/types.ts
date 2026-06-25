@@ -40,7 +40,7 @@ export interface PlatformDescriptor {
 // ---------------------------------------------------------------------------
 
 /** Categories of canonical artifacts that get projected per platform. */
-export type ArtifactCategory = "agent" | "command" | "skill" | "config" | "plugin" | "instructions"
+export type ArtifactCategory = "agent" | "command" | "skill" | "config" | "plugin" | "instructions" | "user-template"
 
 /** A single file or directory that FORGE installs to a target location. */
 export interface CanonicalArtifact {
@@ -65,8 +65,8 @@ export type OperationKind = "create" | "update" | "skip" | "backup"
 
 /** A single install operation targeting one platform. */
 export interface InstallOperation {
-  /** Which platform this operation applies to. */
-  platform: Platform
+  /** Which platform this operation applies to ("forge" = platform-neutral FORGE artifact). */
+  platform: Platform | "forge"
   /** What to do. */
   kind: OperationKind
   /** Absolute path on disk. */

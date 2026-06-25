@@ -130,7 +130,22 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
     const synthesizedChecksums: Record<string, string> = {}
     if (existsSync(opencodeDir)) {
       const artifacts = catalogCanonicalArtifacts(resolve(_dirname, ".."))
-[...]
+      for (const artifact of artifacts) {
+        const targetPath = join(projectRoot, ".opencode", artifact.targetPath)
+        if (existsSync(targetPath)) {
+          const content = readFileSync(targetPath, "utf-8")
+          synthesizedChecksums[targetPath] = createHash("sha256").update(content, "utf-8").digest("hex")
+        }
+      }
+    }
+    existingManifest = createManifest(platforms, synthesizedChecksums)
+  }
+
+  // Step 3: Build install plan
+  section("Install Plan")
+  const plan = buildInstallPlan(
+    platforms,
+    DESCRIPTORS,
     resolve(_dirname, ".."),      // FORGE source root (repo root)
     projectRoot,
     existingManifest?.checksums,
@@ -177,7 +192,7 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   const totalSkips = plan.operations.filter((o) => o.kind === "skip").length
   const totalBackups = plan.operations.filter((o) => o.kind === "backup").length
 
-  log("info", `Operations: ${totalCreates} create, ${totalUpdates} update, ${totalSkips} skip, ${totalBackups} backup (all platforms)`)
+  log("info", `Operations: ${totalCreates} create, ${totalUpdates} update, ${totalSkips} skip, ${totalBackups} backup (all)`)
 
   // Step 5: Check mode — verify projection matches expected, don't write
   if (isCheck) {
@@ -270,6 +285,12 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
     const pc = createsByPlatform[p] ?? 0
     const pu = updatesByPlatform[p] ?? 0
     summary(`✓ ${DESCRIPTORS[p].label}: ${pc} created, ${pu} updated`)
+  }
+  // Print summary for FORGE shared artifacts (.forge/mcp-server/, .forge/frontend/)
+  const forgeCreates = createsByPlatform["forge"] ?? 0
+  const forgeUpdates = updatesByPlatform["forge"] ?? 0
+  if (forgeCreates > 0 || forgeUpdates > 0) {
+    summary(`✓ FORGE shared (.forge/): ${forgeCreates} created, ${forgeUpdates} updated`)
   }
   if (backupPaths.length > 0) {
     log("warn", `${backupPaths.length} file(s) backed up:`)

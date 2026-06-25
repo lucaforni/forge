@@ -40,6 +40,9 @@ const CANONICAL_DIRS = ["agents", "commands", "skills"] as const
 /** MCP server source files (copied to .forge/mcp-server/ in target). */
 const MCP_SERVER_DIRS = ["index.ts", "package.json", "tsconfig.json", "src"] as const
 
+/** Frontend files that are user-customizable — created once, never overwritten on update. */
+const USER_OWNED_FRONTEND_FILES = new Set(["stack-decisions.md", "design-system.md"])
+
 /** Catalog MCP server artifacts from mcp-server/ source. */
 function catalogMcpServerArtifacts(sourceRoot: string): CanonicalArtifact[] {
   const artifacts: CanonicalArtifact[] = []
@@ -64,6 +67,43 @@ function catalogMcpServerArtifacts(sourceRoot: string): CanonicalArtifact[] {
   }
 
   return artifacts
+}
+
+/** Catalog frontend pattern library artifacts from frontend/ source. */
+function catalogFrontendArtifacts(sourceRoot: string): CanonicalArtifact[] {
+  const artifacts: CanonicalArtifact[] = []
+  const frontendDir = join(sourceRoot, "frontend")
+
+  if (!existsSync(frontendDir)) return artifacts
+
+  const entries = walkDir(frontendDir)
+  for (const entry of entries) {
+    const relPath = relative(frontendDir, entry)
+
+    // Skip internal documentation — not distributed to target projects
+    if (relPath === "DISTRIBUTE.md") continue
+
+    const content = readFileSync(entry, "utf-8")
+    const checksum = createHash("sha256").update(content, "utf-8").digest("hex")
+
+    artifacts.push({
+      category: USER_OWNED_FRONTEND_FILES.has(relPath) ? "user-template" : "config",
+      sourcePath: join("frontend", relPath),
+      targetPath: join(".forge", "frontend", relPath),
+      content,
+      checksum,
+    })
+  }
+
+  return artifacts
+}
+
+/** Catalog all FORGE-shared artifacts (mcp-server + frontend patterns). */
+export function catalogForgeArtifacts(sourceRoot: string): CanonicalArtifact[] {
+  return [
+    ...catalogMcpServerArtifacts(sourceRoot),
+    ...catalogFrontendArtifacts(sourceRoot),
+  ]
 }
 
 /** Catalog all canonical artifacts from .opencode/ source. */
@@ -136,13 +176,13 @@ export function buildInstallPlan(
   targetRoot: string,
   existingManifestChecksums?: Record<string, string>,
 ): InstallPlan {
-  const artifacts = [
-    ...catalogCanonicalArtifacts(sourceRoot),
-    ...catalogMcpServerArtifacts(sourceRoot),
-  ]
+  const platformArtifacts = catalogCanonicalArtifacts(sourceRoot)
+  const forgeArtifacts = catalogForgeArtifacts(sourceRoot)
+
   const operations: InstallOperation[] = []
   const requiredDirectories: Set<string> = new Set()
 
+  // --- Platform-specific artifacts (installed once per detected platform) ---
   for (const platform of platforms) {
     const descriptor = descriptors[platform]
     const platformRoot = join(targetRoot, descriptor.rootDir)
@@ -150,18 +190,16 @@ export function buildInstallPlan(
     // Ensure the platform root dir exists
     requiredDirectories.add(platformRoot)
 
-    for (const artifact of artifacts) {
+    for (const artifact of platformArtifacts) {
       const relTarget = targetPathForPlatform(descriptor, artifact)
       const absTarget = join(targetRoot, descriptor.rootDir, relTarget)
       const targetDir = resolve(join(absTarget, ".."))
 
       requiredDirectories.add(targetDir)
 
-      // Check if file exists
       const fileExists = existsSync(absTarget)
 
       if (!fileExists) {
-        // Fresh install — create
         operations.push({
           platform,
           kind: "create",
@@ -170,10 +208,8 @@ export function buildInstallPlan(
           reason: "new file",
         })
       } else {
-        // Check for drift against manifest
         const prevChecksum = existingManifestChecksums?.[absTarget]
         if (prevChecksum === artifact.checksum) {
-          // No change — skip
           operations.push({
             platform,
             kind: "skip",
@@ -182,7 +218,6 @@ export function buildInstallPlan(
             reason: "unchanged",
           })
         } else if (prevChecksum) {
-          // Content differs from manifest → drift (user edited it)
           operations.push({
             platform,
             kind: "backup",
@@ -192,7 +227,6 @@ export function buildInstallPlan(
             reason: "drift detected — user file backed up",
           })
         } else {
-          // File exists but not in manifest → update (pre-2.0 upgrade or manual install)
           operations.push({
             platform,
             kind: "update",
@@ -201,6 +235,63 @@ export function buildInstallPlan(
             reason: "update (no prior manifest)",
           })
         }
+      }
+    }
+  }
+
+  // --- FORGE shared artifacts (installed once, platform-neutral → .forge/) ---
+  // These use artifact.targetPath directly and are NOT multiplied per platform.
+  for (const artifact of forgeArtifacts) {
+    const absTarget = join(targetRoot, artifact.targetPath)
+    const targetDir = resolve(join(absTarget, ".."))
+
+    requiredDirectories.add(targetDir)
+
+    const fileExists = existsSync(absTarget)
+
+    if (!fileExists) {
+      operations.push({
+        platform: "forge",
+        kind: "create",
+        targetPath: absTarget,
+        content: artifact.content,
+        reason: "new file",
+      })
+    } else if (artifact.category === "user-template") {
+      // User-owned files (stack-decisions.md, design-system.md) — create once, never overwrite
+      operations.push({
+        platform: "forge",
+        kind: "skip",
+        targetPath: absTarget,
+        reason: "user-owned template",
+      })
+    } else {
+      const prevChecksum = existingManifestChecksums?.[absTarget]
+      if (prevChecksum === artifact.checksum) {
+        operations.push({
+          platform: "forge",
+          kind: "skip",
+          targetPath: absTarget,
+          previousChecksum: prevChecksum,
+          reason: "unchanged",
+        })
+      } else if (prevChecksum) {
+        operations.push({
+          platform: "forge",
+          kind: "backup",
+          targetPath: absTarget,
+          content: artifact.content,
+          previousChecksum: prevChecksum,
+          reason: "drift detected — user file backed up",
+        })
+      } else {
+        operations.push({
+          platform: "forge",
+          kind: "update",
+          targetPath: absTarget,
+          content: artifact.content,
+          reason: "update (no prior manifest)",
+        })
       }
     }
   }
