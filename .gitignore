@@ -1,2 +1,7 @@
 # Medium drafts — not for version control
 medium/
+node_modules/
+install-forge.ts.bak
+dev/
+.forge/.backups
+.forge/.install-manifest.json

@@ -19,7 +19,7 @@ FORGE is a methodology framework for AI-assisted software development that provi
 - Bidirectional traceability from requirements to code
 
 ### 1.2 Non-Negotiable Principles
-- **OpenCode-native**: FORGE is built specifically for OpenCode
+- **Multi-platform**: FORGE runs natively on OpenCode, Claude Code, and Codex CLI — canonical artifacts are platform-agnostic markup projected to each runtime's native layout
 - **Agent-first design**: All workflows route through specialized subagents
 - **Constitution as law**: All decisions must comply with project constitution
 - **Document precision**: All specs must be machine-parseable for future automation
@@ -28,7 +28,7 @@ FORGE is a methodology framework for AI-assisted software development that provi
 ### 1.3 User Experience Standards
 - All slash commands must complete in < 30 seconds for typical use cases
 - Error messages must be actionable
-- Documentation must be embedded in \`.opencode/docs/\` for offline access
+- Documentation must be embedded in the project root for offline access
 
 ---
 
@@ -38,7 +38,7 @@ FORGE is a methodology framework for AI-assisted software development that provi
 
 | Layer | Technology | Version | Rationale |
 |-------|-----------|---------|-----------|
-| Runtime | Node.js | 20+ | OpenCode requirement |
+| Runtime | Node.js | 20+ | Required by all target platforms |
 | Language | TypeScript | 5+ | Type safety for tools |
 | Packaging | Bun/NPM | Latest | Fast installs |
 | Documentation | Markdown | CommonMark | Universal format |
@@ -60,11 +60,12 @@ FORGE is a methodology framework for AI-assisted software development that provi
 ## Article 3: Architecture Patterns
 
 ### 3.1 System Architecture
-File-based orchestration framework:
-- Agent definitions in \`.opencode/agents/\`
-- Commands in \`.opencode/commands/\`
-- Skills in \`.opencode/skills/\`
+File-based orchestration framework with platform-projection:
+- Agent definitions in platform agents dir (e.g., \`.opencode/agents/\`, \`.claude/agents/\`)
+- Commands in platform commands dir (e.g., \`.opencode/commands/\`, \`.claude/commands/\`)
+- Skills in platform skills dir (e.g., \`.opencode/skills/\`, \`.claude/skills/\`)
 - User artifacts in \`.forge/\`
+- Shared MCP server in repo root for cross-platform custom tools
 
 ### 3.2 Code Organization
 ```
@@ -99,7 +100,7 @@ forge/
 ### 5.1 File Naming
 - Agents: \`forge-[role].md\`
 - Commands: \`forge-[action].md\`
-- Skills: \`.opencode/skills/[name]/SKILL.md\`
+- Skills: \`.opencode/skills/[name]/SKILL.md\` (or platform equivalent)
 
 ---
 
@@ -108,3 +109,4 @@ forge/
 | Date | Article | Change | Rationale | ADR Ref |
 |------|---------|--------|-----------|---------|
 | 2026-02-16 | 2.3, 4.3 | Added distribution exclusions | Prevent meta-dev overhead | N/A |
+| 2026-06-21 | 1.2, 1.3, 2.1, 3.1, 5.1 | Cross-platform amendment: replaced "OpenCode-native" with "Multi-platform", broadened architecture to platform-projection model | Port FORGE to Claude Code and Codex CLI | ADR-001 |

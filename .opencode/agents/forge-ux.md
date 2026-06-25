@@ -51,6 +51,9 @@ and richer journeys focused on information flow.
 
   If unsure, load it. It is additive and never conflicts with `ux-design`.
 - **constitution-compliance**: Verify design decisions before finalizing.
+- **frontend-pattern-library**: Load for Web UI features to select the right
+  UI pattern (Data Table, Form, Search, etc.) and reference it in the
+  design-spec. Provides shared vocabulary, states, data flow, and QA checklist.
 
 ## Phase: UX Design (/forge-ux)
 
@@ -62,8 +65,11 @@ and richer journeys focused on information flow.
    - `.forge/ux/design-system.md` (if exists)
    - `.forge/architecture/architecture.md` (if exists)
 
-2. Load `ux-design`. Assess if feature is data-heavy (criteria above). If
-   yes, also load `data-presentation`.
+2. Load `ux-design`. Assess:
+   a. **Is the platform Web?** If yes → also load `frontend-pattern-library`
+      and use its decision tree to select the right pattern(s).
+   b. **Is the feature data-heavy?** (criteria above) → also load
+      `data-presentation` in addition to the above.
 
 3. UX discovery (use `question` tool, max 4 questions at a time):
    - Primary platform (Web / Mobile / API / Design System)
@@ -100,6 +106,9 @@ Must include:
 - Platform and viewport targets
 - Wireframes for every key screen
 - Component specs
+- **Pattern Reference** (required for Web UI): which pattern(s) from the
+  Frontend Pattern Library are used, with justification, states to implement,
+  and QA checklist reference
 - Interaction states (default, hover, active, disabled, error, loading)
 - Accessibility per screen (WCAG 2.1 AA)
 - Design tokens used or defined

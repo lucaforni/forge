@@ -2,11 +2,13 @@
 
 **Framework for Orchestrated Requirements, Governance & Engineering**
 
-> A structured, enterprise-grade agentic development methodology for OpenCode that adapts ceremony to complexity through progressive context engineering and constitutional governance.
+> A structured, enterprise-grade agentic development methodology that adapts ceremony to complexity through progressive context engineering and constitutional governance — **for OpenCode, Claude Code, and Codex CLI**.
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenCode](https://img.shields.io/badge/OpenCode-Compatible-green.svg)](https://opencode.ai)
-[![Version](https://img.shields.io/badge/version-1.3.0-orange.svg)](CHANGELOG.md)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-purple.svg)](https://claude.ai)
+[![Codex CLI](https://img.shields.io/badge/Codex%20CLI-Compatible-gold.svg)](https://github.com/openai/codex)
+[![Version](https://img.shields.io/badge/version-2.0.0-orange.svg)](CHANGELOG.md)
 
 ---
 
@@ -84,6 +86,22 @@ Your `.forge/constitution.md` defines non-negotiable rules:
 
 **All decisions must comply** - AI agents verify compliance automatically.
 
+### 🖥️ Supported Platforms
+
+FORGE runs natively on three AI-coding runtimes with a single shared codebase:
+
+| Platform | Vendor | Install Location | Config File | Project Instructions |
+|----------|--------|-----------------|-------------|---------------------|
+| **OpenCode** | OpenCode | `.opencode/{agents,commands,skills,tools,plugins}/` | `opencode.json` | `AGENTS.md` |
+| **Claude Code** | Anthropic | `.claude/{agents,commands,skills,hooks}/` | `.claude/settings.json` | `CLAUDE.md` (`@AGENTS.md`) |
+| **Codex CLI** | OpenAI | `.codex/{agents,commands}/` + `.agents/skills/` | `.codex/config.toml` | `AGENTS.md` |
+
+The installer **auto-detects** which platform(s) you're using by probing for `.opencode/`, `.claude/`, and `.codex/` directories, then projects the correct layout for each detected platform.
+
+Custom tools (`validate-spec`, `trace-requirements`, `sprint-status`) are exposed via a **shared MCP server** that works identically on all three platforms.
+
+---
+
 ### 🧠 Persistent Knowledge Management
 
 Knowledge that survives sessions:
@@ -99,18 +117,20 @@ Knowledge that survives sessions:
 
 ### Installation
 
-Install FORGE in your project with one command:
+FORGE auto-detects your platform. One command works for all:
 
 ```bash
 # Clone FORGE
 git clone https://github.com/lucaforni/forge.git
 
-# Install in your project
+# Install in your project (auto-detects OpenCode / Claude Code / Codex CLI)
 npx tsx forge/install-forge.ts /path/to/your/project
 
-# Start using FORGE
-cd /path/to/your/project
-opencode
+# Or force a specific platform:
+npx tsx forge/install-forge.ts /path/to/your/project --platform=claude-code
+
+# Preview what will be installed (writes nothing):
+npx tsx forge/install-forge.ts /path/to/your/project --dry-run
 ```
 
 ### First Steps
@@ -129,7 +149,7 @@ opencode
 
 3. **Start building:**
    ```bash
-   # In OpenCode
+   # In your AI coding runtime (OpenCode / Claude Code / Codex CLI)
    /forge-help               # See all commands
    /forge-specify "Feature"  # Create a spec
    /forge-implement          # Build it
@@ -238,15 +258,53 @@ opencode
 
 ```
 your-project/
-├── .opencode/                  # FORGE system (installed)
+├── .opencode/                  # FORGE system (OpenCode — installed)
 │   ├── agents/                 # Specialized AI agents
 │   ├── commands/               # Slash commands
 │   ├── skills/                 # Reusable logic
 │   ├── plugins/                # Event-driven automation
-│   ├── tools/                  # Custom tools
+│   ├── tools/                  # Custom tools (OpenCode SDK)
 │   ├── templates/              # Document templates
 │   └── docs/                   # Methodology documentation
 │
+├── .claude/                    # FORGE for Claude Code (installed)
+│   ├── agents/                 # Same agents, projected for Claude Code
+│   ├── commands/               # Same commands
+│   ├── skills/                 # Same skills
+│   ├── hooks/                  # Hook-based automation
+│   └── settings.json           # Claude Code config
+│
+├── .codex/                     # FORGE for Codex CLI (installed)
+│   ├── agents/                 # Codex-native agent definitions
+│   └── commands/               # Same commands
+│
+├── .agents/skills/             # Skills for Codex CLI (installed)
+│
+├── .forge/                     # Your project data (all platforms)
+│   ├── mcp-server/             # Shared MCP server (forge-mcp-server)
+│   ├── constitution.md         # 📝 Your project principles
+│   ├── specs/                  # Feature specifications
+│   │   └── 001-feature/
+│   │       ├── spec.md         # Requirements
+│   │       ├── design-spec.md  # UX/UI design (wireframes, components, a11y)
+│   │       ├── user-journey.md # Personas & user journeys
+│   │       ├── plan.md         # Implementation plan
+│   │       └── tasks.md        # Task breakdown
+│   ├── ux/
+│   │   └── design-system.md    # Shared design tokens & components
+│   ├── knowledge/
+│   │   ├── adr/                # Architecture decisions
+│   │   ├── decision-log.md     # Session decisions
+│   │   └── lessons-learned.md  # Retrospective insights
+│   ├── epics/                  # Epic documents
+│   ├── sprints/                # Sprint tracking
+│   │   ├── sprint-001.json     # Active sprint
+│   │   └── archive/            # Completed sprints
+│   └── product/                # Product brief & roadmap
+│
+├── AGENTS.md                   # 📝 Your project conventions (OpenCode + Codex)
+├── CLAUDE.md                   # 📝 Claude Code instructions (@AGENTS.md import)
+└──
 ├── .forge/                     # Your project data
 │   ├── constitution.md         # 📝 Your project principles
 │   ├── specs/                  # Feature specifications
@@ -388,13 +446,20 @@ Not sure which track? Run `/forge-help` and the orchestrator will assess complex
 
 ## 🛠️ Tools & Integrations
 
-FORGE includes custom OpenCode tools:
+FORGE includes cross-platform tools via a shared **MCP server**:
 
-- **trace-requirements** - Trace spec requirements to implementation
-- **validate-spec** - Check spec completeness and quality
-- **sprint-status** - Visual sprint dashboard
+| Tool | Description | Platform |
+|------|-------------|----------|
+| **validate-spec** | Check spec completeness and quality (0-100%) | All platforms via MCP |
+| **trace-requirements** | Trace spec requirements to implementation | All platforms via MCP |
+| **sprint-status** | Visual sprint dashboard with progress bars | All platforms via MCP |
 
-Plugins provide automation:
+The `forge-mcp-server` is automatically configured for each platform:
+- **OpenCode**: referenced in `opencode.json` under `mcp`
+- **Claude Code**: referenced in `.claude/settings.json` under `mcpServers`
+- **Codex CLI**: referenced in `.codex/config.toml` under `mcp_servers`
+
+Plugins provide automation (adapted per-platform hooks):
 
 - **session-knowledge** - Auto-capture decisions when sessions end
 - **spec-watcher** - Detect spec changes and suggest updates
@@ -425,6 +490,9 @@ FORGE enforces quality through:
 
 ## 🗺️ Roadmap
 
+- [x] Cross-platform support (OpenCode + Claude Code + Codex CLI) — **v2.0**
+- [x] MCP server for shared custom tools
+- [x] Platform-aware auto-detection installer
 - [ ] GitHub Actions integration for CI/CD
 - [ ] VS Code extension for quick command access
 - [ ] Spec templates for common feature types
@@ -455,9 +523,9 @@ FORGE is open source software licensed under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-FORGE is built on top of [OpenCode](https://opencode.ai), the AI-native development environment.
+FORGE runs on three AI-coding runtimes — [OpenCode](https://opencode.ai), [Claude Code](https://claude.ai) (Anthropic), and [Codex CLI](https://github.com/openai/codex) (OpenAI) — and their shared investment in agentic tooling and MCP made this cross-platform approach possible.
 
-Special thanks to the OpenCode team for creating a platform that makes agent-driven development possible.
+Special thanks to the OpenCode team for creating the platform that started it all.
 
 ---
 

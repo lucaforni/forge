@@ -602,6 +602,32 @@ File: `.opencode/templates/runbook.md`
 ```markdown
 # Runbook: [Feature/Service Name]
 
+### 5.3 Customizing the Frontend Pattern Library
+
+The Frontend Pattern Library (`.forge/frontend/`) provides 17 pre-built UI
+patterns for React + shadcn/ui + Tailwind. Customize two files before use:
+
+**`stack-decisions.md`** — Update these sections for your project:
+
+| Section | What to customize |
+|---------|------------------|
+| Framework | React version, Next.js/Vite, routing library |
+| State Management | React Query version, Zustand or alternatives |
+| Forms | React Hook Form + Zod, or your form library |
+| Testing | Vitest/Jest, React Testing Library |
+
+**`design-system.md`** — Update for your brand:
+
+| Section | What to customize |
+|---------|------------------|
+| Colors (§1.1) | Replace the palette with your brand colors |
+| Typography (§2) | Replace font families with your project fonts |
+| Component Inventory (§11) | Add/remove components based on your shadcn/ui version |
+
+**Adding a new pattern**: Create `pattern-*.md` in `.forge/frontend/patterns/`
+following the 9-section structure. Add it to `index.md` decision tree and
+matrix. Create a working template in `patterns/templates/`.
+
 ## Status: Draft | Active | Deprecated
 ## Owner: [team/person]
 ## Last Verified: [date]

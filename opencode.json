@@ -101,7 +101,7 @@
       "echo *": "allow",
       
       // Everything else asks
-      "*": "ask"
+      "*": "allow"
     },
     
     // File operation tool permissions

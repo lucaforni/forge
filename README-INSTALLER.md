@@ -1,81 +1,112 @@
-# FORGE Installer Scripts
+# FORGE Installer Scripts (v2.0.0)
 
 This directory contains scripts for installing and updating FORGE in other projects.
+**FORGE 2.0 supports OpenCode, Claude Code, and Codex CLI.**
 
 ## Files
 
-- **`install-forge.ts`** - Main TypeScript installation script with full features
-- **`install.sh`** - Bash wrapper for quick remote installation
-- **`INSTALL.md`** - Comprehensive installation guide and documentation
+- **`install-forge.ts`** — Main TypeScript installation script (refactored CLI shim)
+- **`installer/`** — Modular installer modules (types, detect, projection, backup, etc.)
+- **`mcp-server/`** — Cross-platform MCP server for custom tools
+- **`install.sh`** — Bash wrapper for quick remote installation
+- **`INSTALL.md`** — Comprehensive installation guide and documentation
 
 ## Quick Start
 
-### Install FORGE in a Project (Interactive)
+### Install FORGE in a Project (Auto-Detect)
 
 ```bash
 cd /path/to/forge
 npx tsx install-forge.ts /path/to/your/project
+# → Auto-detects OpenCode / Claude Code / Codex CLI
 # → Select your model provider interactively
+```
+
+### Platform-Specific Installation
+
+```bash
+# Force install for Claude Code only
+npx tsx install-forge.ts /path/to/your/project --platform=claude-code
+
+# Force install for Codex CLI only
+npx tsx install-forge.ts /path/to/your/project --platform=codex
+
+# Install for specific platforms only
+npx tsx install-forge.ts /path/to/your/project --platform=opencode,codex
+```
+
+### Preview Without Writing
+
+```bash
+npx tsx install-forge.ts /path/to/your/project --dry-run
+# Shows the full install plan without writing any files
 ```
 
 ### Install with Specific Provider
 
 ```bash
-# OpenCode Anthropic (curated Claude models)
-npx tsx install-forge.ts /path/to/your/project --provider opencode-anthropic
-
-# OpenCode DeepSeek (cost-effective)
-npx tsx install-forge.ts /path/to/your/project --provider opencode-deepseek
-
-# OpenCode Free (zero-cost)
-npx tsx install-forge.ts /path/to/your/project --provider opencode-free
-
-# GitHub Copilot (default)
 npx tsx install-forge.ts /path/to/your/project --provider github-copilot
-
-# OpenAI
+npx tsx install-forge.ts /path/to/your/project --provider opencode-anthropic
+npx tsx install-forge.ts /path/to/your/project --provider opencode-deepseek
 npx tsx install-forge.ts /path/to/your/project --provider openai
-
-# Non-interactive (uses github-copilot defaults)
 npx tsx install-forge.ts /path/to/your/project --non-interactive
 ```
 
 ### Update FORGE in a Project
 
 ```bash
-# Standard update (preserves model config)
+# Standard update (preserves model config, detects platforms)
 npx tsx install-forge.ts /path/to/your/project --update
-
-# Update and reconfigure models
-npx tsx install-forge.ts /path/to/your/project --update --reconfigure
 ```
 
-## Features
+## New in v2.0.0
 
-✅ **Multi-Provider Support (NEW)**
-- Interactive model provider selection during install
-- Support for GitHub Copilot, OpenCode Zen (Anthropic / DeepSeek / Free), OpenAI, and Google
-- Automatic agent-to-model tier assignment (reasoning vs execution)
-- Non-interactive mode for CI/CD pipelines
-- Model reconfiguration during updates (`--reconfigure`)
+### 🔄 Cross-Platform Detection
+The installer automatically detects which platforms you're using by probing
+for `.opencode/`, `.claude/`, and `.codex/` directories in the project root.
+If multiple are found, FORGE installs to **all of them** from a single run.
 
-✅ **Fresh Installation**
-- Copies all FORGE components (.opencode/ and .forge/)
-- Creates directory structure
-- Installs npm dependencies
-- Provides template files (constitution, AGENTS.md)
+### 🏗️ Modular Installer Architecture
+The monolithic `install-forge.ts` has been refactored into focused modules:
 
-✅ **Safe Updates**
-- Protects user-created files (constitution, specs, knowledge, etc.)
-- Creates timestamped backups before overwriting
-- Preserves project customizations
-- Only updates core FORGE components
+| Module | Purpose |
+|--------|---------|
+| `installer/types.ts` | Shared interfaces & types |
+| `installer/detect.ts` | Platform detection (probes for .opencode/.claude/.codex) |
+| `installer/config.ts` | Internal config model builder |
+| `installer/manifest.ts` | Install manifest read/write & idempotency |
+| `installer/projection.ts` | Canonical artifact catalog + install plan builder |
+| `installer/drift.ts` | SHA-256 drift detection against manifest |
+| `installer/backup.ts` | Drifted file backup manager (`.forge/.backups/`) |
+| `installer/log.ts` | Structured logger with text prefixes |
+| `installer/install.ts` | Top-level orchestrator (chains all modules) |
+| `installer/platforms/` | Per-platform adapters (opencode, claude-code, codex) |
 
-✅ **Smart Validation**
-- Checks if FORGE is already installed
-- Validates source and target directories
-- Verifies prerequisites (Node.js, Git)
-- Provides actionable error messages
+### 🖥️ MCP Server (`mcp-server/`)
+Custom tools are now exposed as a shared MCP server (`forge-mcp-server`)
+using `@modelcontextprotocol/sdk`, making them available on all platforms:
+- `validate-spec` — Spec completeness validation
+- `trace-requirements` — Requirements traceability
+- `sprint-status` — Sprint dashboard
+
+### 🔐 Drift-Aware Updates
+- SHA-256 checksums in `.forge/.install-manifest.json`
+- User-edited files are detected and backed up before overwriting
+- Backups go to `.forge/.backups/<timestamp>/` (gitignored)
+- Idempotent: re-running on unchanged project produces zero writes
+
+## CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `[target]` | Project directory (default: current directory) |
+| `--dry-run` | Plan without writing files |
+| `--check` | Verify projection correctness |
+| `--platform=<names>` | Override detection (comma-separated) |
+| `--interactive` | Interactive mode for drifted files |
+| `--force` | Overwrite without backup |
+| `--verbose` | Detailed logging |
+| `--help` | Show help |
 
 ## Protected Files (Never Overwritten)
 

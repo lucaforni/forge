@@ -1,0 +1,25 @@
+# Sprint 03: Advanced Patterns + FORGE Integration
+duration: 4 days
+status: planned
+epic: E01-frontend-pattern-library
+
+goals:
+  - "Advanced patterns: wizard, infinite scroll, command palette, settings, confirmation"
+  - "FORGE integration: skill, agent update, reviewer update"
+  - "Retrospective and documentation"
+
+tasks:
+  - E01-T027: Pattern - Wizard (spec + template)
+  - E01-T028: Pattern - Infinite Scroll (spec + template)
+  - E01-T029: Pattern - Command Palette (spec + template)
+  - E01-T030: Pattern - Settings Panel (spec + template)
+  - E01-T031: Pattern - Confirmation Flow (spec + template)
+  - E01-T032: Review Phase 4
+  - E01-T033: Skill: frontend-pattern-library
+  - E01-T034: Update forge-ux agent
+  - E01-T035: Update forge-reviewer for frontend QA
+  - E01-T036: Epic Retrospective + Documentation
+
+stories:
+  - story-005-advanced: "Advanced interaction patterns (wizard, infinite scroll, command palette, settings, confirmation)"
+  - story-006-integration: "FORGE workflow integration: skill, agent updates, reviewer checklist"

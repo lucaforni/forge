@@ -1,0 +1,28 @@
+{
+  "name": "forge",
+  "version": "2.0.0",
+  "private": true,
+  "description": "FORGE — Framework for Orchestrated Requirements, Governance & Engineering",
+  "type": "module",
+  "scripts": {
+    "install-forge": "npx tsx install-forge.ts",
+    "mcp-server": "npx tsx mcp-server/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.101.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.2.17",
+    "class-variance-authority": "^0.7.1",
+    "jsdom": "^29.1.1",
+    "lucide-react": "^1.21.0",
+    "sonner": "^2.0.7",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}

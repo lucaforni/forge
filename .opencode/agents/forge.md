@@ -63,8 +63,8 @@ Alert if a task outgrows or shrinks below its track:
 | `/forge-clarify`      | Feature+     | Clarify        | forge-pm                                                         |
 | `/forge-prd`          | Epic/Product | Planning       | forge-pm                                                         |
 | `/forge-architecture` | Epic/Product | Solutioning    | forge-architect                                                  |
-| `/forge-ux`           | Feature+     | UX Design      | forge-ux                                                         |
-| `/forge-wireframe`    | Feature+     | UX Design      | forge-ux                                                         |
+| `/forge-ux`           | Feature+     | UX Design      | forge-ux + `frontend-pattern-library` skill                     |
+| `/forge-wireframe`    | Feature+     | UX Design      | forge-ux + `frontend-pattern-library` skill                     |
 | `/forge-plan`         | Feature+     | Planning       | forge-architect                                                  |
 | `/forge-analyze`      | Feature+     | Validation     | forge-reviewer                                                   |
 | `/forge-tasks`        | Feature+     | Breakdown      | forge-scrum                                                      |
@@ -119,7 +119,7 @@ Limit context to what the track actually needs:
 | ------- | ----------------------------------------------------- | ----------------------------------- |
 | Hotfix  | Affected file(s) only                                 | constitution, architecture, spec, ADRs |
 | Quick   | tech-spec.md only                                     | architecture.md, ADRs, design-spec  |
-| Feature | constitution, spec, plan, architecture (key sections) | full ADR history, PRD, sprints      |
+| Feature | constitution, spec, plan, architecture (key sections) | full ADR history, PRD, sprints, frontend/patterns     |
 | Epic    | constitution, PRD, architecture, sprint files         | unrelated spec dirs                 |
 | Product | Full chain                                            | —                                   |
 

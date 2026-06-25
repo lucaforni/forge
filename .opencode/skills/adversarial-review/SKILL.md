@@ -80,11 +80,47 @@ Load `ux-review` skill when:
 - `design-spec.md` or `user-journey.md` exists for the feature.
 
 Check:
-- Spec-to-implementation fidelity (wireframes → code).
-- Accessibility (WCAG 2.1 AA): focus, contrast, labels, ARIA.
-- Design system consistency (tokens, components, no magic values).
-- UX anti-patterns (missing empty states, no loading feedback, etc.).
-- Responsive behavior + mobile touch targets.
+- **Spec-to-implementation fidelity** (wireframes → code).
+- **Accessibility** (WCAG 2.1 AA): focus, contrast, labels, ARIA.
+- **Design system consistency** (tokens, components, no magic values).
+- **UX anti-patterns** (missing empty states, no loading feedback, etc.).
+- **Responsive behavior** + mobile touch targets.
+
+#### 7a. Frontend Pattern Compliance *(activate when pattern is referenced)*
+
+If the design-spec or spec references a Frontend Pattern Library pattern
+(e.g., "Pattern: Data Table"), load the specific pattern file from
+`.forge/frontend/patterns/pattern-[name].md` and verify against its
+**QA Checklist**.
+
+Loading priority:
+1. Read `.forge/frontend/patterns/index.md` to find the pattern reference.
+2. Load `.forge/frontend/patterns/pattern-[name].md` → go to section 9 (QA Checklist).
+3. For each QA point, mark as ✅ Pass / ❌ Fail / ⚠️ Partial.
+
+Additional checks beyond the pattern checklist:
+- **All states implemented**: loading, empty, error, edge cases — every state
+  from the pattern's state machine must be present in the code.
+- **All states visible**: not just defined — triggered and testable (e.g., empty
+  state must appear when data is empty, not just exist in code).
+- **Component composition**: the code uses the correct shadcn/ui components
+  as specified in the pattern (e.g., using shadcn/ui Table, not an HTML table).
+- **Data flow correct**: URL params, React Query keys, mutation patterns match
+  the pattern's data flow specification.
+
+Output format:
+
+```
+✅ QA: Pattern Data Table
+   ✅ Sorting: click header cycles asc/desc — Tested at OrderTable.tsx:42
+   ✅ Pagination: page in URL, back button works — URL params verified
+   ✅ Empty states: both first-visit + filtered-empty implemented
+   ❌ Refetching: data not preserved during background refresh — showing loading skeleton instead
+   ⚠️ Skeleton: matches table structure but missing 2 columns
+   ...
+
+Pattern Compliance Score: 4/6 (67%)
+```
 
 ---
 

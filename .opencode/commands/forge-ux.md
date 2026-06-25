@@ -19,8 +19,9 @@ Optional spec reference: $ARGUMENTS
 
 1. `.forge/specs/NNN-slug/spec.md` — **required**. STOP if missing; ask user to run `/forge-specify` first.
 2. `.forge/constitution.md` — governance + tech stack.
-3. `.forge/ux/design-system.md` — existing tokens/components (optional).
-4. `.forge/architecture/architecture.md` — platform constraints (optional).
+3. `.forge/frontend/patterns/index.md` — pattern library decision tree (for web UI features).
+4. `.forge/frontend/design-system.md` — existing tokens/components (optional, fallback to `.forge/ux/design-system.md`).
+5. `.forge/architecture/architecture.md` — platform constraints (optional).
 
 ## Discovery Process
 
@@ -36,6 +37,14 @@ Ask up to 4 focused questions (use `question` tool, conversational):
 ### Step 2: Load UX Design Skill
 
 Load `ux-design` skill for full methodology, wireframe conventions, component spec format.
+
+If the feature is a **web UI** using React + shadcn/ui + Tailwind, also load
+the `frontend-pattern-library` skill. Use its decision tree to select the right
+pattern(s) and include a **Pattern Reference** section in the design spec with:
+- Pattern name and source file
+- Selection justification
+- States to implement (from pattern state machine)
+- QA checklist (from pattern §9)
 
 ### Step 3: Personas & User Journeys
 
