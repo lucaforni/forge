@@ -1,0 +1,26 @@
+# Sprint 02: Dashboard + Interaction Patterns
+duration: 5 days
+status: planned
+epic: E01-frontend-pattern-library
+
+goals:
+  - "Dashboard: dashboard layout, KPI card, loading skeleton"
+  - "Interaction: modal, drawer, notification, error recovery"
+  - "Template .tsx per ogni pattern"
+
+tasks:
+  - E01-T016: Pattern - Dashboard (spec)
+  - E01-T017: Pattern - Dashboard (template)
+  - E01-T018: Pattern - KPI Card (spec + template)
+  - E01-T019: Pattern - Loading Skeleton (spec + template)
+  - E01-T020: Review Phase 2
+  - E01-T021: Pattern - Modal Flow (spec + template)
+  - E01-T022: Pattern - Drawer/Sheet (spec + template)
+  - E01-T023: Pattern - Notification (spec + template)
+  - E01-T024: Pattern - Error Recovery (spec + template)
+  - E01-T025: ADR Interaction Patterns
+  - E01-T026: Review Phase 3
+
+stories:
+  - story-003-dashboard: "Dashboard patterns with KPIs, charts, and loading skeletons"
+  - story-004-interaction: "Modal, drawer, notification, and error recovery patterns"

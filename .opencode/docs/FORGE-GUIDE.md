@@ -149,6 +149,32 @@ FORGE uses 9 specialized subagents, each with a distinct role and model:
 > `forge-reviewer-peer` **in parallel**. Their independent findings are
 > synthesised into one report — consensus issues carry the highest confidence.
 
+### 2.3a Frontend Pattern Library
+
+FORGE includes a **Frontend Pattern Library** — 17 reusable UI patterns for
+React + shadcn/ui + Tailwind. Each pattern specifies:
+
+- **When to use** (and when NOT to use)
+- **Component composition** (which shadcn/ui components, how they nest)
+- **State machine** (loading, populated, empty, error, edge cases — all six states mandatory)
+- **Data flow** (React Query keys, URL params, cache strategy)
+- **Accessibility requirements** (WCAG 2.1 AA per pattern)
+- **QA checklist** (verifiable by `forge-reviewer`)
+
+Patterns range from foundational (Data Table, Form + Validation, Search) to
+advanced (Wizard, Command Palette, Infinite Scroll, Confirmation Flow).
+
+When `forge-ux` runs for a web UI feature, it automatically loads the
+`frontend-pattern-library` skill, selects the right pattern via a decision tree,
+and integrates the pattern's states and QA checklist into the design spec. Build
+then references the pattern template to generate consistent code with all states
+pre-implemented. The reviewer verifies against the pattern's QA checklist —
+reducing review cycles from 3–4 to 0–1.
+
+> **Installation**: Copy `.forge/frontend/` from this repo to your project.
+> Personalize `stack-decisions.md` and `design-system.md` for your stack and
+> brand. See `.forge/frontend/DISTRIBUTE.md` for the full guide.
+
 ### 2.4 The Constitution
 
 For Product-track projects, FORGE creates a `constitution.md` -- a governance
@@ -443,6 +469,12 @@ Deliverables:
 ```
 
 **Output**: `.forge/specs/003-oauth2-authentication/design-spec.md`
+
+> **Pattern Library Integration**: For React + shadcn/ui + Tailwind projects,
+> `forge-ux` loads the `frontend-pattern-library` skill and selects the right
+> pattern automatically. The design spec includes a **Pattern Reference** section
+> with the chosen pattern's state machine and QA checklist — replacing vague
+> wireframes with verifiable specifications.
 
 **Phase 4: Plan**
 
@@ -1666,6 +1698,31 @@ Quick overview:
 
 - **Use feature branches for specs too**. When developing a feature, the
   spec and plan should be on the same branch as the code.
+
+### 8.7 Frontend Pattern Library
+
+- **Install the pattern library before your first frontend feature**. Copy
+  `.forge/frontend/` to your project and personalize `stack-decisions.md`
+  and `design-system.md`. This one-time setup pays off in every subsequent
+  frontend feature.
+
+- **Let forge-ux select the pattern**. The `frontend-pattern-library` skill
+  includes a decision tree that maps requirements to patterns. Trust it —
+  manual pattern selection often leads to mismatches.
+
+- **Always refer to the template when implementing**. The template `.tsx` files
+  in `patterns/templates/` are working components. Build should use them as
+  structural reference — not copy wholesale, but adapt to the feature context.
+
+- **Run pattern QA checklists in review**. When `design-spec.md` references a
+  pattern, `forge-reviewer` automatically loads the pattern's QA checklist
+  (§9 of each pattern spec). This catches missing states (loading, empty, error)
+  before they reach code review.
+
+- **Don't skip empty states**. The Pattern Library mandates that every data
+  view has: loading skeleton, populated view, empty state (first-visit +
+  filtered-empty), error state with retry, and refetching indicator. If the
+  reviewer doesn't find all of them, the review blocks.
 
 ---
 

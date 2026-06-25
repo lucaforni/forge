@@ -1,0 +1,30 @@
+# Sprint 01: Foundation + Core Patterns
+duration: 5 days
+status: planned
+epic: E01-frontend-pattern-library
+
+goals:
+  - "Foundation: stack, design system, pattern index"
+  - "Core patterns: Data Table, Form, Search, Master-Detail, Empty State"
+  - "Template .tsx per ogni pattern core"
+
+tasks:
+  - E01-T001: stack-decisions.md
+  - E01-T002: design-system.md - Tokens
+  - E01-T003: design-system.md - shadcn/ui Component Inventory
+  - E01-T004: pattern-index.md - Decision Tree
+  - E01-T005: QA Checklist Template
+  - E01-T006: Pattern - Data Table (spec)
+  - E01-T007: Pattern - Data Table (template)
+  - E01-T008: Pattern - Form (spec)
+  - E01-T009: Pattern - Form (template)
+  - E01-T010: Pattern - Search (spec)
+  - E01-T011: Pattern - Search (template)
+  - E01-T012: Pattern - Master-Detail (spec)
+  - E01-T013: Pattern - Master-Detail (template)
+  - E01-T014: Pattern - Empty State (spec + template)
+  - E01-T015: Review Phase 1
+
+stories:
+  - story-001-foundation: "Setup design system, stack decisions, and pattern index"
+  - story-002-core-patterns: "Implement 5 core UI patterns with specs and templates"

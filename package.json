@@ -11,10 +11,18 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "vitest": "^2.0.0",
-    "typescript": "^5.0.0",
+    "@tanstack/react-query": "^5.101.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20.0.0",
-    "tsx": "^4.0.0"
-  },
-  "dependencies": {}
+    "@types/react": "^19.2.17",
+    "class-variance-authority": "^0.7.1",
+    "jsdom": "^29.1.1",
+    "lucide-react": "^1.21.0",
+    "sonner": "^2.0.7",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
 }
