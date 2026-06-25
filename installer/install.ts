@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync } fr
 import { join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { createHash } from "node:crypto"
+import { spawnSync } from "node:child_process"
 import type { Platform, PlatformDescriptor, InstallPlan, InstallOperation, InstallResult } from "./types"
 
 import { detectProjectState } from "./detect"
@@ -305,5 +306,38 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   }
 
   log("ok", "FORGE installation complete.")
+
+  // Step 9: Install MCP server npm dependencies (idempotent)
+  installMcpServerDeps(projectRoot)
+
   return { success: true, installed: platforms, warnings, backupPaths, manifestPath, exitCode: 0 }
+}
+
+// ---------------------------------------------------------------------------
+// Post-Install: MCP server npm install
+// ---------------------------------------------------------------------------
+
+/**
+ * Run `npm install` in `.forge/mcp-server/` if needed.
+ * Called after the main install pipeline completes.
+ * Idempotent: skips if node_modules is already up to date.
+ */
+export function installMcpServerDeps(projectRoot: string): void {
+  const mcpDir = join(projectRoot, ".forge", "mcp-server")
+  const mcpPackageJson = join(mcpDir, "package.json")
+
+  if (!existsSync(mcpPackageJson)) return
+
+  log("info", "Installing MCP server dependencies (npm install)...")
+  const result = spawnSync("npm", ["install", "--silent"], {
+    cwd: mcpDir,
+    stdio: "inherit",
+    encoding: "utf-8",
+  })
+
+  if (result.status === 0) {
+    log("ok", "MCP server dependencies installed.")
+  } else {
+    log("warn", "npm install in .forge/mcp-server/ failed. Run it manually if the MCP server doesn't start.")
+  }
 }

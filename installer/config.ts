@@ -16,10 +16,16 @@ import type { ForgeConfigModel, McpServerConfig, AgentConfig } from "./types"
 /** Default MCP server config for the forge-mcp-server. */
 export function defaultMcpServerConfig(projectRoot: string): McpServerConfig {
   // The MCP server is copied to the target project's .forge/mcp-server/
-  // during installation. Reference it from there.
+  // during installation, along with its node_modules (npm install is run
+  // as a post-install step). Use node + local tsx binary to avoid any
+  // dependency on globally installed tools or npx engine-strict issues.
   return {
     name: "forge-mcp-server",
-    command: ["npx", "-y", "tsx", ".forge/mcp-server/index.ts"],
+    command: [
+      "node",
+      ".forge/mcp-server/node_modules/tsx/dist/cli.mjs",
+      ".forge/mcp-server/index.ts",
+    ],
   }
 }
 
