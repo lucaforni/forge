@@ -36,6 +36,7 @@ export function generateOpenCodeConfig(model: ForgeConfigModel): string {
   const config: Record<string, unknown> = {
     $schema: "https://opencode.ai/config.json",
     default_agent: "forge",
+    subagent_depth: 3,
   }
 
   // Agent definitions
