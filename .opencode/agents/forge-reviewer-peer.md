@@ -1,13 +1,11 @@
 ---
 description: "FORGE adversarial reviewer (peer): independent code review across 7 dimensions including Test-Spec Coherence and UX quality"
 mode: subagent
-tools:
-  read: true
-  glob: true
-  grep: true
-  skill: true
-  bash: true
 permission:
+  read: allow
+  glob: allow
+  grep: allow
+  skill: allow
   bash:
     "git diff *": allow
     "git log *": allow

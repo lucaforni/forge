@@ -109,7 +109,9 @@
     "write": "allow",
     "read": "allow",
     "glob": "allow",
-    "grep": "allow"
+    "grep": "allow",
+    "skill": "allow",
+    "question": "allow"
   },
 
   // Constitution and knowledge base for FORGE meta-development

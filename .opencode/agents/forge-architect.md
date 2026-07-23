@@ -1,15 +1,15 @@
 ---
 description: 'FORGE architect: technical architecture design, ADR creation, technical planning, and constitution compliance verification'
 mode: subagent
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  skill: true
-  question: true
-  webfetch: true
+permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  question: allow
+  webfetch: allow
 ---
 <!-- Model configured via opencode.json -->
 

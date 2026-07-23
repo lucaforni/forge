@@ -2,16 +2,14 @@
 description: "FORGE QA engineer: test strategy definition, test generation, coverage analysis, and adaptive testing based on workflow track"
 mode: subagent
 variant: high
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  bash: true
-  skill: true
-  question: true
 permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  question: allow
   bash:
     "npm test*": allow
     "npm run test*": allow

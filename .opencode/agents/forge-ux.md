@@ -1,14 +1,14 @@
 ---
 description: "FORGE UX/UI designer with specialization in data-heavy interfaces: user journeys, personas, wireframes, component specs, design system, accessibility, plus visualization choice, hierarchical IA, dashboard composition, filters/query building, and data storytelling"
 mode: subagent
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  skill: true
-  question: true
+permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  question: allow
 ---
 <!-- Model configured via opencode.json -->
 

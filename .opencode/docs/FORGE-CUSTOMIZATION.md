@@ -77,11 +77,11 @@ File: `.opencode/agents/forge-reviewer.md`
 description: "Security-focused adversarial reviewer"
 mode: subagent
 model: github-copilot/claude-opus-4.6
-tools:
-  read: true
-  glob: true
-  grep: true
-  skill: true
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  skill: allow
   bash:
     "git *": allow
     "*": deny
@@ -129,15 +129,16 @@ File: `.opencode/agents/forge-devops.md`
 description: "Infrastructure and DevOps specialist for FORGE workflows"
 mode: subagent
 model: github-copilot/claude-sonnet-4.6
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  bash: true
-  skill: true
-  webfetch: true
+permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  webfetch: allow
+  bash:
+    "*": allow
 ---
 
 You are a DevOps specialist within the FORGE methodology.
@@ -230,15 +231,16 @@ Each agent has explicit tool permissions. To restrict further:
 
 ```markdown
 ---
-tools:
-  read: true
-  glob: true
-  grep: true
-  bash: false       # No shell access
-  write: false      # Cannot create files
-  edit: false       # Cannot modify files
-  webfetch: false   # No web access
-  skill: true
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  bash:
+    "*": deny        # No shell access
+  write: deny        # Cannot create files
+  edit: deny         # Cannot modify files
+  webfetch: deny     # No web access
 ---
 ```
 
@@ -246,7 +248,11 @@ For granular bash control:
 
 ```markdown
 ---
-tools:
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  skill: allow
   bash:
     "git *": allow
     "npm test": allow
@@ -551,13 +557,23 @@ In `opencode.json`:
 Or per agent in the agent's frontmatter:
 ```markdown
 ---
-tools:
-  skill: true
 permission:
-  skill:
-    "adversarial-review": allow
+  skill: allow
+  bash:
     "*": deny
 ---
+```
+
+Skill-level restrictions are set via `opencode.json`:
+```json
+{
+  "permission": {
+    "skill": {
+      "adversarial-review": "allow",
+      "*": "deny"
+    }
+  }
+}
 ```
 
 ### 4.4 Global vs Project Skills
@@ -1763,14 +1779,14 @@ Add game development capabilities:
 description: "Game design specialist for FORGE"
 mode: subagent
 model: github-copilot/claude-opus-4.6
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  skill: true
-  question: true
+permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  question: allow
 ---
 
 You are a game design specialist. You help define game mechanics,

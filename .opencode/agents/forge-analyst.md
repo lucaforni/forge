@@ -2,15 +2,15 @@
 description: "FORGE analyst: codebase exploration, research, scope detection, brownfield analysis, and product brief creation"
 mode: subagent
 variant: high
-tools:
-  read: true
-  glob: true
-  grep: true
-  webfetch: true
-  skill: true
-  question: true
-  write: true
-  edit: true
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  webfetch: allow
+  skill: allow
+  question: allow
+  write: allow
+  edit: allow
 ---
 <!-- Model configured via opencode.json -->
 
