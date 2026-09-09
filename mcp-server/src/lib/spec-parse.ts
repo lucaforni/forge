@@ -58,8 +58,18 @@ export function extractSections(content: string): Map<string, string> {
 
 /** Check whether a section body is effectively empty (comments/whitespace only). */
 export function isSectionEmpty(body: string): boolean {
-  const cleaned = body
-    .replace(/<!--.*?-->/gs, "")
+  // Strip HTML comments to a fixpoint: a single non-recursive pass can leave
+  // behind a residual "<!--" (e.g. "<!-- <!-- -->"), which may start an HTML
+  // element downstream (js/incomplete-multi-character-sanitization). Then drop
+  // any stray comment markers that were never part of a complete comment.
+  let cleaned = body
+  let prev = ""
+  while (prev !== cleaned) {
+    prev = cleaned
+    cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, "")
+  }
+  cleaned = cleaned
+    .replace(/<!--|-->/g, "")
     .replace(/\|[\s\-|]*\|/g, "")
     .replace(/^\s*[-*]\s*$/gm, "")
     .trim()
