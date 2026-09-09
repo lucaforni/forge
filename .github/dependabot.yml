@@ -23,6 +23,28 @@ updates:
     # Per ricevere anche security updates automatiche, abilitare
     # "Dependabot security updates" nelle impostazioni repo (non versionabile).
 
+  # Secondo lockfile del repo (framework OpenCode): senza questa entry le
+  # vulnerabilita' in .opencode/package-lock.json non generano PR (lezione 2026-09-09).
+  - package-ecosystem: npm
+    directory: "/.opencode"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Rome
+    target-branch: main
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      opencode-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
