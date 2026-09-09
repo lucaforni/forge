@@ -6,7 +6,7 @@
  * The backup directory is inside `.forge/` (conventionally gitignored).
  */
 
-import { copyFileSync, existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync } from "node:fs"
+import { copyFileSync, mkdirSync, openSync, readSync, writeSync, fstatSync, closeSync } from "node:fs"
 import { join, dirname, resolve, relative } from "node:path"
 import type { DriftEntry } from "./drift"
 
@@ -36,9 +36,9 @@ export function backupFile(filePath: string, backupRoot: string, projectRoot: st
   const targetPath = join(backupRoot, relPath)
   const targetDir = dirname(targetPath)
 
-  if (!existsSync(targetDir)) {
-    mkdirSync(targetDir, { recursive: true })
-  }
+  // mkdirSync with recursive:true is idempotent — no TOCTOU-prone
+  // existsSync check needed (js/file-system-race).
+  mkdirSync(targetDir, { recursive: true })
 
   copyFileSync(filePath, targetPath)
   return targetPath
@@ -77,17 +77,28 @@ export function ensureBackupGitignore(projectRoot: string): void {
   const gitignorePath = join(projectRoot, ".forge", ".gitignore")
   const pattern = ".backups/"
 
-  if (!existsSync(gitignorePath)) {
-    const forgeDir = dirname(gitignorePath)
-    if (!existsSync(forgeDir)) {
-      mkdirSync(forgeDir, { recursive: true })
-    }
-    writeFileSync(gitignorePath, `${pattern}\n`, "utf-8")
-    return
-  }
+  // mkdirSync with recursive:true is idempotent — no existsSync check needed.
+  mkdirSync(dirname(gitignorePath), { recursive: true })
 
-  const content = readFileSync(gitignorePath, "utf-8")
-  if (!content.includes(pattern)) {
-    appendFileSync(gitignorePath, `\n${pattern}\n`, "utf-8")
+  // Open once with "a+" (O_CREAT, no truncation) and perform all
+  // read/write operations on the same file descriptor. This avoids the
+  // check-then-act race (js/file-system-race) of existsSync → writeFileSync
+  // / readFileSync → appendFileSync on the path.
+  const fd = openSync(gitignorePath, "a+")
+  try {
+    const { size } = fstatSync(fd)
+    if (size === 0) {
+      writeSync(fd, `${pattern}\n`)
+      return
+    }
+    const buf = Buffer.alloc(size)
+    readSync(fd, buf, 0, size, 0)
+    const content = buf.toString("utf-8")
+    if (!content.includes(pattern)) {
+      const sep = content.endsWith("\n") ? "" : "\n"
+      writeSync(fd, `${sep}${pattern}\n`)
+    }
+  } finally {
+    closeSync(fd)
   }
 }
