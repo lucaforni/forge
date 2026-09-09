@@ -18,7 +18,7 @@
     "@types/node": "^22.20.1",
     "@types/react": "^19.2.17",
     "class-variance-authority": "^0.7.1",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "lucide-react": "^1.21.0",
     "sonner": "^2.0.7",
     "tsx": "^4.0.0",
