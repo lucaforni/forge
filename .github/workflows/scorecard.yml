@@ -1,0 +1,39 @@
+# OSSF Scorecard — security posture (supply-chain)
+name: Scorecard
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * 1" # ogni lunedì ore 07:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@v2.4.1
+        with:
+          results_format: sarif
+          results_file: results.sarif
+          publish_results: true
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif

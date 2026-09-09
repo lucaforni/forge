@@ -1,0 +1,45 @@
+# Dependabot — aggiornamenti automatici dipendenze
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Rome
+    target-branch: main
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      dev-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    # Per ricevere anche security updates automatiche, abilitare
+    # "Dependabot security updates" nelle impostazioni repo (non versionabile).
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Rome
+    target-branch: main
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

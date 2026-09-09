@@ -1,0 +1,4 @@
+# CODEOWNERS — reviewer di default
+# @lucaforni rivede tutto di default; aggiungi righe più specifiche sopra se serve.
+
+* @lucaforni
