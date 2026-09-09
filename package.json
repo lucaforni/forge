@@ -22,7 +22,7 @@
     "lucide-react": "^1.21.0",
     "sonner": "^2.0.7",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0",
+    "typescript": "^7.0.2",
     "vite": "^6.4.3",
     "vitest": "^5.0.0"
   }
