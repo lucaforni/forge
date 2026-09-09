@@ -56,20 +56,52 @@ export function extractSections(content: string): Map<string, string> {
   return sections
 }
 
+/**
+ * Remove HTML comments from a string.
+ *
+ * Implemented as a character scanner (not a single-pass regex) so that nested
+ * openers cannot leave a residual "<!--" behind and both comment closers
+ * ("-->" and "--!>") are honored. An unterminated opener swallows the rest of
+ * the input, mirroring how browsers treat it (nothing after "<!--" renders).
+ */
+function stripHtmlComments(input: string): string {
+  let out = ""
+  let i = 0
+  while (i < input.length) {
+    const start = input.indexOf("<!--", i)
+    if (start === -1) {
+      out += input.slice(i)
+      break
+    }
+    out += input.slice(i, start)
+    let depth = 1
+    let j = start + 4
+    let end = -1
+    while (j < input.length && depth > 0) {
+      if (input.startsWith("<!--", j)) {
+        depth++
+        j += 4
+      } else if (input.startsWith("--!>", j)) {
+        depth--
+        if (depth === 0) end = j + 4
+        j += 4
+      } else if (input.startsWith("-->", j)) {
+        depth--
+        if (depth === 0) end = j + 3
+        j += 3
+      } else {
+        j++
+      }
+    }
+    if (end === -1) break // unterminated: drop the remainder
+    i = end
+  }
+  return out
+}
+
 /** Check whether a section body is effectively empty (comments/whitespace only). */
 export function isSectionEmpty(body: string): boolean {
-  // Strip HTML comments to a fixpoint: a single non-recursive pass can leave
-  // behind a residual "<!--" (e.g. "<!-- <!-- -->"), which may start an HTML
-  // element downstream (js/incomplete-multi-character-sanitization). Then drop
-  // any stray comment markers that were never part of a complete comment.
-  let cleaned = body
-  let prev = ""
-  while (prev !== cleaned) {
-    prev = cleaned
-    cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, "")
-  }
-  cleaned = cleaned
-    .replace(/<!--|-->/g, "")
+  const cleaned = stripHtmlComments(body)
     .replace(/\|[\s\-|]*\|/g, "")
     .replace(/^\s*[-*]\s*$/gm, "")
     .trim()
