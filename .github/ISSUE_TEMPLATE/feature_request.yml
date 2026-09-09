@@ -1,0 +1,53 @@
+name: ✨ Feature request
+description: Proponi una nuova funzionalità o miglioramento
+title: "[Feature]: "
+labels: [enhancement, triage]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per il suggerimento! Descrivi il problema e la soluzione proposta.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: Quale problema risolve questa feature? Es. "Sono frustrato quando..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Soluzione proposta
+      description: Cosa vorresti che succedesse?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative considerate
+      description: Hai valutato soluzioni o workaround alternativi?
+  - type: textarea
+    id: context
+    attributes:
+      label: Contesto aggiuntivo
+      description: Mockup, esempi, link o riferimenti utili
+  - type: dropdown
+    id: track
+    attributes:
+      label: Track FORGE stimata (opzionale)
+      description: Quanto è grande secondo te?
+      options:
+        - Non so
+        - Quick (< 1 giorno)
+        - Feature (1-5 giorni)
+        - Epic (settimane)
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: Ho verificato che non esista già una issue/PR simile
+          required: true
+        - label: Sono disponibile a contribuire con una PR (opzionale)
+          required: false

@@ -1,0 +1,72 @@
+name: 🐛 Bug report
+description: Segnala un bug o un comportamento inatteso
+title: "[Bug]: "
+labels: [bug, triage]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione! Compila tutti i campi per aiutarci a riprodurre il problema.
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrizione
+      description: Descrizione chiara e concisa del bug
+      placeholder: Cosa è successo?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passi per riprodurre
+      description: Come possiamo riprodurre il problema?
+      placeholder: |
+        1. Vai su '...'
+        2. Esegui '...'
+        3. Vedi errore
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento atteso
+      description: Cosa ti aspettavi che succedesse?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento attuale
+      description: Cosa succede invece? Includi messaggi di errore.
+  - type: input
+    id: node-version
+    attributes:
+      label: Versione Node.js
+      description: Output di `node --version`
+      placeholder: "es. 22.14.0"
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema operativo
+      options:
+        - Linux
+        - macOS
+        - Windows
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log rilevanti
+      description: Incolla log o stack trace (usa blocchi ``` per formattare)
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: Ho cercato tra le issue esistenti prima di aprirne una nuova
+          required: true
+        - label: Posso riprodurre il bug sull'ultima versione di `main`
+          required: false

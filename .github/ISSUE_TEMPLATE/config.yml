@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Segnalazione vulnerabilità (privata)
+    url: https://github.com/lucaforni/forge/security/advisories/new
+    about: NON aprire issue pubbliche per vulnerabilità — usa la segnalazione privata
+# Per abilitare il link alle Discussions, attiva prima
+# Settings → General → Features → Discussions, poi decommenta:
+#  - name: 💬 GitHub Discussions
+#    url: https://github.com/lucaforni/forge/discussions
+#    about: Domande, idee e discussioni generali (non bug né feature formali)
