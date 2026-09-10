@@ -228,7 +228,6 @@ describe('CountdownConfirmDialog', () => {
     expect(screen.getByText('0')).toBeDefined()
     expect(screen.getByTestId('confirm-btn').getAttribute('disabled')).toBeNull()
   })
-})
 
   it('TypeToConfirm error resets input', () => {
     render(<TypeToConfirmDialog {...defaultProps} confirmWord="CONFIRMA" />)
