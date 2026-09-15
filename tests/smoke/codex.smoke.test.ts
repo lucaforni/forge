@@ -65,6 +65,9 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
         },
       )
       const out = `${res.stdout ?? ""}\n${res.stderr ?? ""}`
+      if (res.status !== 0 || !out.includes(MARKER)) {
+        console.error(`[smoke:codex] harness output (first 4000 chars):\n${out.slice(0, 4000)}`)
+      }
       expect({ status: res.status, out }).toMatchObject({ status: 0 })
       expect(out).toContain(MARKER)
     },
