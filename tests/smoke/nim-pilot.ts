@@ -155,6 +155,49 @@ console.log("key: present\n")
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
+// 3b. Voluntary tool call (no tool_choice — the agentic condition) -------------
+// Harnesses never force tool_choice; the model must volunteer the call inside
+// a normal assistant turn. This is the check that predicts smoke success.
+{
+  const { status, json, raw } = await api("/chat/completions", {
+    model: MODEL,
+    messages: [
+      {
+        role: "user",
+        content:
+          "What is the first line of data.txt? Use the get_file_first_line tool to find out.",
+      },
+    ],
+    tools: [
+      {
+        type: "function",
+        function: {
+          name: "get_file_first_line",
+          description: "Return the first line of a project file.",
+          parameters: {
+            type: "object",
+            properties: { path: { type: "string" } },
+            required: ["path"],
+          },
+        },
+      },
+    ],
+    max_tokens: 256,
+    temperature: 0,
+  })
+  const msg = (json as { choices?: { message?: { tool_calls?: { function?: { name?: string } }[]; content?: string } }[] })
+    ?.choices?.[0]?.message
+  const names = msg?.tool_calls?.map((c) => c.function?.name) ?? []
+  const ok = status === 200 && names.includes("get_file_first_line")
+  check("voluntary tool call (no tool_choice)", ok, `HTTP ${status}, calls=${JSON.stringify(names)}`)
+  if (!ok) {
+    console.log(`      content was: ${JSON.stringify(msg?.content)?.slice(0, 300)}`)
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
+  console.log(`      tokens: ${usageOf(json)}`)
+}
+
 // 4. Responses API (Codex custom-provider wire) ---------------------------------
 {
   const { status, json, raw } = await api("/responses", {
