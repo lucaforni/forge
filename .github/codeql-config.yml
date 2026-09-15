@@ -1,0 +1,8 @@
+# CodeQL config — <https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/customizing-code-scanning>
+# Referenziato da .github/workflows/codeql.yml (init -> config-file).
+
+# frontend/ contiene solo template di esempio non eseguibili (nessun import
+# esterno, fuori dalla CI): esclusi per evitare finding ed errori di
+# estrazione spuri sul codice d'esempio.
+paths-ignore:
+  - frontend/**
