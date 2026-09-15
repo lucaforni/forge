@@ -43,8 +43,22 @@ describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
               },
             },
           },
-          // Least privilege: the smoke prompt only reads one file.
-          permission: { read: "allow", glob: "allow", grep: "allow", "*": "deny" },
+          // Least privilege: the smoke prompt only reads one file. The model may
+          // pick the read tool or a read-only shell command (observed: sed).
+          // Everything else (edit/write/arbitrary bash) stays denied.
+          permission: {
+            read: "allow",
+            glob: "allow",
+            grep: "allow",
+            bash: {
+              "sed *": "allow",
+              "cat *": "allow",
+              "head *": "allow",
+              "ls *": "allow",
+              "*": "deny",
+            },
+            "*": "deny",
+          },
         },
         null,
         2,
