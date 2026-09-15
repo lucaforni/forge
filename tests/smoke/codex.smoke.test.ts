@@ -3,8 +3,9 @@
  *
  * Skips (never fails) without NVIDIA_API_KEY or without the codex CLI.
  * Uses an isolated CODEX_HOME so the user's real ~/.codex is untouched.
- * NOTE: codex custom providers require wire_api = "responses" — the pilot
- * (tests/smoke/nim-pilot.ts) must validate /v1/responses before trusting this.
+ * NOTE: wire_api = "chat" (not "responses"): NIM's Responses endpoint strictly
+ * validates tools and rejects Codex's namespace/sub-agent tools. Chat sends
+ * plain function tools, which NIM accepts.
  */
 
 import { describe, it, expect, beforeAll } from "vitest"
@@ -39,7 +40,9 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
         `name = "NVIDIA NIM"`,
         `base_url = "${cfg.baseUrl}"`,
         `env_key = "NVIDIA_API_KEY"`,
-        `wire_api = "responses"`,
+        // NOTE: "responses" is rejected by NIM (strict tool validation chokes on
+        // Codex's namespace/sub-agent tools). "chat" sends plain function tools.
+        `wire_api = "chat"`,
         ``,
       ].join("\n"),
       "utf-8",
