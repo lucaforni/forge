@@ -59,7 +59,9 @@ if (!API_KEY) {
 }
 
 console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}`)
-console.log(`key prefix: ${API_KEY.slice(0, 11)}… (verify it matches build.nvidia.com)\n`)
+// NOTE: never log API_KEY or anything derived from it (length included) —
+// CodeQL js/clear-text-logging flags any secret-derived value in log sinks.
+console.log("key: present\n")
 
 // 1. Key + connectivity -------------------------------------------------------
 {
