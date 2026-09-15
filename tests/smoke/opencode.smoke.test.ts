@@ -65,6 +65,10 @@ describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
           project,
           "--model",
           `nim/${cfg.model}`,
+          // JSON event stream: machine-readable (tool calls, errors) and free
+          // of ANSI codes, so assertions and failure dumps are precise.
+          "--format",
+          "json",
           "Read data.txt in the current directory and reply with ONLY its first line. Use tools, do not guess.",
         ],
         {
