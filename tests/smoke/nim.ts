@@ -12,7 +12,10 @@ import { join } from "node:path"
 import { spawnSync } from "node:child_process"
 
 export const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
-export const NIM_DEFAULT_MODEL = "openai/gpt-oss-20b"
+// qwen2.5-coder: strong tool use via NIM chat completions. gpt-oss-20b was
+// tried first (2026-09-15) but returned empty/pseudo-JSON instead of tool
+// calls inside opencode's agent loop — see nim-pilot.ts tool check.
+export const NIM_DEFAULT_MODEL = "qwen/qwen2.5-coder-32b-instruct"
 
 export interface NimConfig {
   apiKey: string
