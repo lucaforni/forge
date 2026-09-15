@@ -198,6 +198,70 @@ console.log("key: present\n")
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
+// 3c. Voluntary tool call UNDER LOAD (predicts harness success) ----------------
+// Harnesses send a big system prompt + dozens of tools. Small/weaker models
+// follow the protocol with 1 tool but leak native formats (raw JSON, DSML)
+// under load. Send 20 dummy tools + long preamble and still require a clean
+// function call to get_file_first_line.
+{
+  const dummyTools = Array.from({ length: 19 }, (_, i) => ({
+    type: "function",
+    function: {
+      name: `dummy_helper_${i}`,
+      description: `Unrelated helper number ${i} for testing tool selection under load. Does nothing useful.`,
+      parameters: {
+        type: "object",
+        properties: {
+          verbose: { type: "boolean" },
+          count: { type: "integer" },
+          label: { type: "string" },
+        },
+      },
+    },
+  }))
+  const realTool = {
+    type: "function",
+    function: {
+      name: "get_file_first_line",
+      description: "Return the first line of a project file.",
+      parameters: {
+        type: "object",
+        properties: { path: { type: "string" } },
+        required: ["path"],
+      },
+    },
+  }
+  const preamble =
+    "You are a careful coding assistant operating inside a software project. " +
+    "Follow project conventions. Prefer precise tool calls over guessing. " +
+    "When you need file contents, always use the provided file tools. ".repeat(40)
+  const { status, json, raw } = await api("/chat/completions", {
+    model: MODEL,
+    messages: [
+      { role: "system", content: preamble },
+      {
+        role: "user",
+        content:
+          "What is the first line of data.txt? Use the get_file_first_line tool to find out.",
+      },
+    ],
+    tools: [...dummyTools, realTool],
+    max_tokens: 256,
+    temperature: 0,
+  })
+  const msg = (json as { choices?: { message?: { tool_calls?: { function?: { name?: string } }[]; content?: string } }[] })
+    ?.choices?.[0]?.message
+  const names = msg?.tool_calls?.map((c) => c.function?.name) ?? []
+  const ok = status === 200 && names.includes("get_file_first_line")
+  check("voluntary tool call under load", ok, `HTTP ${status}, calls=${JSON.stringify(names)}`)
+  if (!ok) {
+    console.log(`      content was: ${JSON.stringify(msg?.content)?.slice(0, 300)}`)
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
+  console.log(`      tokens: ${usageOf(json)}`)
+}
+
 // 4. Responses API (Codex custom-provider wire) ---------------------------------
 {
   const { status, json, raw } = await api("/responses", {
