@@ -5,3 +5,6 @@ install-forge.ts.bak
 dev/
 .forge/.backups
 .forge/.install-manifest.json
+# Local smoke-test credentials (see .env.example — never commit real keys)
+.env
+.env.local
