@@ -50,7 +50,13 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
     return () => rmSync(codexHome, { recursive: true, force: true })
   })
 
-  it(
+  // KNOWN INCOMPATIBILITY (2026-09-15, codex 0.154.0): NIM's /v1/responses
+  // endpoint strictly validates tools and rejects Codex's namespace/sub-agent
+  // tools (18 validation errors), while `wire_api = "chat"` is rejected
+  // client-side ("no longer supported"). No wire option works today.
+  // it.fails pins this: suite stays green on the fast deterministic rejection,
+  // and flips red if it ever unexpectedly passes (then re-enable the test).
+  it.fails(
     "reads a project file through tools and echoes its first line",
     () => {
       const res = spawnSync(
