@@ -12,10 +12,11 @@ import { join } from "node:path"
 import { spawnSync } from "node:child_process"
 
 export const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
-// gpt-oss-120b: 20b emits tool calls as TEXT (not function calls) inside
-// opencode's loop; 120b is the same family, far more capable, still cheap.
-// qwen2.5-coder-32b is EOL; deepseek-v4-flash hung. See nim-pilot.ts.
-export const NIM_DEFAULT_MODEL = "openai/gpt-oss-120b"
+// deepseek-v4-flash-0731: alive in catalog, maintainer-approved. History:
+// gpt-oss-20b/120b emit tool calls as TEXT in opencode's loop (20b) or are
+// EOL (120b); qwen2.5-coder-32b and kimi-k2-instruct EOL 2026-05-12.
+// deepseek's earlier hang predates the stdin-ignore fix — retest fairly.
+export const NIM_DEFAULT_MODEL = "deepseek-ai/deepseek-v4-flash-0731"
 
 export interface NimConfig {
   apiKey: string
