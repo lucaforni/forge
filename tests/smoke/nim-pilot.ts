@@ -25,7 +25,10 @@ function check(name: string, ok: boolean, detail = "") {
   if (!ok) failures++
 }
 
-async function api(path: string, body?: unknown): Promise<{ status: number; json: unknown }> {
+async function api(
+  path: string,
+  body?: unknown,
+): Promise<{ status: number; json: unknown; raw: string }> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: body === undefined ? "GET" : "POST",
     headers: {
@@ -35,8 +38,14 @@ async function api(path: string, body?: unknown): Promise<{ status: number; json
     body: body === undefined ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(120_000),
   })
-  const json = (await res.json().catch(() => null)) as unknown
-  return { status: res.status, json }
+  const raw = await res.text().catch(() => "")
+  let json: unknown = null
+  try {
+    json = JSON.parse(raw)
+  } catch {
+    /* non-JSON error page — raw carries the detail */
+  }
+  return { status: res.status, json, raw: raw.slice(0, 500) }
 }
 
 function usageOf(json: unknown): string {
@@ -49,13 +58,18 @@ if (!API_KEY) {
   process.exit(2)
 }
 
-console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}\n`)
+console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}`)
+console.log(`key prefix: ${API_KEY.slice(0, 11)}… (verify it matches build.nvidia.com)\n`)
 
 // 1. Key + connectivity -------------------------------------------------------
 {
-  const { status, json } = await api("/v1/models")
+  const { status, json, raw } = await api("/v1/models")
   const ids = (json as { data?: { id: string }[] })?.data?.map((m) => m.id) ?? []
   check("models endpoint reachable", status === 200, `HTTP ${status}, ${ids.length} models`)
+  if (status !== 200) {
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
   if (status === 200 && !ids.includes(MODEL)) {
     console.log(`WARN  model ${MODEL} not listed — continuing anyway`)
   }
@@ -63,7 +77,7 @@ console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}\n`)
 
 // 2. Chat round-trip ------------------------------------------------------------
 {
-  const { status, json } = await api("/v1/chat/completions", {
+  const { status, json, raw } = await api("/v1/chat/completions", {
     model: MODEL,
     messages: [{ role: "user", content: "Reply with exactly: NIM-OK" }],
     max_tokens: 64,
@@ -71,13 +85,18 @@ console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}\n`)
   })
   const text = (json as { choices?: { message?: { content?: string } }[] })?.choices?.[0]?.message
     ?.content?.trim()
-  check("chat round-trip", status === 200 && text === "NIM-OK", `got ${JSON.stringify(text)}`)
+  const ok = status === 200 && text === "NIM-OK"
+  check("chat round-trip", ok, `HTTP ${status}, got ${JSON.stringify(text)}`)
+  if (!ok) {
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
 // 3. Tool-call emission (critical for agentic harnesses) -----------------------
 {
-  const { status, json } = await api("/v1/chat/completions", {
+  const { status, json, raw } = await api("/v1/chat/completions", {
     model: MODEL,
     messages: [
       {
@@ -106,26 +125,51 @@ console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}\n`)
   const calls = (json as { choices?: { message?: { tool_calls?: { function?: { name?: string } }[] } }[] })
     ?.choices?.[0]?.message?.tool_calls
   const names = calls?.map((c) => c.function?.name) ?? []
-  check(
-    "tool call emitted",
-    status === 200 && names.includes("get_file_first_line"),
-    `calls=${JSON.stringify(names)}`,
-  )
+  const ok = status === 200 && names.includes("get_file_first_line")
+  check("tool call emitted", ok, `HTTP ${status}, calls=${JSON.stringify(names)}`)
+  if (!ok) {
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
 // 4. Responses API (Codex custom-provider wire) ---------------------------------
 {
-  const { status, json } = await api("/v1/responses", {
+  const { status, json, raw } = await api("/v1/responses", {
     model: MODEL,
     input: "Reply with exactly: NIM-RESP-OK",
     max_output_tokens: 64,
     temperature: 0,
   })
   const out = JSON.stringify(json)
-  check("responses API", status === 200 && out.includes("NIM-RESP-OK"), `HTTP ${status}`)
+  const ok = status === 200 && out.includes("NIM-RESP-OK")
+  check("responses API", ok, `HTTP ${status}`)
+  if (!ok) {
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
 console.log(failures === 0 ? "\nPILOT GREEN — NIM is smoke-ready." : `\nPILOT RED — ${failures} check(s) failed.`)
 process.exit(failures === 0 ? 0 : 1)
+
+/** Map common NIM failure signatures to actionable next steps. */
+function hintForStatus(status: number, raw: string): void {
+  if (status === 401) {
+    console.log("      hint: key rejected — regenerate it at build.nvidia.com/settings.")
+  } else if (status === 403 || /authorization failed/i.test(raw)) {
+    console.log(
+      "      hint: 403 on integrate.api.nvidia.com usually means the account/org lacks the",
+    )
+    console.log("            'Public API Endpoints' entitlement — request it (forum/help@build.nvidia.com).")
+  } else if (status === 404 || /not found for account/i.test(raw)) {
+    console.log("      hint: 404 'Function not found for account' = inference not enabled for this")
+    console.log("            account/org. Check Organization Details on build.nvidia.com or request access.")
+    console.log("            (Also verify NIM_BASE_URL is unset/default and the key is from build.nvidia.com,")
+    console.log("            not an NGC registry key.)")
+  } else if (status === 429) {
+    console.log("      hint: free-tier rate limit (~40 RPM) — wait a minute and retry.")
+  }
+}
