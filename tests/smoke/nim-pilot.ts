@@ -28,13 +28,13 @@ function check(name: string, ok: boolean, detail = "") {
 async function api(
   path: string,
   body?: unknown,
+  opts: { auth?: boolean } = {},
 ): Promise<{ status: number; json: unknown; raw: string }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  if (opts.auth !== false) headers.Authorization = `Bearer ${API_KEY}`
   const res = await fetch(`${BASE_URL}${path}`, {
     method: body === undefined ? "GET" : "POST",
-    headers: {
-      Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(120_000),
   })
@@ -63,9 +63,28 @@ console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}`)
 // CodeQL js/clear-text-logging flags any secret-derived value in log sinks.
 console.log("key: present\n")
 
+// 0. Key shape + public connectivity (no auth) ---------------------------------
+{
+  const sane =
+    API_KEY.startsWith("nvapi-") && API_KEY.length >= 32 && !/\s/.test(API_KEY)
+  check("key looks like a build.nvidia.com key", sane, "expect nvapi-…, 32+ chars, no whitespace")
+  if (!sane) {
+    console.log("      hint: regenerate at build.nvidia.com/settings; export with single quotes")
+    console.log("            to avoid shell mangling: export NVIDIA_API_KEY='nvapi-...'")
+  }
+  const { status, raw } = await api("/models", undefined, { auth: false })
+  const ok = status === 200
+  check("public models endpoint (no auth)", ok, `HTTP ${status}`)
+  if (!ok) {
+    console.log(`      body: ${raw || "(empty)"}`)
+    console.log("      hint: the host itself is unreachable — check proxy env (HTTPS_PROXY), VPN, DNS.")
+    console.log("            Authenticated checks below are meaningless until this is green.")
+  }
+}
+
 // 1. Key + connectivity -------------------------------------------------------
 {
-  const { status, json, raw } = await api("/v1/models")
+  const { status, json, raw } = await api("/models")
   const ids = (json as { data?: { id: string }[] })?.data?.map((m) => m.id) ?? []
   check("models endpoint reachable", status === 200, `HTTP ${status}, ${ids.length} models`)
   if (status !== 200) {
@@ -79,7 +98,7 @@ console.log("key: present\n")
 
 // 2. Chat round-trip ------------------------------------------------------------
 {
-  const { status, json, raw } = await api("/v1/chat/completions", {
+  const { status, json, raw } = await api("/chat/completions", {
     model: MODEL,
     messages: [{ role: "user", content: "Reply with exactly: NIM-OK" }],
     max_tokens: 64,
@@ -98,7 +117,7 @@ console.log("key: present\n")
 
 // 3. Tool-call emission (critical for agentic harnesses) -----------------------
 {
-  const { status, json, raw } = await api("/v1/chat/completions", {
+  const { status, json, raw } = await api("/chat/completions", {
     model: MODEL,
     messages: [
       {
@@ -138,7 +157,7 @@ console.log("key: present\n")
 
 // 4. Responses API (Codex custom-provider wire) ---------------------------------
 {
-  const { status, json, raw } = await api("/v1/responses", {
+  const { status, json, raw } = await api("/responses", {
     model: MODEL,
     input: "Reply with exactly: NIM-RESP-OK",
     max_output_tokens: 64,
@@ -167,10 +186,12 @@ function hintForStatus(status: number, raw: string): void {
     )
     console.log("            'Public API Endpoints' entitlement — request it (forum/help@build.nvidia.com).")
   } else if (status === 404 || /not found for account/i.test(raw)) {
-    console.log("      hint: 404 'Function not found for account' = inference not enabled for this")
-    console.log("            account/org. Check Organization Details on build.nvidia.com or request access.")
-    console.log("            (Also verify NIM_BASE_URL is unset/default and the key is from build.nvidia.com,")
-    console.log("            not an NGC registry key.)")
+    console.log("      hint: compare with step 0 above — public 200 + authed 404 means the KEY is")
+    console.log("            not recognized: regenerate at build.nvidia.com/settings (must be a Build")
+    console.log("            key, not an NGC registry key) and re-export with single quotes.")
+    console.log("            'Function not found for account' (JSON body) instead means inference is")
+    console.log("            not enabled for this account/org — request 'Public API Endpoints' access.")
+    console.log("            (Also verify NIM_BASE_URL is unset/default.)")
   } else if (status === 429) {
     console.log("      hint: free-tier rate limit (~40 RPM) — wait a minute and retry.")
   }
