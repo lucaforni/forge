@@ -70,6 +70,9 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
           cwd: project,
           timeout: 300_000,
           encoding: "utf-8",
+          // stdin ignored: a permission prompt must fail fast, never hang
+          // the full 300s waiting on an open pipe.
+          stdio: ["ignore", "pipe", "pipe"],
           env: { ...process.env, CODEX_HOME: codexHome, NVIDIA_API_KEY: cfg.apiKey, CI: "true" },
         },
       )
