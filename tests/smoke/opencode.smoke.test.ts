@@ -83,6 +83,12 @@ describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
           // of ANSI codes, so assertions and failure dumps are precise.
           "--format",
           "json",
+          // plan agent = read-only toolset (read/glob/grep): a fraction of the
+          // default build agent's tool surface, so a 20b model can follow the
+          // function-calling protocol instead of emitting pseudo-JSON text.
+          // Semantically ideal for smoke: read a file and report back.
+          "--agent",
+          "plan",
           "Read data.txt in the current directory and reply with ONLY its first line. Use tools, do not guess.",
         ],
         {
