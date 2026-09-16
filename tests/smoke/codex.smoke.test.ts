@@ -12,8 +12,7 @@
 import { describe, it, expect, beforeAll } from "vitest"
 import { mkdirSync, writeFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
-import { spawnSync } from "node:child_process"
-import { smokeProvider, smokeBlockers, findCli, makeTempHome } from "./providers"
+import { smokeProvider, smokeBlockers, findCli, makeTempHome, runHarness } from "./providers"
 
 const MARKER = "SMOKE-MARKER-7429"
 const blocker = smokeBlockers("codex")
@@ -53,30 +52,20 @@ describe.skipIf(!!blocker)(`codex + ${process.env.SMOKE_PROVIDER || "zen"} smoke
   it(
     "reads a project file through tools and echoes its first line",
     () => {
-      const res = spawnSync(
-        cli,
-        [
-          "exec",
-          "--skip-git-repo-check",
-          "Read data.txt in the current directory and reply with ONLY its first line. Use tools, do not guess.",
-        ],
-        {
-          cwd: project,
-          timeout: 300_000,
-          encoding: "utf-8",
-          // stdin ignored: a permission prompt must fail fast, never hang
-          // the full 300s waiting on an open pipe.
-          stdio: ["ignore", "pipe", "pipe"],
-          env: { ...process.env, CODEX_HOME: codexHome, [cfg.apiKeyEnv]: cfg.apiKey, CI: "true" },
-        },
-      )
-      const out = `${res.stdout ?? ""}\n${res.stderr ?? ""}`
-      if (res.status !== 0 || !out.includes(MARKER)) {
+      const { status, out } = runHarness("codex", cli, [
+        "exec",
+        "--skip-git-repo-check",
+        "Read data.txt in the current directory and reply with ONLY its first line. Use tools, do not guess.",
+      ], {
+        cwd: project,
+        env: { ...process.env, CODEX_HOME: codexHome, [cfg.apiKeyEnv]: cfg.apiKey, CI: "true" },
+      })
+      if (status !== 0 || !out.includes(MARKER)) {
         console.error(`[smoke:codex] harness output (first 4000 chars):\n${out.slice(0, 4000)}`)
       }
-      expect({ status: res.status, out }).toMatchObject({ status: 0 })
+      expect({ status, out }).toMatchObject({ status: 0 })
       expect(out).toContain(MARKER)
     },
-    300_000,
+    600_000,
   )
 })

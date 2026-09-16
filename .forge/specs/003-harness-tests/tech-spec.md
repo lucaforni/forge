@@ -12,7 +12,7 @@ codex; claude-code e pi pianificati dopo. Provider default: **OpenCode Zen**
 (`https://opencode.ai/zen/v1`, modelli verificati dal team opencode,
 free tier disponibile); fallback NVIDIA NIM (`nim-pilot.ts` per validarlo).
 
-Modello smoke default (Zen): `big-pickle` (free).
+Modello smoke default (Zen): `deepseek-v4-flash-free` (free).
 
 ## Livello 1 — unit (vitest, CI su ogni PR, zero secret)
 
