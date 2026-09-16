@@ -50,10 +50,11 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
         {
           model: cfg.modelRef,
           ...providerBlock,
-          // Permission semantics learned the hard way: "*" deny HIDES tools from
-          // the model ("Available tools: ." — calls die unexecuted), while
-          // "ask" keeps them listed and denies at execution (stdin is ignored
-          // so prompts fail fast). Read-only tools allowed, rest asks→denied.
+          // Permission semantics learned the hard way:
+          // - "*" deny HIDES tools from the model (calls die unexecuted);
+          // - "*" ask OVERRIDES specific allows (everything prompts).
+          // So: explicit read-only allows, NO wildcard key — unlisted tools
+          // fall back to the default (ask → auto-deny, stdin is ignored).
           permission: {
             read: "allow",
             glob: "allow",
@@ -63,9 +64,7 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
               "cat *": "allow",
               "head *": "allow",
               "ls *": "allow",
-              "*": "ask",
             },
-            "*": "ask",
           },
         },
         null,
