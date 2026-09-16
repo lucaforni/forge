@@ -25,15 +25,14 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
     cli = findCli("opencode")!
     mkdirSync(project, { recursive: true })
     writeFileSync(join(project, "data.txt"), `${MARKER}\nsecond line\n`, "utf-8")
-    writeFileSync(
-      join(project, "opencode.json"),
-      JSON.stringify(
-        {
-          model: `${cfg.id}/${cfg.model}`,
+    // Zen uses opencode's NATIVE provider (opencode/<model>, key via env) —
+    // no custom provider block needed. NIM needs the openai-compatible block.
+    const providerBlock = cfg.needsCustomProvider
+      ? {
           provider: {
             [cfg.id]: {
               npm: "@ai-sdk/openai-compatible",
-              name: cfg.id === "zen" ? "OpenCode Zen" : "NVIDIA NIM",
+              name: "NVIDIA NIM",
               options: { baseURL: cfg.baseUrl, apiKey: `{env:${cfg.apiKeyEnv}}` },
               models: {
                 [cfg.model]: {
@@ -43,6 +42,14 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
               },
             },
           },
+        }
+      : {}
+    writeFileSync(
+      join(project, "opencode.json"),
+      JSON.stringify(
+        {
+          model: cfg.modelRef,
+          ...providerBlock,
           // Least privilege: the smoke prompt only reads one file. The model may
           // pick the read tool or a read-only shell command (observed: sed).
           // Everything else (edit/write/arbitrary bash) stays denied.
@@ -75,8 +82,8 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
         "run",
         "--dir",
         project,
-        "--model",
-        `${cfg.id}/${cfg.model}`,
+          "--model",
+          cfg.modelRef,
         // JSON event stream: machine-readable (tool calls, errors) and free
         // of ANSI codes, so assertions and failure dumps are precise.
         "--format",

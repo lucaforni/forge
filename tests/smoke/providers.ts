@@ -5,7 +5,7 @@
  *
  *   zen — OpenCode Zen gateway (https://opencode.ai/zen/v1), models tested by
  *         the opencode team for tool-calling. Key: OPENCODE_ZEN_API_KEY.
- *         Default model: deepseek-v4-flash-free (free tier).
+ *         Default model: big-pickle via NATIVE opencode provider (opencode/big-pickle).
  *   nim — NVIDIA NIM (https://integrate.api.nvidia.com/v1). Key: NVIDIA_API_KEY.
  *         Kept as fallback; NIM proved flaky (EOL models, entitlement issues).
  *
@@ -18,7 +18,7 @@ import { join } from "node:path"
 import { spawnSync } from "node:child_process"
 
 export interface SmokeProvider {
-  /** "zen" | "nim" — also used as the opencode provider id. */
+  /** "zen" | "nim" */
   id: string
   /** Base URL (client appends /chat/completions or /responses). */
   baseUrl: string
@@ -26,10 +26,18 @@ export interface SmokeProvider {
   apiKeyEnv: string
   apiKey: string
   model: string
+  /**
+   * Full model ref for runners. Zen uses the NATIVE opencode provider
+   * (opencode/<id>, key via OPENCODE_ZEN_API_KEY); NIM uses a custom
+   * openai-compatible provider block (<id>/<model>).
+   */
+  modelRef: string
+  /** True when the runner must declare a custom provider block (NIM only). */
+  needsCustomProvider: boolean
 }
 
 const ZEN_BASE_URL = "https://opencode.ai/zen/v1"
-const ZEN_DEFAULT_MODEL = "deepseek-v4-flash-free"
+const ZEN_DEFAULT_MODEL = "big-pickle"
 const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 const NIM_DEFAULT_MODEL = "meta/llama-3.3-70b-instruct"
 
@@ -45,16 +53,21 @@ export function smokeProvider(): SmokeProvider | null {
       apiKeyEnv: "NVIDIA_API_KEY",
       apiKey,
       model: process.env.NIM_SMOKE_MODEL?.trim() || NIM_DEFAULT_MODEL,
+      modelRef: `nim/${process.env.NIM_SMOKE_MODEL?.trim() || NIM_DEFAULT_MODEL}`,
+      needsCustomProvider: true,
     }
   }
   const apiKey = process.env.OPENCODE_ZEN_API_KEY?.trim()
   if (!apiKey) return null
+  const model = process.env.ZEN_SMOKE_MODEL?.trim() || ZEN_DEFAULT_MODEL
   return {
     id: "zen",
     baseUrl: ZEN_BASE_URL,
     apiKeyEnv: "OPENCODE_ZEN_API_KEY",
     apiKey,
-    model: process.env.ZEN_SMOKE_MODEL?.trim() || ZEN_DEFAULT_MODEL,
+    model,
+    modelRef: `opencode/${model}`,
+    needsCustomProvider: false,
   }
 }
 
