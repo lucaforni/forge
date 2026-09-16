@@ -16,9 +16,15 @@ import { smokeProvider, smokeBlockers, findCli, makeTempHome, runHarness } from 
 
 const MARKER = "SMOKE-MARKER-7429"
 const blocker = smokeBlockers("codex")
-if (blocker) console.info(`[smoke:codex] skipped — ${blocker}.`)
+// Zen free tier is locked to the opencode client ("can only be used in
+// OpenCode") — codex runs against it fail by design. Force them only with an
+// unrestricted setup: SMOKE_CODEX=1 (e.g. paid Zen model). NIM fallback stays live.
+const zenParked = smokeProvider()?.id === "zen" && !process.env.SMOKE_CODEX
+if (zenParked) {
+  console.info("[smoke:codex] skipped — Zen free tier works only inside opencode; set SMOKE_CODEX=1 to force.")
+}
 
-describe.skipIf(!!blocker)(`codex + ${process.env.SMOKE_PROVIDER || "zen"} smoke`, () => {
+describe.skipIf(!!blocker || zenParked)(`codex + ${process.env.SMOKE_PROVIDER || "zen"} smoke`, () => {
   const cfg = smokeProvider()!
   const codexHome = makeTempHome("forge-smoke-codex-")
   const project = join(codexHome, "proj")

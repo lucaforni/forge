@@ -37,7 +37,7 @@ export interface SmokeProvider {
 }
 
 const ZEN_BASE_URL = "https://opencode.ai/zen/v1"
-const ZEN_DEFAULT_MODEL = "big-pickle"
+const ZEN_DEFAULT_MODEL = "muse-spark-1.3-contributor-free"
 const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 const NIM_DEFAULT_MODEL = "meta/llama-3.3-70b-instruct"
 
