@@ -5,7 +5,7 @@
  *
  *   zen — OpenCode Zen gateway (https://opencode.ai/zen/v1), models tested by
  *         the opencode team for tool-calling. Key: OPENCODE_ZEN_API_KEY.
- *         Default model: deepseek-v4-flash-free (free tier).
+ *         Default model: big-pickle (free stealth model).
  *   nim — NVIDIA NIM (https://integrate.api.nvidia.com/v1). Key: NVIDIA_API_KEY.
  *         Kept as fallback; NIM proved flaky (EOL models, entitlement issues).
  *
@@ -29,7 +29,7 @@ export interface SmokeProvider {
 }
 
 const ZEN_BASE_URL = "https://opencode.ai/zen/v1"
-const ZEN_DEFAULT_MODEL = "deepseek-v4-flash-free"
+const ZEN_DEFAULT_MODEL = "big-pickle"
 const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 const NIM_DEFAULT_MODEL = "meta/llama-3.3-70b-instruct"
 
