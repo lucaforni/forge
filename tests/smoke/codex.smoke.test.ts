@@ -1,25 +1,26 @@
 /**
- * tests/smoke/codex.smoke.test.ts — Level 3 smoke: real `codex exec` against NVIDIA NIM.
+ * tests/smoke/codex.smoke.test.ts — Level 3 smoke: real `codex exec` against
+ * the configured provider (default OpenCode Zen, fallback NVIDIA NIM).
  *
- * Skips (never fails) without NVIDIA_API_KEY or without the codex CLI.
+ * Skips (never fails) without provider key or without the codex CLI.
  * Uses an isolated CODEX_HOME so the user's real ~/.codex is untouched.
- * NOTE: wire_api = "chat" (not "responses"): NIM's Responses endpoint strictly
- * validates tools and rejects Codex's namespace/sub-agent tools. Chat sends
- * plain function tools, which NIM accepts.
+ * NOTE: codex 0.154 requires wire_api = "responses". Whether the provider's
+ * Responses endpoint accepts Codex's namespace/sub-agent tools is verified
+ * live — see history in providers.ts docs / PRs.
  */
 
 import { describe, it, expect, beforeAll } from "vitest"
 import { mkdirSync, writeFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { spawnSync } from "node:child_process"
-import { nimConfig, smokeBlockers, findCli, makeTempHome } from "./nim"
+import { smokeProvider, smokeBlockers, findCli, makeTempHome } from "./providers"
 
 const MARKER = "SMOKE-MARKER-7429"
 const blocker = smokeBlockers("codex")
 if (blocker) console.info(`[smoke:codex] skipped — ${blocker}.`)
 
-describe.skipIf(!!blocker)("codex + NIM smoke", () => {
-  const cfg = nimConfig()!
+describe.skipIf(!!blocker)(`codex + ${process.env.SMOKE_PROVIDER || "zen"} smoke`, () => {
+  const cfg = smokeProvider()!
   const codexHome = makeTempHome("forge-smoke-codex-")
   const project = join(codexHome, "proj")
   let cli: string
@@ -32,17 +33,16 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
       join(codexHome, "config.toml"),
       [
         `model = "${cfg.model}"`,
-        `model_provider = "nim"`,
+        `model_provider = "${cfg.id}"`,
         `approval_policy = "never"`,
         `sandbox_mode = "read-only"`,
         ``,
-        `[model_providers.nim]`,
-        `name = "NVIDIA NIM"`,
+        `[model_providers.${cfg.id}]`,
+        `name = "${cfg.id === "zen" ? "OpenCode Zen" : "NVIDIA NIM"}"`,
         `base_url = "${cfg.baseUrl}"`,
-        `env_key = "NVIDIA_API_KEY"`,
-        // NOTE: "responses" is rejected by NIM (strict tool validation chokes on
-        // Codex's namespace/sub-agent tools). "chat" sends plain function tools.
-        `wire_api = "chat"`,
+        `env_key = "${cfg.apiKeyEnv}"`,
+        // codex 0.154+ accepts only "responses" here.
+        `wire_api = "responses"`,
         ``,
       ].join("\n"),
       "utf-8",
@@ -50,13 +50,7 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
     return () => rmSync(codexHome, { recursive: true, force: true })
   })
 
-  // KNOWN INCOMPATIBILITY (2026-09-15, codex 0.154.0): NIM's /v1/responses
-  // endpoint strictly validates tools and rejects Codex's namespace/sub-agent
-  // tools (18 validation errors), while `wire_api = "chat"` is rejected
-  // client-side ("no longer supported"). No wire option works today.
-  // it.fails pins this: suite stays green on the fast deterministic rejection,
-  // and flips red if it ever unexpectedly passes (then re-enable the test).
-  it.fails(
+  it(
     "reads a project file through tools and echoes its first line",
     () => {
       const res = spawnSync(
@@ -73,7 +67,7 @@ describe.skipIf(!!blocker)("codex + NIM smoke", () => {
           // stdin ignored: a permission prompt must fail fast, never hang
           // the full 300s waiting on an open pipe.
           stdio: ["ignore", "pipe", "pipe"],
-          env: { ...process.env, CODEX_HOME: codexHome, NVIDIA_API_KEY: cfg.apiKey, CI: "true" },
+          env: { ...process.env, CODEX_HOME: codexHome, [cfg.apiKeyEnv]: cfg.apiKey, CI: "true" },
         },
       )
       const out = `${res.stdout ?? ""}\n${res.stderr ?? ""}`

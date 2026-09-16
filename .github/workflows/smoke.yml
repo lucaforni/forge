@@ -1,7 +1,8 @@
-# Smoke — real harness CLIs against NVIDIA NIM (level 3)
+# Smoke — real harness CLIs against LLM providers (level 3)
 #
 # Triggers: weekly schedule + manual dispatch ONLY (never PRs — fork PRs must
-# never see secrets). Requires the `smoke` Environment with NVIDIA_API_KEY.
+# never see secrets). Requires the `smoke` Environment with OPENCODE_ZEN_API_KEY
+# (default provider) and optionally NVIDIA_API_KEY (fallback).
 name: Smoke
 
 on:
@@ -18,6 +19,7 @@ jobs:
     timeout-minutes: 30
     environment: smoke
     env:
+      OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       CI: "true"
     steps:
@@ -39,5 +41,5 @@ jobs:
           echo "$HOME/.opencode/bin" >> "$GITHUB_PATH"
           npm install -g @openai/codex
 
-      - name: Run NIM smoke tests
+      - name: "Run smoke tests (default provider: Zen)"
         run: npx vitest run --config vitest.smoke.config.ts
