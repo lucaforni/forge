@@ -5,7 +5,7 @@
  *
  *   zen — OpenCode Zen gateway (https://opencode.ai/zen/v1), models tested by
  *         the opencode team for tool-calling. Key: OPENCODE_ZEN_API_KEY.
- *         Default model: big-pickle (free stealth model).
+ *         Default model: deepseek-v4-flash-free (free tier).
  *   nim — NVIDIA NIM (https://integrate.api.nvidia.com/v1). Key: NVIDIA_API_KEY.
  *         Kept as fallback; NIM proved flaky (EOL models, entitlement issues).
  *
@@ -29,7 +29,7 @@ export interface SmokeProvider {
 }
 
 const ZEN_BASE_URL = "https://opencode.ai/zen/v1"
-const ZEN_DEFAULT_MODEL = "big-pickle"
+const ZEN_DEFAULT_MODEL = "deepseek-v4-flash-free"
 const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 const NIM_DEFAULT_MODEL = "meta/llama-3.3-70b-instruct"
 
@@ -88,4 +88,47 @@ export function findCli(name: string): string | null {
 /** Fresh isolated HOME dir (prevents touching the user's real configs). */
 export function makeTempHome(prefix: string): string {
   return mkdtempSync(join(tmpdir(), prefix))
+}
+
+// ---------------------------------------------------------------------------
+// Transient-aware runner: free tiers hiccup ("high demand", 429/5xx). Retry
+// ONCE on transient-looking failures so CI doesn't go red on capacity blips.
+// Deterministic failures (auth, config, assertion content) never retry.
+// ---------------------------------------------------------------------------
+
+const TRANSIENT_RE =
+  /high demand|temporar|rate.?limit|429|\b5\d\d\b|econn|etimedout|overloaded|capacity|reconnecting/i
+
+export interface HarnessRun {
+  status: number | null
+  out: string
+  attempts: number
+}
+
+export function runHarness(
+  label: string,
+  cli: string,
+  args: string[],
+  opts: { cwd: string; env: Record<string, string | undefined>; timeoutMs?: number },
+): HarnessRun {
+  const timeout = opts.timeoutMs ?? 300_000
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const res = spawnSync(cli, args, {
+      cwd: opts.cwd,
+      timeout,
+      encoding: "utf-8",
+      // stdin ignored: a permission prompt must fail fast, never hang.
+      stdio: ["ignore", "pipe", "pipe"],
+      env: opts.env as Record<string, string>,
+    })
+    const out = `${res.stdout ?? ""}\n${res.stderr ?? ""}`
+    if (res.status === 0) return { status: 0, out, attempts: attempt }
+    if (attempt === 1 && TRANSIENT_RE.test(out)) {
+      console.info(`[smoke:${label}] transient failure (attempt 1), retrying in 30s…`)
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 30_000)
+      continue
+    }
+    return { status: res.status, out, attempts: attempt }
+  }
+  throw new Error("unreachable")
 }
