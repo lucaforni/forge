@@ -1,22 +1,37 @@
 /**
- * tests/smoke/nim-pilot.ts — One-shot live validation of NVIDIA NIM for harness smoke tests.
+ * tests/smoke/nim-pilot.ts — One-shot live validation of the smoke provider.
  *
+ * Default provider is OpenCode Zen; NIM via SMOKE_PROVIDER=nim.
  * Run manually (needs a real key, never in CI):
- *   NVIDIA_API_KEY=nvapi-... npx tsx tests/smoke/nim-pilot.ts
+ *   OPENCODE_ZEN_API_KEY=... npx tsx tests/smoke/nim-pilot.ts
+ *   OPENCODE_ZEN_API_KEY=... ZEN_SMOKE_MODEL=mimo-v2.5-free npx tsx tests/smoke/nim-pilot.ts
+ *   SMOKE_PROVIDER=nim NVIDIA_API_KEY=nvapi-... npx tsx tests/smoke/nim-pilot.ts
  *
  * Validates, in order:
+ *   0. key shape + public connectivity (no auth)
  *   1. key + connectivity (GET /v1/models)
  *   2. chat completions round-trip (/v1/chat/completions)
- *   3. TOOL CALL emission (the critical unknown for agentic harnesses)
+ *   3. TOOL CALL emission (forced tool_choice)
+ *   3b. VOLUNTARY tool call (no tool_choice — the agentic condition)
+ *   3c. Voluntary tool call UNDER LOAD (long preamble + 20 tools — predicts smoke)
  *   4. Responses API (/v1/responses — the wire Codex custom providers require)
  *
  * Exits 0 when all checks pass, 1 otherwise. Prints token usage for cost visibility.
  * Zero dependencies (global fetch, Node 20+).
  */
 
-const BASE_URL = process.env.NIM_BASE_URL?.trim() || "https://integrate.api.nvidia.com/v1"
-const MODEL = process.env.NIM_SMOKE_MODEL?.trim() || "openai/gpt-oss-20b"
-const API_KEY = process.env.NVIDIA_API_KEY?.trim() ?? ""
+import { smokeProvider } from "./providers"
+
+const cfg = smokeProvider()
+if (!cfg) {
+  console.error(
+    "No provider key set — export OPENCODE_ZEN_API_KEY (or SMOKE_PROVIDER=nim + NVIDIA_API_KEY).",
+  )
+  process.exit(2)
+}
+const BASE_URL = cfg.baseUrl
+const MODEL = cfg.model
+const API_KEY = cfg.apiKey
 
 let failures = 0
 
@@ -53,24 +68,30 @@ function usageOf(json: unknown): string {
   return u ? `${u.prompt_tokens ?? "?"} in / ${u.completion_tokens ?? "?"} out` : "usage n/a"
 }
 
-if (!API_KEY) {
-  console.error("NVIDIA_API_KEY is not set — nothing to pilot.")
-  process.exit(2)
-}
-
-console.log(`NIM pilot — ${BASE_URL} — model ${MODEL}`)
+console.log(`Smoke pilot — provider ${cfg.id} — ${BASE_URL} — model ${MODEL}`)
 // NOTE: never log API_KEY or anything derived from it (length included) —
 // CodeQL js/clear-text-logging flags any secret-derived value in log sinks.
 console.log("key: present\n")
 
 // 0. Key shape + public connectivity (no auth) ---------------------------------
 {
-  const sane =
-    API_KEY.startsWith("nvapi-") && API_KEY.length >= 32 && !/\s/.test(API_KEY)
-  check("key looks like a build.nvidia.com key", sane, "expect nvapi-…, 32+ chars, no whitespace")
+  const isNim = cfg.id === "nim"
+  const sane = isNim
+    ? API_KEY.startsWith("nvapi-") && API_KEY.length >= 32 && !/\s/.test(API_KEY)
+    : API_KEY.length >= 16 && !/\s/.test(API_KEY)
+  check(
+    isNim ? "key looks like a build.nvidia.com key" : "key looks usable",
+    sane,
+    // NOTE: keep env var names as literals — interpolating cfg.apiKeyEnv trips
+    // CodeQL js/clear-text-logging (taint on the "Key" identifier).
+    isNim ? "expect nvapi-…, 32+ chars, no whitespace" : "from env, 16+ chars, no whitespace",
+  )
   if (!sane) {
-    console.log("      hint: regenerate at build.nvidia.com/settings; export with single quotes")
-    console.log("            to avoid shell mangling: export NVIDIA_API_KEY='nvapi-...'")
+    console.log(
+      isNim
+        ? "      hint: regenerate at build.nvidia.com/settings; export with single quotes"
+        : "      hint: re-copy the key (opencode.ai/auth) and export with single quotes",
+    )
   }
   const { status, raw } = await api("/models", undefined, { auth: false })
   const ok = status === 200
@@ -280,25 +301,35 @@ console.log("key: present\n")
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
-console.log(failures === 0 ? "\nPILOT GREEN — NIM is smoke-ready." : `\nPILOT RED — ${failures} check(s) failed.`)
+console.log(failures === 0 ? "\nPILOT GREEN — provider is smoke-ready." : `\nPILOT RED — ${failures} check(s) failed.`)
 process.exit(failures === 0 ? 0 : 1)
 
-/** Map common NIM failure signatures to actionable next steps. */
+/** Map common failure signatures to actionable next steps. */
 function hintForStatus(status: number, raw: string): void {
+  const nim = cfg.id === "nim"
   if (status === 401) {
-    console.log("      hint: key rejected — regenerate it at build.nvidia.com/settings.")
+    console.log(
+      nim
+        ? "      hint: key rejected — regenerate it at build.nvidia.com/settings."
+        : "      hint: key rejected — re-copy it from opencode.ai/auth and re-export.",
+    )
   } else if (status === 403 || /authorization failed/i.test(raw)) {
     console.log(
       "      hint: 403 on integrate.api.nvidia.com usually means the account/org lacks the",
     )
     console.log("            'Public API Endpoints' entitlement — request it (forum/help@build.nvidia.com).")
   } else if (status === 404 || /not found for account/i.test(raw)) {
-    console.log("      hint: compare with step 0 above — public 200 + authed 404 means the KEY is")
-    console.log("            not recognized: regenerate at build.nvidia.com/settings (must be a Build")
-    console.log("            key, not an NGC registry key) and re-export with single quotes.")
-    console.log("            'Function not found for account' (JSON body) instead means inference is")
-    console.log("            not enabled for this account/org — request 'Public API Endpoints' access.")
-    console.log("            (Also verify NIM_BASE_URL is unset/default.)")
+    if (nim) {
+      console.log("      hint: compare with step 0 above — public 200 + authed 404 means the KEY is")
+      console.log("            not recognized: regenerate at build.nvidia.com/settings (must be a Build")
+      console.log("            key, not an NGC registry key) and re-export with single quotes.")
+      console.log("            'Function not found for account' (JSON body) instead means inference is")
+      console.log("            not enabled for this account/org — request 'Public API Endpoints' access.")
+      console.log("            (Also verify NIM_BASE_URL is unset/default.)")
+    } else {
+      console.log("      hint: endpoint or model id not found — check the model is listed at")
+      console.log("            opencode.ai/zen and ZEN_SMOKE_MODEL for typos.")
+    }
   } else if (status === 429) {
     console.log("      hint: free-tier rate limit (~40 RPM) — wait a minute and retry.")
   }
