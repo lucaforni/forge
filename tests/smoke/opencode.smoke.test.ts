@@ -86,15 +86,13 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
           cfg.modelRef,
         // JSON event stream: machine-readable (tool calls, errors) and free
         // of ANSI codes, so assertions and failure dumps are precise.
-        "--format",
-        "json",
-        // plan agent = read-only toolset (read/glob/grep): a fraction of the
-        // default build agent's tool surface, so a small model can follow the
-        // function-calling protocol instead of emitting pseudo-JSON text.
-        // Semantically ideal for smoke: read a file and report back.
-        "--agent",
-        "plan",
-        "Read data.txt in the current directory and reply with ONLY its first line. Use tools, do not guess.",
+          "--format",
+          "json",
+          // Default build agent: the plan agent exposes NO tools in this CLI
+          // version ("Available tools: ." — the model correctly called read but
+          // the call died unexecuted). Safety comes from the permission
+          // firewall in the fixture (read-only allowlist, rest denied).
+          "Read data.txt in the current directory and reply with ONLY its first line. Use tools, do not guess.",
       ], {
         cwd: project,
         env: { ...process.env, HOME: home, [cfg.apiKeyEnv]: cfg.apiKey, CI: "true" },
