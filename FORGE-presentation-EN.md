@@ -5,7 +5,7 @@ paginate: true
 backgroundColor: #fff
 color: #333
 header: 'FORGE - Framework for Orchestrated Requirements, Governance & Engineering'
-footer: 'Version 1.2.0 | Author: Luca Forni | © 2026'
+footer: 'Version 2.0.0 | Author: Luca Forni | © 2026'
 style: |
   section {
     font-size: 28px;
@@ -35,7 +35,7 @@ style: |
 
 **Framework for Orchestrated Requirements, Governance & Engineering**
 
-A structured software development system for OpenCode
+A structured software development system for OpenCode, Claude Code and Codex CLI
 
 ---
 
@@ -47,7 +47,7 @@ A structured software development system for OpenCode
 - **Adaptive process** that calibrates ceremony to complexity
 - **Persistent knowledge** that survives session boundaries
 
-> Built natively for OpenCode, synthesising the best of BMAD Method and Speckit
+> Multi-platform since v2.0 — OpenCode, Claude Code and Codex CLI — synthesising the best of BMAD Method and Speckit
 
 ---
 
@@ -104,8 +104,28 @@ A structured software development system for OpenCode
         ▼            ▼            ▼
 ┌──────────────────────────────────────────────────────┐
 │           SUPPORTING SYSTEMS                          │
-│   Skills (9) | Tools (3) | Plugins (3) | MCP         │
+│   Skills (13) | Tools (3) | Plugins (3) | Shared MCP  │
 └──────────────────────────────────────────────────────┘
+
+> v2.0: canonical artifacts in `.opencode/` are projected per platform —
+> `.claude/` for Claude Code, `.codex/` for Codex CLI — with one shared MCP server
+
+---
+
+## v2.0: Multi-Platform by Design
+
+| Platform | Vendor | Agents & Commands | Config | Instructions |
+|----------|--------|-------------------|--------|--------------|
+| **OpenCode** | OpenCode | `.opencode/{agents,commands,skills}/` | `opencode.json` | `AGENTS.md` |
+| **Claude Code** | Anthropic | `.claude/{agents,commands,skills}/` + hooks | `.claude/settings.json` | `CLAUDE.md` |
+| **Codex CLI** | OpenAI | `.codex/{agents,commands}/` + `.agents/skills/` | `.codex/config.toml` | `AGENTS.md` |
+
+**One installer auto-detects your runtime — same methodology everywhere**
+
+```bash
+npx tsx install-forge.ts /path/to/project          # auto-detect
+npx tsx install-forge.ts /path/to/project --platform=claude-code
+```
 ```
 
 ---
@@ -257,14 +277,14 @@ Then follows the Epic workflow with the addition of:
 
 | Agent | Model | Role |
 |-------|-------|------|
-| **forge-analyst** | Sonnet 4.5 | Exploration, research, scope detection |
-| **forge-pm** | | Requirements, spec, PRD, user stories |
-| **forge-ux** | | User journeys, wireframes, accessibility, design spec |
-| **forge-architect** | | Architecture, ADR, technical planning |
-| **forge-scrum** | Sonnet 4.5 | Sprint planning, story management |
-| **forge-reviewer** | | Adversarial review — Task A (7 dimensions) |
-| **forge-reviewer-peer** | | Adversarial review — Task B, independent |
-| **forge-qa** | Sonnet 4.5 | Test strategy, test generation |
+| **forge-analyst** | Sonnet 4.6 | Exploration, research, scope detection |
+| **forge-pm** | Opus 4.7 | Requirements, spec, PRD, user stories |
+| **forge-ux** | Sonnet 4.6 | User journeys, wireframes, accessibility, design spec |
+| **forge-architect** | Opus 4.7 | Architecture, ADR, technical planning |
+| **forge-scrum** | Sonnet 4.6 | Sprint planning, story management |
+| **forge-reviewer** | Opus 4.7 | Adversarial review — Task A (7 dimensions) |
+| **forge-reviewer-peer** | independent model | Adversarial review — Task B, independent |
+| **forge-qa** | Sonnet 4.6 | Test strategy, test generation |
 
 > `/forge-review` launches **forge-reviewer + forge-reviewer-peer in parallel** and synthesises findings — *consensus findings* (both models) carry the highest priority
 
@@ -423,7 +443,7 @@ Test file (src/auth/__tests__/login.test.ts)
 
 ---
 
-## 9 Dynamic Skills
+## 13 Dynamic Skills
 
 | Skill | Used by | Purpose |
 |-------|---------|---------|
@@ -436,6 +456,10 @@ Test file (src/auth/__tests__/login.test.ts)
 | `context-chain` | All agents | Load correct upstream documents |
 | `ux-design` | forge-ux | Generate user journeys, wireframes, a11y specs |
 | `ux-review` | forge-reviewer | 7th review dimension: UX quality & accessibility |
+| `frontend-pattern-library` | forge-ux, Build | 17 UI patterns (React + shadcn/ui) |
+| `data-presentation` | forge-ux | Dashboards, visualisation, data storytelling |
+| `pre-flight-checks` | Forge orchestrator | Health checks before major commands |
+| `decision-archiver` | forge-architect | Promote decisions to ADRs |
 
 **Loaded on-demand to save context window**
 
@@ -619,30 +643,34 @@ The question is not "can we afford the overhead?" but
 
 ## Technical Components
 
-### 10 Agents | 21 Commands | 9 Skills
+### 9 Agents | 24 Commands | 13 Skills | 20 Templates
 
 ```
-.opencode/
-├── agents/          # 8 specialized subagents + forge orchestrator + Build + Plan
-├── commands/        # 21 slash commands
-├── skills/          # 9 dynamic skills
-├── tools/           # 3 custom tools
-├── plugins/         # 3 automation plugins
-└── templates/       # 11 document templates
+.opencode/              # Canonical source (projected per platform)
+├── agents/             # 8 specialized subagents + forge orchestrator
+├── commands/           # 24 slash commands
+├── skills/             # 13 dynamic skills
+├── tools/              # 3 custom tools (via shared MCP server)
+├── plugins/           # 3 automation plugins
+└── templates/         # 20 document templates
+.claude/                # Claude Code projection (agents, commands, hooks)
+.codex/                 # Codex CLI projection (agents, commands)
 ```
 
-**All configured in `opencode.json`**
+**One shared MCP server (`validate-spec`, `trace-requirements`, `sprint-status`) serves all three runtimes**
 
 ---
 
 ## Quick Start
 
-### 1. Installation
+### 1. Installation (auto-detects your runtime)
 
 ```bash
-# Copy .opencode/ into your project
-cp -r path/to/forge/.opencode/ your-project/.opencode/
-cp path/to/forge/opencode.json your-project/opencode.json
+# From the FORGE repo — OpenCode, Claude Code and Codex CLI detected automatically
+npx tsx install-forge.ts /path/to/your/project
+
+# Or target a platform explicitly
+npx tsx install-forge.ts /path/to/your/project --platform=claude-code
 ```
 
 ### 2. Verify
@@ -698,11 +726,11 @@ opencode
 
 | Model | When | Agents |
 |-------|------|--------|
-| | Deep reasoning, architectural decisions, adversarial review | forge-pm, forge-architect, forge-reviewer |
-| **Claude Sonnet 4.5** | Speed, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa, Build, Plan |
-| | Independent adversarial review (second model) | forge-reviewer-peer |
+| **Opus 4.7** | Deep reasoning, architectural decisions, adversarial review | forge-pm, forge-architect, forge-reviewer |
+| **Sonnet 4.6** | Speed, good-enough reasoning, analysis, sprint mgmt | Forge, forge-analyst, forge-scrum, forge-qa |
+| **Independent model** | Independent adversarial review (second opinion) | forge-reviewer-peer |
 
-**Models provided via GitHub Copilot subscription**
+**Models assigned centrally in `opencode.json` — no model directives in agent frontmatter**
 
 ---
 
@@ -868,17 +896,18 @@ Developer C: Epic 3, Stories S001-S003 (Webhooks)
 
 ## CI/CD Integration
 
-### Pre-commit Gate Plugin
+### Quality Gates on Every Change
 
-```typescript
-// Runs before commit
-- Check tasks completed in tasks.md
-- Verify tests exist for modified files
-- Validate [NEEDS CLARIFICATION] resolved
-- Check constitution compliance verified
-```
+| Gate | What it does |
+|------|--------------|
+| **CI matrix** | Tests on Node 20 / 22 / 24, blocks merge on red |
+| **CodeQL** | Static security analysis (JS/TS, security-extended) |
+| **Scorecard** | Supply-chain posture (incl. SHA-pinned actions) |
+| **Dependabot** | Weekly updates (npm + Actions, grouped, auto-PR) |
+| **Branch protection** | PR + code-owner review, linear history, no force-push |
+| **Pre-commit gate** | Advisory: tasks done, tests exist, constitution verified |
 
-**Non-blocking** (advisory), but provides a clear signal
+**Every PR gets dual-model adversarial review before human review**
 
 ---
 
@@ -929,6 +958,20 @@ Developer C: Epic 3, Stories S001-S003 (Webhooks)
 | **Product** | Unit + Integration + E2E + Performance benchmarks |
 
 **Defined by the `test-strategy` skill, executed by `forge-qa`**
+
+---
+
+## 3-Level Harness Tests
+
+**How FORGE tests itself — same pyramid for any project:**
+
+| Level | What | Where | Secrets? |
+|-------|------|-------|----------|
+| **1. Unit** | 74 Vitest tests (installer, MCP, validators) | Every PR | None |
+| **2. Projection** | Install layout per platform (opencode/claude/codex) | Every PR | None |
+| **3. Smoke** | Real CLI runs (`opencode run`, `codex exec`) vs LLM gateway | Weekly + manual | Yes (env-gated) |
+
+**Live smokes assert real tool-calls; missing keys/CLI → skip, never fail**
 
 ---
 
@@ -1035,13 +1078,20 @@ Requirement NFR-001 (P95 < 200ms)
 
 ## Future Roadmap
 
+### Shipped in v2.0 ✅
+
+- **Multi-platform** - OpenCode + Claude Code + Codex CLI via projection installer
+- **CI/CD pipeline** - Matrix CI, CodeQL, Scorecard, Dependabot, branch protection
+- **Shared MCP server** - Custom tools on all three runtimes
+- **Harness test strategy** - Unit + projection + live CLI smokes
+
 ### Possible Evolutions
 
 - **AI Pair Programming Mode** - Forge assists in real-time during coding
 - **Multi-repo Support** - FORGE coordination across microservices
 - **Custom Domain Templates** - Pre-built constitutions for fintech, healthcare, gaming
 - **Integration with Project Management Tools** - Jira, Linear, Azure DevOps
-- **Visual Architecture Diagrams** - Auto-generate from architecture.md
+- **VS Code Extension** - Quick command access
 - **Metrics Dashboard** - Real-time visibility on velocity, quality, debt
 
 ---
@@ -1056,9 +1106,10 @@ Requirement NFR-001 (P95 < 200ms)
 4. **Constitutional governance** ensures a uniform quality bar
 5. **Persistent knowledge base** eliminates knowledge loss
 6. **Adversarial review** catches issues before production (7 dimensions, dual-model)
-7. **Native OpenCode integration** leverages the full platform
+7. **Multi-platform** runs the same methodology on OpenCode, Claude Code and Codex CLI
 8. **Brownfield support** onboards existing codebases
 9. **Team-ready** supports 15+ developers with parallel development
+10. **CI-enforced quality** (matrix tests, CodeQL, Dependabot) + 3-level harness tests
 
 ---
 
@@ -1068,8 +1119,8 @@ Requirement NFR-001 (P95 < 200ms)
 
 **1. Setup** (5 minutes)
 ```bash
-cp -r .opencode/ your-project/
-cd your-project && opencode
+npx tsx forge/install-forge.ts /path/to/your/project
+cd /path/to/your/project && opencode
 ```
 
 **2. First Task** (5 minutes)
@@ -1113,4 +1164,4 @@ Framework for Orchestrated Requirements, Governance & Engineering
 🔗 [linkedin.com/in/lucaforni](https://linkedin.com/in/lucaforni)
 🔗 [github.com/lucaforni](https://github.com/lucaforni)
 
-*Version 1.2.0 | MIT License | 2026*
+*Version 2.0.0 | MIT License | 2026*
