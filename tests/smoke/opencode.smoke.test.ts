@@ -50,9 +50,10 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
         {
           model: cfg.modelRef,
           ...providerBlock,
-          // Least privilege: the smoke prompt only reads one file. The model may
-          // pick the read tool or a read-only shell command (observed: sed).
-          // Everything else (edit/write/arbitrary bash) stays denied.
+          // Permission semantics learned the hard way: "*" deny HIDES tools from
+          // the model ("Available tools: ." — calls die unexecuted), while
+          // "ask" keeps them listed and denies at execution (stdin is ignored
+          // so prompts fail fast). Read-only tools allowed, rest asks→denied.
           permission: {
             read: "allow",
             glob: "allow",
@@ -62,9 +63,9 @@ describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} sm
               "cat *": "allow",
               "head *": "allow",
               "ls *": "allow",
-              "*": "deny",
+              "*": "ask",
             },
-            "*": "deny",
+            "*": "ask",
           },
         },
         null,
