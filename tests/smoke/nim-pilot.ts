@@ -136,6 +136,24 @@ console.log("key: present\n")
   console.log(`      tokens: ${usageOf(json)}`)
 }
 
+// 2b. MINIMAL chat (model+messages only — no temperature/max_tokens/tools) ----
+// Some gateways 500 on specific params. If this passes while check 2 fails,
+// the issue is a request param, not the model/key/account.
+{
+  const { status, json, raw } = await api("/chat/completions", {
+    model: MODEL,
+    messages: [{ role: "user", content: "Reply with exactly: NIM-OK" }],
+  })
+  const text = (json as { choices?: { message?: { content?: string } }[] })?.choices?.[0]?.message
+    ?.content?.trim()
+  const ok = status === 200 && typeof text === "string" && text.includes("NIM-OK")
+  check("minimal chat (no params)", ok, `HTTP ${status}, got ${JSON.stringify(text)}`)
+  if (!ok) {
+    console.log(`      body: ${raw || "(empty)"}`)
+    hintForStatus(status, raw)
+  }
+}
+
 // 3. Tool-call emission (critical for agentic harnesses) -----------------------
 {
   const { status, json, raw } = await api("/chat/completions", {
