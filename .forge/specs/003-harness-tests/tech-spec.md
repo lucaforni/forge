@@ -8,9 +8,11 @@
 ## Obiettivo
 
 Copertura test per FORGE su tre livelli. Primario: opencode. Smoke anche su
-codex; claude-code e pi pianificati dopo. Provider unico: NVIDIA NIM
-(OpenAI-compatible, `https://integrate.api.nvidia.com/v1`, modello smoke
-`openai/gpt-oss-20b`).
+codex; claude-code e pi pianificati dopo. Provider default: **OpenCode Zen**
+(`https://opencode.ai/zen/v1`, modelli verificati dal team opencode,
+free tier disponibile); fallback NVIDIA NIM (`nim-pilot.ts` per validarlo).
+
+Modello smoke default (Zen): `deepseek-v4-flash-free` (free).
 
 ## Livello 1 — unit (vitest, CI su ogni PR, zero secret)
 
@@ -29,8 +31,8 @@ codex; claude-code e pi pianificati dopo. Provider unico: NVIDIA NIM
 
 | File | Ruolo |
 |---|---|
-| `tests/smoke/nim.ts` | Helper zero-dep: `nimConfig()` (env → `{apiKey,baseUrl,model}` o `null`), `skipReason()` |
-| `tests/smoke/nim-pilot.ts` | Script standalone (`npx tsx`): valida key, `/v1/models`, chat con tool-call obbligatoria, `/v1/responses`. Da lanciare una volta prima degli smoke veri |
+| `tests/smoke/providers.ts` | Helper zero-dep: `smokeProvider()` (Zen default via `OPENCODE_ZEN_API_KEY`, NIM fallback via `NVIDIA_API_KEY`), skip helpers, CLI finder, temp HOME |
+| `tests/smoke/nim-pilot.ts` | Script standalone (`npx tsx`): valida key NIM, `/v1/models`, chat con tool-call obbligatoria e volontaria (anche sotto carico), `/v1/responses` |
 | `tests/smoke/opencode.smoke.test.ts` | Skip se no key/CLI; HOME isolata + fixture + `opencode run` su prompt con tool-call attesa |
 | `tests/smoke/codex.smoke.test.ts` | Skip se no key/CLI; `CODEX_HOME` isolata + `config.toml` provider nim + `codex exec` |
 | `vitest.smoke.config.ts` | Config separata (include `tests/smoke/**/*.test.ts`); `vitest.config.ts` esclude `tests/smoke/**` |
@@ -39,8 +41,9 @@ codex; claude-code e pi pianificati dopo. Provider unico: NVIDIA NIM
 
 ## API key — gestione decisa
 
-- Una sola: `NVIDIA_API_KEY` (NGC personal key, free credits). Locale via
-  export/`.env` (gitignored); CI via Environment `smoke` (da creare con secret).
+- Zen (default): `OPENCODE_ZEN_API_KEY` (da opencode.ai/auth). NIM fallback:
+  `NVIDIA_API_KEY` (NGC personal key). Locale via export/`.env` (gitignored);
+  CI via Environment `smoke` (da creare con i secret).
 - Mai nei file: config committate senza secret; log senza key.
 - Senza key/CLI: skip, non fail. PR da fork: smoke mai triggerato.
 

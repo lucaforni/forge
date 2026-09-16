@@ -1,7 +1,8 @@
 /**
- * tests/smoke/opencode.smoke.test.ts — Level 3 smoke: real `opencode run` against NVIDIA NIM.
+ * tests/smoke/opencode.smoke.test.ts — Level 3 smoke: real `opencode run`
+ * against the configured provider (default OpenCode Zen, fallback NIM).
  *
- * Skips (never fails) without NVIDIA_API_KEY or without the opencode CLI.
+ * Skips (never fails) without provider key or without the opencode CLI.
  * Uses an isolated HOME + fixture project so the user's real config is untouched.
  */
 
@@ -9,14 +10,14 @@ import { describe, it, expect, beforeAll } from "vitest"
 import { mkdirSync, writeFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { spawnSync } from "node:child_process"
-import { nimConfig, smokeBlockers, findCli, makeTempHome } from "./nim"
+import { smokeProvider, smokeBlockers, findCli, makeTempHome } from "./providers"
 
 const MARKER = "SMOKE-MARKER-7429"
 const blocker = smokeBlockers("opencode")
 if (blocker) console.info(`[smoke:opencode] skipped — ${blocker}.`)
 
-describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
-  const cfg = nimConfig()!
+describe.skipIf(!!blocker)(`opencode + ${process.env.SMOKE_PROVIDER || "zen"} smoke`, () => {
+  const cfg = smokeProvider()!
   const home = makeTempHome("forge-smoke-opencode-")
   const project = join(home, "proj")
   let cli: string
@@ -29,15 +30,15 @@ describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
       join(project, "opencode.json"),
       JSON.stringify(
         {
-          model: `nim/${cfg.model}`,
+          model: `${cfg.id}/${cfg.model}`,
           provider: {
-            nim: {
+            [cfg.id]: {
               npm: "@ai-sdk/openai-compatible",
-              name: "NVIDIA NIM",
-              options: { baseURL: cfg.baseUrl, apiKey: "{env:NVIDIA_API_KEY}" },
+              name: cfg.id === "zen" ? "OpenCode Zen" : "NVIDIA NIM",
+              options: { baseURL: cfg.baseUrl, apiKey: `{env:${cfg.apiKeyEnv}}` },
               models: {
                 [cfg.model]: {
-                  name: "NIM smoke model",
+                  name: "Smoke model",
                   modalities: { input: ["text"], output: ["text"] },
                 },
               },
@@ -78,7 +79,7 @@ describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
           "--dir",
           project,
           "--model",
-          `nim/${cfg.model}`,
+          `${cfg.id}/${cfg.model}`,
           // JSON event stream: machine-readable (tool calls, errors) and free
           // of ANSI codes, so assertions and failure dumps are precise.
           "--format",
@@ -98,7 +99,7 @@ describe.skipIf(!!blocker)("opencode + NIM smoke", () => {
           // stdin ignored: a permission prompt must fail fast, never hang
           // the full 300s waiting on an open pipe.
           stdio: ["ignore", "pipe", "pipe"],
-          env: { ...process.env, HOME: home, NVIDIA_API_KEY: cfg.apiKey, CI: "true" },
+          env: { ...process.env, HOME: home, [cfg.apiKeyEnv]: cfg.apiKey, CI: "true" },
         },
       )
       const out = `${res.stdout ?? ""}\n${res.stderr ?? ""}`
