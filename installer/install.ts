@@ -410,15 +410,17 @@ export function installMcpServerDeps(projectRoot: string): void {
     .update(readFileSync(mcpPackageJson, "utf-8"), "utf-8")
     .digest("hex")
 
-  if (existsSync(markerPath)) {
-    try {
-      if (readFileSync(markerPath, "utf-8").trim() === pkgChecksum) {
-        log("skip", "MCP server dependencies already up to date.")
-        return
-      }
-    } catch {
-      // Unreadable marker — fall through and reinstall.
+  // Read the stamp directly rather than existsSync-then-read: the
+  // check-then-act pair is a file-system race (js/file-system-race), and the
+  // absent-file case is already an expected outcome here. Same reasoning as
+  // ensureBackupGitignore in backup.ts.
+  try {
+    if (readFileSync(markerPath, "utf-8").trim() === pkgChecksum) {
+      log("skip", "MCP server dependencies already up to date.")
+      return
     }
+  } catch {
+    // Missing or unreadable stamp — fall through and install.
   }
 
   log("info", "Installing MCP server dependencies (npm install)...")

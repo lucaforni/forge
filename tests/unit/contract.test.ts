@@ -395,8 +395,9 @@ describe("installer contract — config backup (FR-010)", () => {
     try {
       await run({ targetRoot: target })
       const stamp = join(target, ".forge", "mcp-server", "node_modules", ".forge-install-stamp")
-      expect(existsSync(stamp), "install stamp not written").toBe(true)
 
+      // Read directly instead of existsSync-then-read (js/file-system-race);
+      // a missing stamp surfaces as a thrown ENOENT, which fails the test.
       const before = readFileSync(stamp, "utf-8")
       const mtime = statSync(stamp).mtimeMs
 
