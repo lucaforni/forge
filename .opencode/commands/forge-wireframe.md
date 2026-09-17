@@ -81,9 +81,7 @@ Mobile (375px) — separate narrowed layout:
 
 One frame per density variant (Empty / Sparse / Dense). This is the single
 home of the data-view format — the agent and skill files point here rather
-than duplicating it.
-
-Produce one frame per density variant; annotate with the data block:
+than duplicating it. Annotate with the data block:
 
 ```
 +--------------------------------------------------+

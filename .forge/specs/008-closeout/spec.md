@@ -81,7 +81,25 @@ reference). No check, gate, or process step is removed.
 - [x] T-004 `[M]` 001-cross-platform close-out: record, statuses, ADR-002/003, path hygiene, decision-log backfill
 - [x] T-005 `[M]` Mark conditional skills explicitly; script partitions mandatory/worst-case; gate mandatory ≤ 5,000
 - [x] T-006 `[M]` Dedup wireframe blocks from `forge-ux.md`; split `ux-design`; amend Art. 4.2 with the outcome
-- [ ] T-007 `[S]` Full verification; adversarial review; resolve CRITICAL findings
+- [x] T-007 `[S]` Full verification; adversarial review; resolve CRITICAL findings
+
+## Review Outcome
+
+Both subagent reviewers were unavailable again (quota + provider
+restriction), so the review was performed directly with executed probes:
+
+| Finding | Resolution |
+|---|---|
+| **`--json` printed human text after the JSON** (`All file budgets hold.` on stdout), breaking machine consumption. | Summary line suppressed under `--json`; violations were already on stderr. Verified parseable. |
+| **4,522 vs hand recomputation 4,519** | Rounding, not a bug: the script rounds per file (`Math.round`), the probe truncated. Exact per-file sum matches. |
+| **Skipped agent directories were silent** — a deleted agents dir would pass the gate vacuously. | stderr note on skip. |
+| **Step 0 ambiguous when both constitutions exist** (the FORGE repo has both). | Explicit rule: both present means meta-development, use Map B. |
+| Transplanted §2b repeated its own first line after the new intro. | Deduped. |
+
+Probes also confirmed: Map B titles match the constitution headings exactly;
+tagged conditionals carry their conditions inline (no skip-permission risk);
+close-out evidence verified against the tree (installer files, `v2.0.0` tag,
+28 tracked `.forge` files); conditional partition math rechecked.
 
 ## Acceptance Criteria
 

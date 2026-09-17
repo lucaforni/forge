@@ -59,7 +59,10 @@ function agentFiles(): string[] {
         if (e.endsWith(".md")) out.push(join(abs, e))
       }
     } catch {
-      // meta dir may not exist in all checkouts
+      // The meta dir legitimately absents itself outside the framework repo,
+      // but a missing directory must be visible, not silent: skipping it
+      // without a word would let a deleted agents dir pass the gate vacuously.
+      console.error(`note: agent directory absent, skipped: ${abs}`)
     }
   }
   return out.sort()
@@ -155,11 +158,12 @@ function main(): void {
   }
 
   if (violations.length > 0) {
+    // Violations go to stderr so --json stays parseable on stdout.
     console.error("\nBUDGET VIOLATIONS:")
     for (const v of violations) console.error(`  - ${v}`)
     process.exit(1)
   }
-  console.log("\nAll file budgets hold.")
+  if (!asJson) console.log("\nAll file budgets hold.")
 }
 
 main()

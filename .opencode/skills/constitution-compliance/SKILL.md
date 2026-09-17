@@ -25,7 +25,10 @@ Two shapes exist — using the wrong map produces confidently wrong verdicts:
 | User project (installed FORGE) | `.forge/constitution.md`, from the 9-article template | Map A below |
 | FORGE itself (meta-development) | `.forge-meta/constitution.md` | Map B below |
 
-Read the file in full first; its headings are authoritative. If it is missing
+Read the governing file in full first; its headings are authoritative. If both
+constitutions exist (you are inside the FORGE repository itself), you are doing
+meta-development — use Map B unless the task explicitly concerns an installed
+user project. If it is missing
 or still contains `<!-- CUSTOMIZE -->` placeholders, note it and skip
 uncustomized articles. If an article number below does not exist in the loaded
 constitution, say so explicitly instead of guessing its meaning — "Article 5"
