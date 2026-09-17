@@ -78,12 +78,11 @@ with a message asking you to create one of the platform directories.
 
 ### What Gets Installed Per Platform
 
-> [!WARNING]
-> **The list below is the target state, not the current behaviour.**
-> `installer/projection.ts` currently projects only `agents`, `commands`
-> and `skills`. Rows marked ❌ are **not installed today** — tracked in
-> [#56](https://github.com/lucaforni/forge/issues/56) and
-> [#57](https://github.com/lucaforni/forge/issues/57).
+> [!NOTE]
+> Rows marked ❌ are deliberately not distributed; the reason is given
+> inline. Everything else is installed and verified by the installer
+> contract test (`tests/unit/contract.test.ts`), which fails CI if an
+> artifact ever references a path the installer does not create.
 
 #### OpenCode
 
@@ -92,11 +91,12 @@ with a message asking you to create one of the platform directories.
 | `.opencode/agents/` | 9 FORGE subagents | ✅ |
 | `.opencode/commands/` | 24 slash commands (`/forge-*`) | ✅ |
 | `.opencode/skills/` | 13 reusable skills | ✅ |
-| `.opencode/plugins/` | 3 event-driven plugins | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
-| `.opencode/tools/` | 3 custom tools (OpenCode SDK) | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
-| `.opencode/templates/` | Document templates | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
-| `.opencode/docs/` | Methodology documentation | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
-| `opencode.json` | Platform config | ⚠️ generated without `instructions`/`permission`, and **overwrites** any existing file — [#57](https://github.com/lucaforni/forge/issues/57) |
+| `.opencode/plugins/` | 3 event-driven plugins | ✅ |
+| `.opencode/package.json` | Declares `@opencode-ai/plugin` for the plugins | ✅ |
+| `.opencode/tools/` | 3 custom tools (OpenCode SDK) | ❌ superseded by the MCP server; the two implementations diverged — [#68](https://github.com/lucaforni/forge/issues/68) |
+| `.forge/templates/` | Document templates (18) | ✅ platform-neutral |
+| `.forge/docs/` | Methodology documentation | ✅ platform-neutral |
+| `opencode.json` | Platform config | ✅ includes `instructions`, `permission`, `model`, `agent`, `mcp`; an existing file is **merged and backed up**, never clobbered |
 
 #### Claude Code
 
@@ -105,6 +105,7 @@ with a message asking you to create one of the platform directories.
 | `.claude/agents/` | Same 9 subagents | ⚠️ copied with OpenCode frontmatter; missing `name:` — [#71](https://github.com/lucaforni/forge/issues/71) |
 | `.claude/commands/` | Same 24 slash commands | ⚠️ `agent:` routing is not honoured by Claude Code — [#71](https://github.com/lucaforni/forge/issues/71) |
 | `.claude/skills/` | Same 13 skills | ✅ |
+| `.forge/templates/`, `.forge/docs/` | Templates and docs | ✅ platform-neutral |
 | `.claude/hooks/` | Adapted hook-based automation | ❌ [#71](https://github.com/lucaforni/forge/issues/71) |
 | `.claude/settings.json` | Claude Code config with MCP server reference | ⚠️ MCP only |
 | `CLAUDE.md` | Project instructions (imports `AGENTS.md`) | ⚠️ imports a file that is not created — [#56](https://github.com/lucaforni/forge/issues/56) |
@@ -117,7 +118,8 @@ with a message asking you to create one of the platform directories.
 | `.codex/commands/` | Same 24 slash commands | ⚠️ Codex reads prompts from a different directory — [#70](https://github.com/lucaforni/forge/issues/70) |
 | `.agents/skills/` | Same 13 skills | ❌ lands in `.codex/.agents/skills/` — [#70](https://github.com/lucaforni/forge/issues/70) |
 | `.codex/config.toml` | Codex CLI config with MCP server reference | ⚠️ MCP only |
-| `AGENTS.md` | Project instructions (native format) | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `.forge/templates/`, `.forge/docs/` | Templates and docs | ✅ platform-neutral |
+| `AGENTS.md` | Project instructions (native format) | ✅ created once, never overwritten |
 
 #### All Platforms
 
@@ -125,9 +127,17 @@ with a message asking you to create one of the platform directories.
 |---|---|:--:|
 | `.forge/mcp-server/` | Shared MCP server for custom tools | ✅ |
 | `.forge/frontend/` | Frontend pattern library | ✅ |
-| `.forge/` | Project data (specs, knowledge, epics, sprints, product) | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
-| `.forge/constitution.md` | Project constitution template | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
-| `AGENTS.md` | Project conventions template | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `.forge/templates/` | 18 document templates used by the commands | ✅ |
+| `.forge/docs/` | Methodology documentation | ✅ |
+| `.forge/{specs,architecture,epics,product}/` | Working directories | ✅ scaffolded |
+| `.forge/knowledge/adr/` | Architecture decision records | ✅ scaffolded |
+| `.forge/sprints/{active,completed,retrospectives}/` | Sprint tracking | ✅ scaffolded |
+| `.forge/constitution.md` | Project constitution | ✅ created once, never overwritten |
+| `AGENTS.md` | Project conventions | ✅ created once, never overwritten |
+
+> **Templates and docs are platform-neutral.** They live under `.forge/`, not
+> under a platform directory, so the single path every command uses resolves
+> identically on OpenCode, Claude Code and Codex.
 
 ---
 
@@ -176,16 +186,16 @@ npx tsx install-forge.ts /path/to/your/project --update
 - `AGENTS.md` — Your project conventions
 - `CONTRIBUTING.md` — Your contribution guide
 
-> [!WARNING]
-> These paths are safe today only because the installer never touches them
-> — **there is no protection logic**. No `PROTECTED_PATTERNS` filter exists
-> in `installer/`. Once
-> [#56](https://github.com/lucaforni/forge/issues/56) adds `.forge/`
-> scaffolding, an explicit guard must be added with it.
->
-> **`opencode.json` is not protected:** an existing file is overwritten
-> wholesale, with no merge and no backup —
-> [#57](https://github.com/lucaforni/forge/issues/57).
+`.forge/constitution.md` and `AGENTS.md` are created on a fresh install and
+carry the `user-template` category: the installer writes them once and
+never touches them again. This is verified by an idempotency test.
+
+**`opencode.json` is merged, not replaced.** Unknown keys, a custom `model`,
+your own agents and your own MCP servers are all preserved; only the
+FORGE-managed keys (`$schema`, `default_agent`, `instructions`, and the
+FORGE agent entries) are refreshed. An existing `permission` block is never
+rewritten. The previous file is backed up to `.forge/.backups/<timestamp>/`
+before any write.
 
 **What gets updated (per platform):**
 - All agents, commands, skills (to each platform's location)

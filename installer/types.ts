@@ -75,6 +75,12 @@ export interface InstallOperation {
   content?: string
   /** Previous checksum if the file existed (for drift detection). */
   previousChecksum?: string
+  /**
+   * Back the file up before writing, even for a plain create/update.
+   * Used for config files, which may contain user customisations that
+   * predate any FORGE manifest.
+   */
+  backupBeforeWrite?: boolean
   /** Reason for skip/backup decisions (for post-install summary). */
   reason?: string
 }
@@ -145,6 +151,8 @@ export interface ForgeConfigModel {
   mcpServers: McpServerConfig[]
   /** Hook/plugin registrations. */
   hooks: HookConfig[]
+  /** Default model for agents that declare no override. */
+  defaultModel?: string
 }
 
 export interface AgentConfig {

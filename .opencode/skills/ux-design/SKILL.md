@@ -116,7 +116,7 @@ A11y:
 
 ### Step 6: Design Token Specification
 
-If existing design system at `.forge/ux/design-system.md`, reference its tokens. Otherwise define tokens using CSS custom property format:
+If existing design system at `.forge/frontend/design-system.md`, reference its tokens. Otherwise define tokens using CSS custom property format:
 
 | Category | Tokens to define |
 |----------|-----------------|

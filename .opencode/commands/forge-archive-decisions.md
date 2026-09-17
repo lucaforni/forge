@@ -179,7 +179,7 @@ Entry at line 789 (2026-01-28):
    💡 Consider adding tags for better organization
 
 Fix these issues before archiving.
-Use the template: .opencode/templates/decision-log-entry-template.md
+Use the template: .forge/templates/decision-log-entry-template.md
 ```
 
 ---

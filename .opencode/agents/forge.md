@@ -164,7 +164,7 @@ Limit context to what the track actually needs:
 
 Run directly:
 1. Check `.forge/constitution.md` exists and is customized.
-2. If not, create from `.opencode/templates/constitution.md` and guide the
+2. If not, create from `.forge/templates/constitution.md` and guide the
    user through customization article by article.
 3. Verify `opencode.json` config.
 4. Verify directory structure.
@@ -176,7 +176,7 @@ Run directly:
 1. Identify what user needs help with.
 2. Explain the relevant workflow/track/command.
 3. Suggest the next step based on project state.
-4. Reference `.opencode/docs/` for deeper reading.
+4. Reference `.forge/docs/` for deeper reading.
 
 ---
 

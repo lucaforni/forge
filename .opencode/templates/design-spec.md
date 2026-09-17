@@ -157,7 +157,7 @@ Screen reader flow:
 
 ## 5. Design Tokens
 
-> Reference: `.forge/ux/design-system.md`. List tokens **used** here. If new, add them to design-system.md.
+> Reference: `.forge/frontend/design-system.md`. List tokens **used** here. If new, add them to design-system.md.
 
 | Token | Value | Usage |
 |---|---|---|
@@ -197,5 +197,5 @@ Screen reader flow:
 | Feature spec | `.forge/specs/NNN-slug/spec.md` |
 | User journeys | `.forge/specs/NNN-slug/user-journey.md` |
 | Architecture | `.forge/architecture/architecture.md` |
-| Design system | `.forge/ux/design-system.md` |
+| Design system | `.forge/frontend/design-system.md` |
 | Related ADRs | `.forge/knowledge/adr/ADR-NNN-*.md` |

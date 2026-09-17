@@ -52,7 +52,7 @@ Specific coding tasks · `[P]` for parallelizable · include tests · sizes `[S]
 
 ### 5. Authoring
 
-Use `.opencode/templates/story.md`. Write to `.forge/epics/epic-NN-slug/story-NNN-slug.md`.
+Use `.forge/templates/story.md`. Write to `.forge/epics/epic-NN-slug/story-NNN-slug.md`.
 
 ### 6. Sprint Assignment
 

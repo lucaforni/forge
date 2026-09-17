@@ -43,7 +43,7 @@ Scan `.forge/specs/`, take max NNN+1 (3 digits). Confirm slug with user. Create 
 
 ### 4. Authoring
 
-Use `.opencode/templates/spec.md`. Write to `.forge/specs/NNN-slug/spec.md`. Fill:
+Use `.forge/templates/spec.md`. Write to `.forge/specs/NNN-slug/spec.md`. Fill:
 - Overview/objectives
 - User stories (As a / I want / So that) + Given/When/Then ACs
 - FRs with unique IDs (FR-001…)

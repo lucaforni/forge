@@ -20,7 +20,7 @@ Optional spec reference: $ARGUMENTS
 1. `.forge/specs/NNN-slug/spec.md` — **required**. STOP if missing; ask user to run `/forge-specify` first.
 2. `.forge/constitution.md` — governance + tech stack.
 3. `.forge/frontend/patterns/index.md` — pattern library decision tree (for web UI features).
-4. `.forge/frontend/design-system.md` — existing tokens/components (optional, fallback to `.forge/ux/design-system.md`).
+4. `.forge/frontend/design-system.md` — existing tokens/components (optional).
 5. `.forge/architecture/architecture.md` — platform constraints (optional).
 
 ## Discovery Process
@@ -54,7 +54,7 @@ From spec's user stories and personas:
 2. Per persona, map a **user journey**: trigger, numbered steps, outcome, emotional annotations.
 3. Include: happy path + ≥2 edge cases (error, empty, permission denied).
 
-Save to `.forge/specs/NNN-slug/user-journey.md` using `.opencode/templates/user-journey.md`.
+Save to `.forge/specs/NNN-slug/user-journey.md` using `.forge/templates/user-journey.md`.
 
 ### Step 4: Wireframes & Component Specs
 
@@ -80,11 +80,11 @@ Per screen/component document:
 If no design system, or new tokens introduced:
 1. Define/update: color palette, typography scale, spacing scale, border radius, shadow levels.
 2. Format: CSS custom properties or project styling approach.
-3. Save to `.forge/ux/design-system.md`.
+3. Save to `.forge/frontend/design-system.md`.
 
 ### Step 7: Save Design Spec
 
-Write `.forge/specs/NNN-slug/design-spec.md` using `.opencode/templates/design-spec.md`.
+Write `.forge/specs/NNN-slug/design-spec.md` using `.forge/templates/design-spec.md`.
 
 Must include: spec reference + FR traceability, platform/viewport targets, wireframes per key screen, component inventory with states, a11y requirements table, design tokens.
 

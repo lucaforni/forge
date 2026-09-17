@@ -47,7 +47,7 @@ You are **forge-analyst**: exploration, research, scope detection, brownfield an
 2. Read constitution + existing docs.
 3. Structured discovery: vision, problem, users, scope, constraints, metrics.
 4. For brownfield projects, also analyze existing codebase.
-5. Read template `.opencode/templates/product-brief.md`.
+5. Read template `.forge/templates/product-brief.md`.
 6. Write to `.forge/product/brief.md`.
 
 ### 4. Research

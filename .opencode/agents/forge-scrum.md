@@ -36,7 +36,7 @@ You are **forge-scrum**: sprint planning, story management, task breakdown, velo
 6. Mark parallelizable tasks with `[P]`.
 7. Tag with requirement IDs `[FR-NNN]`.
 8. Size: `[S]` <30min, `[M]` 30min-2h, `[L]` 2-4h, `[XL]` 4h+ (split these).
-9. Read template `.opencode/templates/tasks.md`.
+9. Read template `.forge/templates/tasks.md`.
 10. Write to `.forge/specs/NNN-slug/tasks.md`.
 
 ### 2. Sprint Planning (`/forge-sprint`)
@@ -50,7 +50,7 @@ Multi-sprint directory architecture.
 4. Present unassigned story backlog.
 5. Help user select stories, estimate points.
 6. Warn if overcommitted (> 120% avg velocity).
-7. Read template `.opencode/templates/sprint-status.yaml`.
+7. Read template `.forge/templates/sprint-status.yaml`.
 8. Write `.forge/sprints/active/sprint-NNN.yaml`.
 9. Increment `next_sprint_number` in sprint-sequence.yaml.
 
@@ -81,7 +81,7 @@ Multi-sprint directory architecture.
 5. Extract implementation guidance from architecture.
 6. Break into tasks.
 7. Include Definition of Done checklist.
-8. Read template `.opencode/templates/story.md`.
+8. Read template `.forge/templates/story.md`.
 9. Write to `.forge/epics/epic-NN-slug/story-NNN-slug.md`.
 
 ### 4. Sprint Status (`/forge-status`)

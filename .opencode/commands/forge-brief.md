@@ -44,7 +44,7 @@ Load `scope-detection` skill. Evaluate complexity (files, tasks, deps). Recommen
 
 ### 4. Authoring
 
-Use `.opencode/templates/product-brief.md`. Write to `.forge/product/brief.md`:
+Use `.forge/templates/product-brief.md`. Write to `.forge/product/brief.md`:
 - Project name + vision
 - Problem statement with evidence
 - Stakeholder analysis

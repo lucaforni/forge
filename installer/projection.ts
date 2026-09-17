@@ -14,6 +14,22 @@ import type { Platform, PlatformDescriptor, CanonicalArtifact, InstallPlan, Inst
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** SHA-256 hex digest of a UTF-8 string. */
+function sha256(content: string): string {
+  return createHash("sha256").update(content, "utf-8").digest("hex")
+}
+
+/**
+ * Normalise a path to POSIX separators.
+ *
+ * Projection rules match on relative paths (e.g. `skills/foo/SKILL.md`).
+ * On Windows `relative()` yields backslashes, which would silently defeat
+ * every such match, so all comparisons are done on POSIX form.
+ */
+function toPosix(p: string): string {
+  return sep === "/" ? p : p.split(sep).join("/")
+}
+
 /**
  * Recursively walk a directory, returning all file paths.
  */
@@ -37,8 +53,72 @@ function walkDir(dirPath: string): string[] {
 
 const CANONICAL_DIRS = ["agents", "commands", "skills"] as const
 
-/** MCP server source files (copied to .forge/mcp-server/ in target). */
-const MCP_SERVER_DIRS = ["index.ts", "package.json", "tsconfig.json", "src"] as const
+/**
+ * Directories under `.opencode/` that are projected to the platform-neutral
+ * `.forge/` root instead of a platform directory.
+ *
+ * Templates and docs are referenced by agents and commands using a single
+ * hardcoded path. Keeping them platform-neutral means that path resolves
+ * identically on OpenCode, Claude Code and Codex, instead of being correct
+ * on one platform and broken on two. See spec 004 § D-1.
+ */
+const FORGE_NEUTRAL_DIRS = ["templates", "docs"] as const
+
+/**
+ * Meta-development documents that live in `.opencode/docs/` but must never
+ * reach a user project (constitution Art. 2.3 / 4.3). These are internal
+ * engineering reports, not user documentation.
+ */
+const EXCLUDED_DOCS = new Set([
+  "automatic-monitoring-setup.md",
+  "decision-log-archiviation-implementation.md",
+  "pre-flight-checks-implementation.md",
+])
+
+/**
+ * Templates that are NOT distributed:
+ * - `opencode.json*` — the installer generates these per platform
+ * - `presets.json` — orphaned v1 provider-preset engine (#72)
+ */
+const EXCLUDED_TEMPLATES = new Set([
+  "opencode.json",
+  "opencode.json.example-customized",
+  "presets.json",
+])
+
+/**
+ * `.opencode/plugins/` is OpenCode-specific: the plugins import
+ * `@opencode-ai/plugin`. Claude Code hooks are a separate projection
+ * problem (#71). See spec 004 § D-3.
+ *
+ * `.opencode/tools/` is deliberately excluded — it duplicates
+ * `mcp-server/src/tools/` with divergent algorithms (#68), and the MCP
+ * server is the constitutional cross-platform tool surface (Art. 3.1).
+ * See spec 004 § D-2.
+ */
+const OPENCODE_ONLY_DIRS = ["plugins"] as const
+
+/**
+ * Files created once from a template and then owned by the user. The
+ * installer writes them on a fresh install and never touches them again.
+ */
+export const SCAFFOLD_FILES: ReadonlyArray<{ template: string; target: string }> = [
+  { template: "constitution.md", target: ".forge/constitution.md" },
+  { template: "decision-log.md", target: ".forge/knowledge/decision-log.md" },
+  { template: "agents.md", target: "AGENTS.md" },
+]
+
+/** Directories scaffolded empty in `.forge/` so FORGE commands have a home. */
+const FORGE_SCAFFOLD_DIRS = [
+  "specs",
+  "architecture",
+  "knowledge/adr",
+  "epics",
+  "sprints/active",
+  "sprints/completed",
+  "sprints/retrospectives",
+  "product",
+] as const
 
 /** Frontend files that are user-customizable — created once, never overwritten on update. */
 const USER_OWNED_FRONTEND_FILES = new Set(["stack-decisions.md", "design-system.md"])
@@ -55,7 +135,7 @@ function catalogMcpServerArtifacts(sourceRoot: string): CanonicalArtifact[] {
   for (const entry of entries) {
     const relPath = relative(mcpDir, entry)
     const content = readFileSync(entry, "utf-8")
-    const checksum = createHash("sha256").update(content, "utf-8").digest("hex")
+    const checksum = sha256(content)
 
     artifacts.push({
       category: "config",
@@ -84,7 +164,7 @@ function catalogFrontendArtifacts(sourceRoot: string): CanonicalArtifact[] {
     if (relPath === "DISTRIBUTE.md") continue
 
     const content = readFileSync(entry, "utf-8")
-    const checksum = createHash("sha256").update(content, "utf-8").digest("hex")
+    const checksum = sha256(content)
 
     artifacts.push({
       category: USER_OWNED_FRONTEND_FILES.has(relPath) ? "user-template" : "config",
@@ -103,7 +183,120 @@ export function catalogForgeArtifacts(sourceRoot: string): CanonicalArtifact[] {
   return [
     ...catalogMcpServerArtifacts(sourceRoot),
     ...catalogFrontendArtifacts(sourceRoot),
+    ...catalogNeutralArtifacts(sourceRoot),
+    ...catalogScaffoldArtifacts(sourceRoot),
   ]
+}
+
+/**
+ * Catalog platform-neutral artifacts: `.opencode/templates/` and
+ * `.opencode/docs/` project to `.forge/templates/` and `.forge/docs/`.
+ *
+ * These are referenced by agents and commands through a single hardcoded
+ * path, so they must land somewhere that resolves on every platform.
+ */
+export function catalogNeutralArtifacts(sourceRoot: string): CanonicalArtifact[] {
+  const artifacts: CanonicalArtifact[] = []
+  const opencodeDir = join(sourceRoot, ".opencode")
+
+  if (!existsSync(opencodeDir)) return artifacts
+
+  for (const dir of FORGE_NEUTRAL_DIRS) {
+    const dirPath = join(opencodeDir, dir)
+    if (!existsSync(dirPath)) continue
+
+    for (const entry of walkDir(dirPath)) {
+      const relPath = toPosix(relative(dirPath, entry))
+
+      if (dir === "docs" && EXCLUDED_DOCS.has(relPath)) continue
+      if (dir === "templates" && EXCLUDED_TEMPLATES.has(relPath)) continue
+
+      const content = readFileSync(entry, "utf-8")
+
+      artifacts.push({
+        category: "config",
+        sourcePath: join(".opencode", dir, relPath),
+        targetPath: join(".forge", dir, relPath),
+        content,
+        checksum: sha256(content),
+      })
+    }
+  }
+
+  return artifacts
+}
+
+/**
+ * Catalog the `.forge/` scaffolding a fresh project needs.
+ *
+ * These use the `user-template` category: created once on a fresh install,
+ * never overwritten on update, because the user edits them (spec 004 § D-4).
+ */
+export function catalogScaffoldArtifacts(sourceRoot: string): CanonicalArtifact[] {
+  const artifacts: CanonicalArtifact[] = []
+  const templatesDir = join(sourceRoot, ".opencode", "templates")
+
+  for (const { template, target } of SCAFFOLD_FILES) {
+    const sourceFile = join(templatesDir, template)
+    if (!existsSync(sourceFile)) continue
+
+    const content = readFileSync(sourceFile, "utf-8")
+
+    artifacts.push({
+      category: "user-template",
+      sourcePath: join(".opencode", "templates", template),
+      targetPath: target,
+      content,
+      checksum: sha256(content),
+    })
+  }
+
+  return artifacts
+}
+
+/**
+ * Catalog OpenCode-only artifacts (`.opencode/plugins/` + its package
+ * manifest). Returned separately because they must not be projected to
+ * Claude Code or Codex (spec 004 § D-3).
+ */
+export function catalogOpenCodeOnlyArtifacts(sourceRoot: string): CanonicalArtifact[] {
+  const artifacts: CanonicalArtifact[] = []
+  const opencodeDir = join(sourceRoot, ".opencode")
+
+  if (!existsSync(opencodeDir)) return artifacts
+
+  for (const dir of OPENCODE_ONLY_DIRS) {
+    const dirPath = join(opencodeDir, dir)
+    if (!existsSync(dirPath)) continue
+
+    for (const entry of walkDir(dirPath)) {
+      const relPath = toPosix(relative(opencodeDir, entry))
+      const content = readFileSync(entry, "utf-8")
+
+      artifacts.push({
+        category: "plugin",
+        sourcePath: relPath,
+        targetPath: relPath,
+        content,
+        checksum: sha256(content),
+      })
+    }
+  }
+
+  // The plugins import @opencode-ai/plugin — ship the manifest that declares it.
+  const pkgPath = join(opencodeDir, "package.json")
+  if (artifacts.length > 0 && existsSync(pkgPath)) {
+    const content = readFileSync(pkgPath, "utf-8")
+    artifacts.push({
+      category: "plugin",
+      sourcePath: "package.json",
+      targetPath: "package.json",
+      content,
+      checksum: sha256(content),
+    })
+  }
+
+  return artifacts
 }
 
 /** Catalog all canonical artifacts from .opencode/ source. */
@@ -119,9 +312,9 @@ export function catalogCanonicalArtifacts(sourceRoot: string): CanonicalArtifact
 
     const entries = walkDir(dirPath)
     for (const entry of entries) {
-      const relPath = relative(opencodeDir, entry)
+      const relPath = toPosix(relative(opencodeDir, entry))
       const content = readFileSync(entry, "utf-8")
-      const checksum = createHash("sha256").update(content, "utf-8").digest("hex")
+      const checksum = sha256(content)
 
       artifacts.push({
         category: dir === "agents" ? "agent" : dir === "commands" ? "command" : "skill",
@@ -147,9 +340,13 @@ export function catalogCanonicalArtifacts(sourceRoot: string): CanonicalArtifact
  */
 function targetPathForPlatform(descriptor: PlatformDescriptor, artifact: CanonicalArtifact): string {
   // For skills on Codex CLI, map to .agents/skills/ instead of .codex/skills/
+  // NOTE: the caller joins this under descriptor.rootDir, so the result today
+  // is .codex/.agents/skills/ rather than the documented .agents/skills/.
+  // Tracked in #70 — fixing it requires a project-root escape hatch in the
+  // operation model, which is out of scope for spec 004.
   if (descriptor.id === "codex" && artifact.category === "skill") {
-    // .opencode/skills/foo/SKILL.md → .agents/skills/foo/SKILL.md
-    return artifact.sourcePath.replace(/^skills\//, ".agents/skills/")
+    // skills/foo/SKILL.md → .agents/skills/foo/SKILL.md
+    return toPosix(artifact.sourcePath).replace(/^skills\//, ".agents/skills/")
   }
 
   return artifact.sourcePath
@@ -178,9 +375,17 @@ export function buildInstallPlan(
 ): InstallPlan {
   const platformArtifacts = catalogCanonicalArtifacts(sourceRoot)
   const forgeArtifacts = catalogForgeArtifacts(sourceRoot)
+  const openCodeOnlyArtifacts = catalogOpenCodeOnlyArtifacts(sourceRoot)
 
   const operations: InstallOperation[] = []
   const requiredDirectories: Set<string> = new Set()
+
+  // Scaffold the .forge/ directory tree so FORGE commands have somewhere to
+  // write. Empty directories carry no artifact, so they are registered
+  // directly as required directories (spec 004 FR-005).
+  for (const dir of FORGE_SCAFFOLD_DIRS) {
+    requiredDirectories.add(join(targetRoot, ".forge", ...dir.split("/")))
+  }
 
   // --- Platform-specific artifacts (installed once per detected platform) ---
   for (const platform of platforms) {
@@ -190,7 +395,14 @@ export function buildInstallPlan(
     // Ensure the platform root dir exists
     requiredDirectories.add(platformRoot)
 
-    for (const artifact of platformArtifacts) {
+    // Plugins are OpenCode-only: they import @opencode-ai/plugin, which has
+    // no equivalent on Claude Code or Codex (spec 004 § D-3).
+    const artifactsForPlatform =
+      platform === "opencode"
+        ? [...platformArtifacts, ...openCodeOnlyArtifacts]
+        : platformArtifacts
+
+    for (const artifact of artifactsForPlatform) {
       const relTarget = targetPathForPlatform(descriptor, artifact)
       const absTarget = join(targetRoot, descriptor.rootDir, relTarget)
       const targetDir = resolve(join(absTarget, ".."))

@@ -60,7 +60,7 @@ Use `question` tool to set: sprint goal (required, 1-2 sentences), duration (def
 
 ### Step 4 — Create Sprint File
 
-Read template `../.opencode/templates/sprint-status.yaml`.
+Read template `.forge/templates/sprint-status.yaml`.
 
 Create `.forge/sprints/active/sprint-NNN.yaml`:
 ```yaml
@@ -272,4 +272,4 @@ Missing `end_date` → fallback to today + warn. Collision → `-2`, `-3` suffix
 
 Delete `active/` + `completed/`; rename `sprint-status.yaml.bak` → `sprint-status.yaml`; old parser takes over.
 
-See `../.opencode/docs/MIGRATION-SPRINT-FORMAT.md` for full guide.
+See `docs/meta-development/migration-sprint-format.md` in the FORGE source repository for the full migration guide.
