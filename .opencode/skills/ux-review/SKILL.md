@@ -10,7 +10,7 @@ metadata:
 
 ## Purpose
 
-Adds the **6th review dimension: UX Quality** to adversarial code review. Structured checks for usability, accessibility, design system consistency, and UX anti-patterns.
+Adds the **7th review dimension: UX Quality** to adversarial code review. Structured checks for usability, accessibility, design system consistency, and UX anti-patterns.
 
 Activate when:
 - `design-spec.md` or `user-journey.md` exists for the feature.
@@ -134,7 +134,7 @@ Same severity format as other dimensions:
 ## Integration with Standard Review
 
 1. Add UX as Dimension 7 in review output.
-2. Count UX issues toward minimum 3-issue requirement.
+2. Count UX issues toward the per-reviewer minimum (≥3 issues — see `adversarial-review`).
 3. Update summary:
 
 ```
@@ -155,4 +155,4 @@ If no `design-spec.md` for the feature:
      Suggestion: Run /forge-ux to produce a design spec, or retroactively
      document the implemented UX in design-spec.md.
    ```
-2. Still apply checks 6b (a11y), 6c (design system), 6d (anti-patterns), 6e (responsive). These don't require a spec.
+2. Still apply checks 7b (a11y), 7c (design system), 7d (anti-patterns), 7e (responsive). These don't require a spec.

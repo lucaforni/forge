@@ -375,7 +375,7 @@ The user wants to make the following database change: $ARGUMENTS
 4. If the migration involves data loss or breaking changes, create an
    ADR documenting the decision.
 
-5. Invoke the Build agent to:
+5. Invoke `/forge-implement` (the Forge orchestrator implements) to:
    a. Generate the migration file
    b. Update the ORM schema if applicable
    c. Update any affected queries or repositories
@@ -526,7 +526,7 @@ identifying bottlenecks, inefficiencies, and optimization opportunities.
 
 For each finding:
 ```
-**[IMPACT: Critical|High|Medium|Low]** [DIMENSION]
+**[IMPACT: CRITICAL|WARNING|INFO]** [DIMENSION]
 File: path/to/file.ts:LINE
 Issue: [description of the performance problem]
 Current: O(n^2) / 500ms avg / unbounded memory
@@ -591,12 +591,12 @@ Project skills override global skills of the same name.
 
 ### 5.1 Modifying a Template
 
-Templates are markdown files in `.opencode/templates/`. FORGE agents use
+Templates are markdown files in `.forge/templates/`. FORGE agents use
 these templates when creating new documents.
 
 **Example**: Add a "Compliance" section to the spec template:
 
-File: `.opencode/templates/spec.md`
+File: `.forge/templates/spec.md`
 
 Add after the "Non-Functional Requirements" section:
 
@@ -609,11 +609,11 @@ Add after the "Non-Functional Requirements" section:
 
 ### 5.2 Adding a New Template
 
-Create a new markdown file in `.opencode/templates/`.
+Create a new markdown file in `.forge/templates/`.
 
 **Example**: Add a runbook template for operational documentation:
 
-File: `.opencode/templates/runbook.md`
+File: `.forge/templates/runbook.md`
 
 ```markdown
 # Runbook: [Feature/Service Name]
@@ -697,7 +697,7 @@ subtask: true
 
 Create a runbook for: $ARGUMENTS
 
-Use the template at .opencode/templates/runbook.md as a starting point.
+Use the template at .forge/templates/runbook.md as a starting point.
 Read the existing architecture and spec documents for context.
 Save the output to .forge/runbooks/[service-name]-runbook.md.
 ```
@@ -797,8 +797,8 @@ Add enforcement language to articles:
 
 ### 4.2 Code Review
 - All code MUST pass adversarial AI review before human review (BLOCKING)
-- All HIGH severity findings MUST be resolved before merge (BLOCKING)
-- All MEDIUM severity findings MUST have documented justification if not fixed
+- All CRITICAL findings MUST be resolved before merge (BLOCKING)
+- All WARNING findings MUST have documented justification if not fixed
 
 ### 4.3 Performance
 - P95 response time < 200ms for all API endpoints (BLOCKING)
@@ -898,7 +898,7 @@ unknown.
 
 3. Create the spike report template:
 
-File: `.opencode/templates/spike-report.md`
+File: `.forge/templates/spike-report.md`
 
 ```markdown
 # Spike Report: [NNN] - [Title]
@@ -1054,328 +1054,27 @@ For agents that need more (or less) extended thinking:
 }
 ```
 
-### 8.4 Using OpenCode Zen Models
+### 8.4 Default Model Tiers
 
-OpenCode Zen provides a **curated model selection** managed by OpenCode.
-Instead of choosing specific models per provider, Zen routes your requests
-to the best available model automatically.
-
-FORGE ships with **three Zen presets** for different model families and budgets:
-
-| Preset | Reasoning | Execution | Peer | Best For |
-|---|---|---|---|---|
-| `opencode-anthropic` | Claude Opus 4.7 | Claude Sonnet 4.6 | GPT-5.3-Codex | Maximum quality |
-| `opencode-deepseek` | DeepSeek V4 Pro | DeepSeek V4 Flash | Qwen 3.6 Plus | Cost-effective quality |
-| `opencode-free` | MiniMax M3 Free | DeepSeek V4 Flash Free | Qwen 3.6 Plus Free | Zero-cost experimentation |
-
-Select a preset during install:
-
-```bash
-npx tsx install-forge.ts /path/to/project --provider opencode-deepseek
-```
-
-**Full Zen-Anthropic configuration:**
-
-```json
-{
-  "model": "opencode/claude-sonnet-4.6",
-  "provider": {
-    "opencode": {
-      "models": {
-        "claude-sonnet-4.6": {},
-        "claude-opus-4.7": {},
-        "claude-opus-4.6": {
-          "options": {
-            "thinking": { "budgetTokens": 16000 }
-          }
-        },
-        "gpt-5.3-codex": {}
-      }
-    }
-  },
-  "agent": {
-    "forge": { "variant": "high" },
-    "forge-pm":        { "model": "opencode/claude-opus-4.7" },
-    "forge-architect": { "model": "opencode/claude-opus-4.7" },
-    "forge-reviewer":  { "model": "opencode/claude-opus-4.7" },
-    "forge-ux":        { "model": "opencode/claude-opus-4.7" },
-    "forge-scrum":     { "model": "opencode/claude-sonnet-4.6" },
-    "forge-qa":        { "model": "opencode/claude-sonnet-4.6" },
-    "forge-analyst":   { "model": "opencode/claude-sonnet-4.6" },
-    "forge-reviewer-peer": { "model": "opencode/gpt-5.3-codex" }
-  }
-}
-```
-
-**Full Zen-DeepSeek configuration:**
-
-```json
-{
-  "model": "opencode/deepseek-v4-flash",
-  "provider": {
-    "opencode": {
-      "models": {
-        "deepseek-v4-pro": {},
-        "deepseek-v4-flash": {},
-        "qwen3.6-plus": {}
-      }
-    }
-  },
-  "agent": {
-    "forge": { "variant": "high" },
-    "forge-pm":        { "model": "opencode/deepseek-v4-pro" },
-    "forge-architect": { "model": "opencode/deepseek-v4-pro" },
-    "forge-reviewer":  { "model": "opencode/deepseek-v4-pro" },
-    "forge-ux":        { "model": "opencode/deepseek-v4-pro" },
-    "forge-scrum":     { "model": "opencode/deepseek-v4-flash" },
-    "forge-qa":        { "model": "opencode/deepseek-v4-flash" },
-    "forge-analyst":   { "model": "opencode/deepseek-v4-flash" },
-    "forge-reviewer-peer": { "model": "opencode/qwen3.6-plus" }
-  }
-}
-```
-
-**Full Zen-Free configuration:**
-
-```json
-{
-  "model": "opencode/deepseek-v4-flash-free",
-  "provider": {
-    "opencode": {
-      "models": {
-        "minimax-m3-free": {},
-        "deepseek-v4-flash-free": {},
-        "qwen3.6-plus-free": {}
-      }
-    }
-  },
-  "agent": {
-    "forge": { "variant": "high" },
-    "forge-pm":        { "model": "opencode/minimax-m3-free" },
-    "forge-architect": { "model": "opencode/minimax-m3-free" },
-    "forge-reviewer":  { "model": "opencode/minimax-m3-free" },
-    "forge-ux":        { "model": "opencode/minimax-m3-free" },
-    "forge-scrum":     { "model": "opencode/deepseek-v4-flash-free" },
-    "forge-qa":        { "model": "opencode/deepseek-v4-flash-free" },
-    "forge-analyst":   { "model": "opencode/deepseek-v4-flash-free" },
-    "forge-reviewer-peer": { "model": "opencode/qwen3.6-plus-free" }
-  }
-}
-```
-
-> **Tip:** Switch between Zen variants anytime with:
-> `npx tsx install-forge.ts . --update --reconfigure --provider opencode-free`
-
-### 8.5 Model Variants
-
-OpenCode supports model variants (e.g., different reasoning effort levels).
-Configure variants for agents that need them:
-
-```json
-{
-  "agent": {
-    "forge-architect": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max"
-    }
-  }
-}
-```
-
-### 8.6 Provider Presets Reference
-
-FORGE ships with predefined model configurations for 4 providers.
-Use `npx tsx install-forge.ts . --reconfigure` to switch providers.
-
-#### GitHub Copilot (github-copilot)
+The installer assigns models by tier. Reasoning-tier agents get the
+strongest model; everything else gets the default; the peer reviewer
+deliberately gets a **different model family** so the dual-model review is
+genuinely diverse (see #66):
 
 | Agent Tier | Model | Agents |
 |---|---|---|
-| Default | `github-copilot/claude-sonnet-4.6` | All |
+| Default | `github-copilot/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
 | Reasoning | `github-copilot/claude-opus-4.7` | PM, Architect, Reviewer, UX |
-| Execution | `github-copilot/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
 | Peer | `github-copilot/gpt-5.3-codex` | Reviewer-Peer |
 
-**Fallback:** If `claude-opus-4.7` is not available, use `claude-opus-4.6`.
+Change any of them by editing the `agent` block in `opencode.json` (see
+§8.1). Your per-agent overrides survive reinstalls — the installer merges,
+never clobbers.
 
-#### OpenCode Anthropic (opencode-anthropic)
-
-| Agent Tier | Model | Agents |
-|---|---|---|
-| Default | `opencode/claude-sonnet-4.6` | All |
-| Reasoning | `opencode/claude-opus-4.7` | PM, Architect, Reviewer, UX |
-| Execution | `opencode/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
-| Peer | `opencode/gpt-5.3-codex` | Reviewer-Peer |
-
-**Fallback:** If `claude-opus-4.7` is not available, use `claude-opus-4.6`.
-
-#### OpenCode DeepSeek (opencode-deepseek)
-
-| Agent Tier | Model | Agents |
-|---|---|---|
-| Default | `opencode/deepseek-v4-flash` | All |
-| Reasoning | `opencode/deepseek-v4-pro` | PM, Architect, Reviewer, UX |
-| Execution | `opencode/deepseek-v4-flash` | Forge, Scrum, QA, Analyst |
-| Peer | `opencode/qwen3.6-plus` | Reviewer-Peer |
-
-#### OpenCode Free (opencode-free)
-
-| Agent Tier | Model | Agents |
-|---|---|---|
-| Default | `opencode/deepseek-v4-flash-free` | All |
-| Reasoning | `opencode/minimax-m3-free` | PM, Architect, Reviewer, UX |
-| Execution | `opencode/deepseek-v4-flash-free` | Forge, Scrum, QA, Analyst |
-| Peer | `opencode/qwen3.6-plus-free` | Reviewer-Peer |
-
-#### OpenAI (openai)
-
-| Agent Tier | Model | Agents |
-|---|---|---|
-| Default | `openai/gpt-4o` | All |
-| Reasoning | `openai/o3` | PM, Architect, Reviewer, UX |
-| Execution | `openai/gpt-4o` | Forge, Scrum, QA, Analyst |
-
-> OpenAI preset does not include a Peer reviewer agent.
-
-#### Google (google)
-
-| Agent Tier | Model | Agents |
-|---|---|---|
-| Default | `google/gemini-2.5-flash` | All |
-| Reasoning | `google/gemini-2.5-pro` | PM, Architect, Reviewer, UX |
-| Execution | `google/gemini-2.5-flash` | Forge, Scrum, QA, Analyst |
-
-> Google preset does not include a Peer reviewer agent.
-
-### 8.7 Reconfiguring After Install
-
-If you installed with one provider and want to switch:
-
-```bash
-# Re-run the installer with --reconfigure
-npx tsx install-forge.ts . --reconfigure
-```
-
-This opens the provider selection flow while preserving your constitution,
-specs, knowledge base, and other project files.
-
-To switch providers manually, edit these sections in `opencode.json`:
-- `model` — default model
-- `provider` — provider configuration
-- `agent` — per-agent model overrides
-
-### 8.8 Customizing Provider Presets
-
-FORGE provider presets are defined in JSON files — not hardcoded in the
-installer. You can customize existing presets or add entirely new ones.
-
-#### Preset File Locations
-
-| File | Purpose | Overwritten on Update? |
-|---|---|---|
-| `.opencode/templates/presets.json` | FORGE default presets | Yes (updated with FORGE) |
-| `.forge/presets.json` | Your custom overrides | **No** (protected) |
-
-#### How It Works
-
-1. FORGE loads presets from `.opencode/templates/presets.json` (shipped presets)
-2. If `.forge/presets.json` exists, it **merges** on top:
-   - Same preset `id` → your version **completely replaces** the FORGE default
-   - New preset `id` → **added** to the available list
-   - Optional `order` field → controls display order in interactive selection
-
-#### Example: Override GitHub Copilot
-
-Create `.forge/presets.json`:
-
-```json
-{
-  "presets": {
-    "github-copilot": {
-      "name": "GitHub Copilot (Custom)",
-      "description": "Claude Opus 4.6 with higher thinking budget",
-      "defaultModel": "github-copilot/claude-sonnet-4.6",
-      "providers": {
-        "github-copilot": {
-          "models": {
-            "claude-opus-4.6": {
-              "options": { "thinking": { "budgetTokens": 32000 } }
-            },
-            "claude-sonnet-4.6": {}
-          }
-        }
-      },
-      "agentModels": {
-        "reasoning": {
-          "model": "github-copilot/claude-opus-4.6",
-          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
-        },
-        "execution": {
-          "model": "github-copilot/claude-sonnet-4.6",
-          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
-        }
-      },
-      "alternatives": {
-        "reasoning": ["github-copilot/claude-opus-4.6"],
-        "execution": ["github-copilot/claude-sonnet-4.6"]
-      }
-    }
-  }
-}
-```
-
-Then reconfigure:
-
-```bash
-npx tsx install-forge.ts . --reconfigure
-```
-
-#### Example: Add a Brand New Provider
-
-```json
-{
-  "presets": {
-    "my-org": {
-      "name": "My Organization",
-      "description": "Internal proxy with custom models",
-      "defaultModel": "my-org/gpt-4o",
-      "providers": {
-        "my-org": {
-          "models": {
-            "gpt-4o": {},
-            "claude-sonnet": {}
-          }
-        }
-      },
-      "agentModels": {
-        "reasoning": {
-          "model": "my-org/claude-sonnet",
-          "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
-        },
-        "execution": {
-          "model": "my-org/gpt-4o",
-          "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
-        }
-      },
-      "alternatives": {
-        "reasoning": ["my-org/claude-sonnet"],
-        "execution": ["my-org/gpt-4o"]
-      }
-    }
-  },
-  "order": ["my-org", "github-copilot", "opencode-anthropic", "opencode-deepseek", "opencode-free", "openai", "google"]
-}
-```
-
-Now `my-org` appears first in the interactive selection and works with
-`--provider my-org`.
-
-> **Tip:** Use `.forge/presets.json` to pin specific model versions,
-> adjust thinking budgets, or add providers for internal API proxies.
-> The file is never overwritten during FORGE updates.
-
----
-
+> **History**: until v2.0, models were chosen through provider presets
+> (`--provider`, `--reconfigure`, `presets.json`). That engine was removed;
+> any documentation still describing it is stale. Model choice is now plain
+> `opencode.json` configuration, merged on every install.
 ## 9. Customizing Plugins
 
 ### 9.1 Modifying Existing Plugins
@@ -1811,7 +1510,7 @@ If you have existing BMAD projects:
    - `_bmad-output/PRD.md` -> `.forge/product/prd.md`
    - `_bmad-output/architecture.md` -> `.forge/architecture/architecture.md`
    - `_bmad-output/epics/story-*.md` -> `.forge/epics/epic-01/story-*.md`
-   - `_bmad-output/sprint-status.yaml` -> `.forge/sprints/sprint-status.yaml`
+   - `_bmad-output/sprint-status.yaml` -> `.forge/sprints/active/sprint-NNN.yaml` (one file per sprint)
 
 2. Create a constitution from BMAD's `project-context.md`:
    ```
@@ -1866,7 +1565,7 @@ plugins use OpenCode-specific APIs. If you also use Cursor or Windsurf:
 | Agents              | `.opencode/agents/*.md`            | Markdown |
 | Commands            | `.opencode/commands/*.md`          | Markdown |
 | Skills              | `.opencode/skills/*/SKILL.md`      | Markdown |
-| Templates           | `.opencode/templates/*.md`         | Markdown |
+| Templates           | `.forge/templates/*.md`           | Markdown |
 | Tools               | `.opencode/tools/*.ts`             | TypeScript |
 | Plugins             | `.opencode/plugins/*.ts`           | TypeScript |
 | Constitution        | `.forge/constitution.md`           | Markdown |

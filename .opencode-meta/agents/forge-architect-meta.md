@@ -51,7 +51,7 @@ When designing architecture or plans for FORGE features, you must specify
 explicit file paths relative to the working directory.
 
 ### Path Conventions
-- **FORGE source**: `../.opencode/` (commands, agents, skills, tools, docs)
+- **FORGE source**: `.opencode/` (commands, agents, skills, tools, docs)
 - **Dev workspace**: `./.forge/` (specs, knowledge, constitution)
 - **Root template**: `../.forge/` (template configuration for users)
 
@@ -60,13 +60,13 @@ When identifying where components should be implemented:
 
 | Component Type | Base Path | Example |
 |----------------|-----------|---------|
-| Command | `../.opencode/commands/` | `../.opencode/commands/forge-doctor.md` |
-| Agent | `../.opencode/agents/` | `../.opencode/agents/forge-tester.md` |
-| Skill | `../.opencode/skills/[name]/` | `../.opencode/skills/validation/SKILL.md` |
-| Tool | `../.opencode/tools/` | `../.opencode/tools/health-checker.ts` |
-| Plugin | `../.opencode/plugins/` | `../.opencode/plugins/auto-validator.ts` |
-| Template | `../.opencode/templates/` | `../.opencode/templates/epic.md` |
-| Documentation | `../.opencode/docs/` | `../.opencode/docs/FORGE-GUIDE.md` |
+| Command | `.opencode/commands/` | `.opencode/commands/forge-doctor.md` |
+| Agent | `.opencode/agents/` | `.opencode/agents/forge-tester.md` |
+| Skill | `.opencode/skills/[name]/` | `.opencode/skills/validation/SKILL.md` |
+| Tool | `.opencode/tools/` | `.opencode/tools/health-checker.ts` |
+| Plugin | `.opencode/plugins/` | `.opencode/plugins/auto-validator.ts` |
+| Template | `.opencode/templates/` | `.opencode/templates/epic.md` |
+| Documentation | `.opencode/docs/` | `.opencode/docs/FORGE-GUIDE.md` |
 | Spec (dev) | `./.forge/specs/NNN-slug/` | `./.forge/specs/001-doctor/spec.md` |
 | ADR (dev) | `./.forge/knowledge/adr/` | `./.forge/knowledge/adr/001-validation.md` |
 
@@ -80,20 +80,20 @@ paths for every file to be created, modified, or deleted. Use this format:
 ### Files to Create
 | Path | Purpose | Estimated Size |
 |------|---------|----------------|
-| `../.opencode/commands/forge-doctor.md` | Health check command | M (100-200 lines) |
-| `../.opencode/tools/validator.ts` | Validation logic | L (300+ lines) |
+| `.opencode/commands/forge-doctor.md` | Health check command | M (100-200 lines) |
+| `.opencode/tools/validator.ts` | Validation logic | L (300+ lines) |
 
 ### Files to Modify
 | Path | Section/Lines | Change Description | Estimated Effort |
 |------|---------------|---------------------|------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4, Lines 250-260 | Add doctor command docs | S (15 min) |
-| `../.opencode/agents/forge.md` | Line 58 | Register new command | S (5 min) |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4, Lines 250-260 | Add doctor command docs | S (15 min) |
+| `.opencode/agents/forge.md` | Line 58 | Register new command | S (5 min) |
 
 ### Files to Reference (Read-only)
 | Path | Purpose |
 |------|---------|
 | `./.forge/constitution.md` | Verify naming conventions (Article 7.1) |
-| `../.opencode/templates/spec.md` | Validate required sections |
+| `.opencode/templates/spec.md` | Validate required sections |
 ```
 
 ### Implementation Phases with Paths
@@ -107,13 +107,13 @@ In Section 7 "Implementation Phases", each phase must list files with paths:
 **Objective**: Create command structure and interface
 
 **Files to Create**:
-- `../.opencode/commands/forge-doctor.md`
+- `.opencode/commands/forge-doctor.md`
   - Purpose: Command definition, description, usage
   - Dependencies: None
   - Estimated effort: 30 min
 
 **Files to Modify**:
-- `../.opencode/agents/forge.md`
+- `.opencode/agents/forge.md`
   - Section/Lines: Line ~58 "Available Commands"
   - Change: Add forge-doctor to command registry
   - Estimated effort: 10 min
@@ -136,7 +136,7 @@ Before finalizing any architecture or plan, verify:
 - [ ] Paths match FORGE naming conventions (Article 7 of constitution)
 
 ### Template Modifications (Use Caution)
-Templates in `../.opencode/templates/` should rarely be modified. If a plan
+Templates in `.opencode/templates/` should rarely be modified. If a plan
 requires template changes:
 
 1. **Document impact**: Explain how this affects existing FORGE users
@@ -150,7 +150,7 @@ Example:
 ### Files to Modify
 | Path | Section/Lines | Change Description | Estimated Effort |
 |------|---------------|---------------------|------------------|
-| `../.opencode/templates/spec.md` | Section 12 | Add "Testing Strategy" section | M (30 min) |
+| `.opencode/templates/spec.md` | Section 12 | Add "Testing Strategy" section | M (30 min) |
 
 **⚠️ Breaking Change**: Existing specs without Section 12 may fail validation.
 **Migration**: Add empty Section 12 to existing specs.

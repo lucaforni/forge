@@ -50,7 +50,7 @@ When working on FORGE itself (detected by working directory ending in `/dev`):
 All specs, PRDs, and tech-specs must include explicit file paths relative to
 the working directory. Paths use the following convention:
 
-- **FORGE source code**: `../.opencode/` (goes up from `dev/` to `forge/`)
+- **FORGE source code**: `.opencode/` (goes up from `dev/` to `forge/`)
 - **Dev specs/docs**: `./.forge/` (current working directory)
 - **Root config** (template): `../.forge/` (goes up to template config)
 
@@ -65,12 +65,12 @@ implementation will happen. Use these table formats:
 ### Files to Create
 | Path | Type | Description |
 |------|------|-------------|
-| `../.opencode/commands/forge-new.md` | Command | New command implementation |
+| `.opencode/commands/forge-new.md` | Command | New command implementation |
 
 ### Files to Modify
 | Path | Section/Line | Change Description |
 |------|--------------|---------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Add command reference |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Add command reference |
 
 ### Files to Reference (Read-only)
 | Path | Purpose |
@@ -85,17 +85,17 @@ implementation will happen. Use these table formats:
 ### New Components
 | Component Type | Path | Description |
 |----------------|------|-------------|
-| Command | `../.opencode/commands/forge-validate.md` | Validation command |
+| Command | `.opencode/commands/forge-validate.md` | Validation command |
 
 ### Modified Components
 | Path | Modification Type | Description |
 |------|-------------------|-------------|
-| `../.opencode/agents/forge.md` | Enhancement | Add validation orchestration |
+| `.opencode/agents/forge.md` | Enhancement | Add validation orchestration |
 
 ### Documentation Updates
 | Path | Section | Update Description |
 |------|---------|---------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Document new command |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Document new command |
 ```
 
 ### Path Validation Rules
@@ -115,13 +115,13 @@ should look like this:
 ### Files to Create
 | Path | Type | Description |
 |------|------|-------------|
-| `../.opencode/commands/forge-doctor.md` | Command | Health check command definition |
+| `.opencode/commands/forge-doctor.md` | Command | Health check command definition |
 
 ### Files to Modify
 | Path | Section/Line | Change Description |
 |------|--------------|---------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 "Command Reference" | Add `/forge-doctor` documentation with usage examples |
-| `../.opencode/agents/forge.md` | Line ~58 "Available Commands" | Register `/forge-doctor` in orchestrator |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4 "Command Reference" | Add `/forge-doctor` documentation with usage examples |
+| `.opencode/agents/forge.md` | Line ~58 "Available Commands" | Register `/forge-doctor` in orchestrator |
 
 ### Files to Reference (Read-only)
 | Path | Purpose |

@@ -9,7 +9,7 @@
 | Epic     | <!-- Link to epic --> |
 | Sprint   | <!-- Sprint number --> |
 | Points   |                   |
-| Priority | <!-- Critical / High / Medium / Low --> |
+| Priority | <!-- CRITICAL / WARNING / INFO --> |
 | Status   | Ready             |
 
 ---
@@ -53,7 +53,7 @@
 - [ ] Unit tests written and passing
 - [ ] Integration tests written and passing (if applicable)
 - [ ] Code passes `/forge-review` adversarial review
-- [ ] No HIGH severity findings unresolved
+- [ ] No CRITICAL findings unresolved
 - [ ] Code follows constitution conventions (Article 7)
 - [ ] Documentation updated (if user-facing changes)
 - [ ] PR created with spec/story reference
@@ -75,4 +75,4 @@
 | Epic                 | `.forge/epics/epic-NN-slug/epic.md`            |
 | Architecture         | `.forge/architecture/architecture.md`          |
 | PRD                  | `.forge/product/prd.md`                        |
-| Sprint Status        | `.forge/sprints/sprint-status.yaml`            |
+| Active Sprint        | `.forge/sprints/active/sprint-NNN.yaml`      |

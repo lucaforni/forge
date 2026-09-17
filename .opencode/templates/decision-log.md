@@ -6,7 +6,7 @@
 > `.forge/knowledge/adr/`.
 >
 > **Format**: Each entry must include required fields (Status, date) for proper
-> archiviation. Use the template: `.opencode/templates/decision-log-entry-template.md`
+> archiviation. Use the template: `./decision-log-entry-template.md`
 >
 > **Maintenance**: Runs automatically when threshold exceeded (500 lines by default).
 > Run `/forge-archive-decisions` manually or configure in `.forge/config.yml`.
@@ -44,7 +44,7 @@ Brief background...
 
 - `/forge-archive-decisions` - Archive old completed decisions
 - `/forge-validate-decisions` - Check entry format
-- See: `.opencode/docs/knowledge-management.md` for complete guide
+- See: `../docs/knowledge-management.md` for complete guide
 
 ---
 

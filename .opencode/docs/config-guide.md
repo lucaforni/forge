@@ -8,7 +8,7 @@
 
 1. Copy the template to your project:
    ```bash
-   cp .opencode/templates/forge-config.yml .forge/config.yml
+   cp .forge/templates/forge-config.yml .forge/config.yml
    ```
 
 2. Customize for your team
@@ -265,6 +265,6 @@ Lower `context.token_budget.decision_log` or decrease `keep_recent`.
 
 ## Related Documentation
 
-- Decision Archiviation: `.opencode/docs/knowledge-management.md`
+- Decision archival: `./knowledge-management.md`
 - Scope Detection: `.opencode/skills/scope-detection/SKILL.md`
 - Context Chaining: `.opencode/skills/context-chain/SKILL.md`

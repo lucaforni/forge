@@ -39,19 +39,35 @@ for project in "${PROJECTS[@]}"; do
     continue
   fi
   
-  if [ ! -f "$project/.opencode/agents/forge.md" ]; then
+  # A project counts as FORGE-installed when the manifest exists or any
+  # platform carries the orchestrator agent — not just OpenCode. The old
+  # check looked only at .opencode/, so Claude-only and Codex-only projects
+  # were misreported as "not installed".
+  if [ ! -f "$project/.forge/.install-manifest.json" ] \
+     && [ ! -f "$project/.opencode/agents/forge.md" ] \
+     && [ ! -f "$project/.claude/agents/forge.md" ] \
+     && [ ! -f "$project/.codex/agents/forge.md" ]; then
     echo "  ⚠ FORGE not installed, skipping..."
     FAILED=$((FAILED + 1))
     continue
   fi
-  
-  if npx tsx "$FORGE_DIR/install-forge.ts" "$project" --update > /dev/null 2>&1; then
+
+  # --update refuses targets with nothing to update (exit 4), so reaching
+  # here with a stale pre-check surfaces as a failure below, not a silent
+  # fresh install. Diagnostics go to a per-project log, not /dev/null: a
+  # bare "Update failed" with set -euo pipefail is undebuggable.
+  log_file="$(mktemp)"
+  if npx tsx "$FORGE_DIR/install-forge.ts" "$project" --update > "$log_file" 2>&1; then
     echo -e "  ${GREEN}✓ Updated successfully${NC}"
     UPDATED=$((UPDATED + 1))
   else
-    echo "  ✗ Update failed"
+    code=$?
+    echo "  ✗ Update failed (exit $code, log: $log_file)"
+    tail -5 "$log_file" | sed 's/^/    /'
     FAILED=$((FAILED + 1))
+    continue
   fi
+  rm -f "$log_file"
   
   echo ""
 done

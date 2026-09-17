@@ -7,8 +7,15 @@
  */
 
 import { describe, it, expect } from "vitest"
+import { spawnSync, execFileSync } from "node:child_process"
+import { mkdtempSync, readdirSync, rmSync } from "node:fs"
+import { join, dirname } from "node:path"
+import { tmpdir } from "node:os"
+import { fileURLToPath } from "node:url"
 
 import { parseArgs } from "../../install-forge"
+
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..")
 
 const argv = (...args: string[]) => ["node", "install-forge.ts", ...args]
 
@@ -82,6 +89,26 @@ describe("parseArgs — usage errors (spec 006 #72)", () => {
   })
 })
 
+describe("AC-5 end to end — the original --provider trap", () => {
+  it("exits 4 and writes nothing, via a real process", () => {
+    // parseArgs unit tests prove the errors are produced; this proves the
+    // process actually refuses to run and leaves the target untouched.
+    const target = mkdtempSync(join(tmpdir(), "forge-ac5-"))
+    try {
+      const proc = spawnSync(
+        process.execPath,
+        ["--import", "tsx", join(REPO_ROOT, "install-forge.ts"), "--provider", "openai", target],
+        { cwd: REPO_ROOT, encoding: "utf-8", timeout: 60_000 },
+      )
+      expect(proc.status).toBe(4)
+      expect(proc.stderr).toContain("Unknown option")
+      expect(readdirSync(target)).toEqual([])
+    } finally {
+      rmSync(target, { recursive: true, force: true })
+    }
+  }, 90_000)
+})
+
 describe("module side effects (regression)", () => {
   it("importing the shim never executes the installer", async () => {
     // cli.test.ts itself imports ../../install-forge for parseArgs. Before
@@ -98,5 +125,12 @@ describe("module side effects (regression)", () => {
     expect(existsSync(join(root, ".forge", "docs"))).toBe(false)
     expect(existsSync(join(root, ".forge", "templates"))).toBe(false)
     expect(existsSync(join(root, ".forge", "frontend"))).toBe(false)
+
+    // The import-time install also rewrote the repo's own opencode.json:
+    // the JSON round-trip strips its // comments. Their presence proves no
+    // merge happened.
+    const { readFileSync } = await import("node:fs")
+    const repoConfig = readFileSync(join(root, "opencode.json"), "utf-8")
+    expect(repoConfig).toContain("// FORGE")
   })
 })

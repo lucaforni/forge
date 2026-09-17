@@ -89,9 +89,29 @@ stays accepted-but-unimplemented, and now says so once, plainly, instead of
 - [x] T-008 `[S]` `[#72]` `--interactive` warns once honestly; help text documents `--update` semantics and exit codes
 - [x] T-009 `[M]` Unit tests for the CLI parser (export `parseArgs`); a coherence test asserting one severity vocabulary, one dimension count and no `.opencode/templates` regressions
 - [x] T-010 `[S]` Adversarial review; resolve CRITICAL findings
+- [x] T-012 `[M]` Resolve peer-review findings (scope was narrower than claimed)
 - [x] T-011 `[S]` Fix the test-harness self-install: importing `install-forge.ts` ran `main()`
 
 ## Review Outcome
+
+The primary reviewer was quota-exhausted, so the peer reviewer carried the
+review alone — and returned 16 findings, 3 CRITICAL. The most important one
+was methodological: the new coherence test scanned only agents/commands/
+skills and passed while docs/, templates/ and .opencode-meta/ still taught
+the old severity scale, named a Build agent, and used the dead `dev/`
+paths. A passing test that cannot see the violation is worse than no test.
+
+| Finding | Resolution |
+|---|---|
+| **CRITICAL** — `--check` probed the target for `.opencode/` instead of the source. A valid fresh target failed exit 3; any directory with a stray `.opencode/` passed without the source ever being verified. | The check now runs the real cataloguing code against the source tree. |
+| **CRITICAL** — coherence scan false-green on docs/templates/meta (old severity examples, Build-agent prose, `../.opencode/` paths, a dead 320-line presets chapter describing the v1 engine). | All fixed; scan expanded to every shipped directory plus meta, sharing the installer's own exclusion set so the two cannot drift. |
+| **CRITICAL** — entry guard compared URL strings, so a symlinked invocation silently skipped `main()` and exited 0 having done nothing. | Real-path comparison. Verified through an actual symlink. |
+| **WARNING** — `--interactive` warned only inside the backup branch, i.e. never on a clean run. | Warns once, unconditionally. |
+| **WARNING** — empty `.forge/` counted as a previous install, so `--update` succeeded on fresh targets; corrupt manifest was the mirror bug. | Synthesis now requires evidence directories; the corrupt-manifest path warns and re-synthesises. |
+| **WARNING** — `story.md` template pointed every new story at the legacy sprint file; the contract test's `sprints/` exclusion hid it. | Template fixed; exclusion narrowed to the three runtime directories. |
+| **WARNING** — retro width NN vs NNN undefined (`001`→`01`?). | NNN everywhere, matching the sprint files. |
+
+## Earlier Finding
 
 Writing the CLI tests exposed a serious harness bug: `install-forge.ts`
 executed `main()` unconditionally at module load, so importing it for

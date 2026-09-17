@@ -19,10 +19,10 @@
  *   --help            Show this help
  */
 
-import { pathToFileURL } from "node:url"
+import { realpathSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { run, CliOptions, EXIT_USAGE } from "./installer/install"
 import { setVerbose } from "./installer/log"
-import { detectProjectState } from "./installer/detect"
 import type { Platform } from "./installer/types"
 
 // ---------------------------------------------------------------------------
@@ -56,6 +56,11 @@ export function parseArgs(argv: string[]): ParsedArgs {
         break
       case arg === "--check":
         result.options.check = true
+        break
+      case arg === "--platform":
+        result.errors.push(
+          `"--platform" needs the "=" form: --platform=opencode,claude-code.`,
+        )
         break
       case arg.startsWith("--platform="): {
         const raw = arg.slice("--platform=".length)
@@ -142,6 +147,7 @@ Options:
 
 Exit codes:
   0  success
+  1  fatal/internal error (unexpected exception)
   2  no supported platform detected in the target
   3  projection check failed
   4  invalid invocation (unknown flag, bad --platform value, or --update
@@ -162,15 +168,19 @@ Examples:
 async function main(): Promise<void> {
   const parsed = parseArgs(process.argv)
 
+  if (parsed.errors.length > 0) {
+    for (const err of parsed.errors) console.error(`[install-forge] Error: ${err}`)
+    if (parsed.showHelp) {
+      showHelp()
+    } else {
+      console.error(`[install-forge] Run with --help for usage.`)
+    }
+    process.exit(EXIT_USAGE)
+  }
+
   if (parsed.showHelp) {
     showHelp()
     process.exit(0)
-  }
-
-  if (parsed.errors.length > 0) {
-    for (const err of parsed.errors) console.error(`[install-forge] Error: ${err}`)
-    console.error(`[install-forge] Run with --help for usage.`)
-    process.exit(EXIT_USAGE)
   }
 
   if (parsed.options.verbose) {
@@ -190,9 +200,17 @@ async function main(): Promise<void> {
 // Without this guard, `import ... from "../../install-forge"` in a test
 // ran a full install into the repository itself (target defaulting to cwd),
 // rewriting the repo's own opencode.json mid-suite.
-const isEntryPoint =
-  process.argv[1] !== undefined &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
+// Compare real paths, not URL strings: through a symlink (the normal shape
+// of a global install) the argv href and the module URL differ, and the old
+// strict comparison silently skipped main() — exiting 0 having done nothing.
+let isEntryPoint = false
+try {
+  isEntryPoint =
+    process.argv[1] !== undefined &&
+    realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
+} catch {
+  isEntryPoint = false
+}
 
 if (isEntryPoint) {
   main().catch((err) => {

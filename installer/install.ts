@@ -15,7 +15,7 @@ import { spawnSync } from "node:child_process"
 import type { Platform, PlatformDescriptor, InstallPlan, InstallOperation, InstallResult } from "./types"
 
 import { detectProjectState } from "./detect"
-import { buildInstallPlan, catalogCanonicalArtifacts, SCAFFOLD_FILES } from "./projection"
+import { buildInstallPlan, catalogCanonicalArtifacts, catalogForgeArtifacts, SCAFFOLD_FILES } from "./projection"
 import { readManifest, writeManifest, createManifest, needsManifestSynthesis } from "./manifest"
 import { buildDefaultConfig, readExistingJsonConfig } from "./config"
 import { detectDrift } from "./drift"
@@ -268,10 +268,16 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   // Step 5: Check mode — verify projection matches expected, don't write
   if (isCheck) {
     log("info", "Check mode: verifying projection correctness...")
-    // Check that the plan is coherent (no missing source dirs, etc.)
-    const sourceExists = existsSync(join(projectRoot, ".opencode"))
-    if (!sourceExists && platforms.includes("opencode")) {
-      log("err", "Projection check failed: .opencode/ source not found for OpenCode platform")
+    // Verify the FORGE source tree (what we install FROM) through the same
+    // cataloguing code the install uses. The previous version probed the
+    // TARGET for `.opencode/`, which inverted the contract: a valid fresh
+    // target failed, while any directory with a stray `.opencode/` passed
+    // without the source ever being verified.
+    const sourceRoot = resolve(_dirname, "..")
+    const canonical = catalogCanonicalArtifacts(sourceRoot)
+    const shared = catalogForgeArtifacts(sourceRoot)
+    if (canonical.length === 0 || shared.length === 0) {
+      log("err", "Projection check failed: FORGE source tree produced no artifacts to install.")
       return { success: false, installed: platforms, warnings: configWarnings, backupPaths: [], exitCode: 3 }
     }
     log("ok", "Projection check passed.")

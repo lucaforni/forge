@@ -37,7 +37,7 @@ path to eliminate ambiguity about where work happens.
 ### Task Format with Paths
 Each task in `tasks.md` must specify:
 
-- **File**: Explicit relative path (e.g., `../.opencode/commands/forge-x.md`)
+- **File**: Explicit relative path (e.g., `.opencode/commands/forge-x.md`)
 - **Type**: `Create new file` or `Modify existing` or `Delete`
 - **Location**: For modifications, specify section name or line numbers
 - **Description**: What needs to be done
@@ -48,7 +48,7 @@ Each task in `tasks.md` must specify:
 ### Example Task Entry
 ```markdown
 - [ ] **1.1** `[FR-001]` Create command definition
-  - **File**: `../.opencode/commands/forge-doctor.md`
+  - **File**: `.opencode/commands/forge-doctor.md`
   - **Type**: Create new file
   - **Description**: Define command frontmatter, description, usage, and examples
   - **Spec Reference**: Section 3.2 "Command Interface"
@@ -56,7 +56,7 @@ Each task in `tasks.md` must specify:
   - **Estimated**: S (30 min)
 
 - [ ] **1.2** `[FR-001]` Register command in orchestrator
-  - **File**: `../.opencode/agents/forge.md`
+  - **File**: `.opencode/agents/forge.md`
   - **Type**: Modify existing
   - **Location**: Line ~58, "Available Commands" section
   - **Description**: Add forge-doctor to command routing logic
@@ -67,7 +67,7 @@ Each task in `tasks.md` must specify:
 
 ### Path Notation Rules
 - Use relative paths from working directory (typically `dev/` for meta-development)
-- FORGE source: `../.opencode/[type]/[file]`
+- FORGE source: `.opencode/[type]/[file]`
 - Dev workspace: `./.forge/[type]/[file]`
 - No absolute paths
 - Include file extension
@@ -167,7 +167,7 @@ When conducting a retrospective:
 4. Extract lessons learned and append to
    `.forge/knowledge/lessons-learned.md`.
 5. Write the retrospective report to
-   `.forge/sprints/retrospectives/sprint-NN-retro.md`.
+   `.forge/sprints/retrospectives/sprint-NNN-retro.md`.
 
 ## Story ID Format
 

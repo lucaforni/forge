@@ -8,7 +8,7 @@
  * - Synthesis for pre-cross-platform upgrades (migration from no-manifest state)
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs"
 import { join, resolve, dirname } from "node:path"
 import type { InstallManifest, Platform } from "./types"
 
@@ -90,9 +90,39 @@ export function createManifest(
  * Returns `true` if `.forge/` exists but `.forge/.install-manifest.json` doesn't.
  * This signals a first-run after upgrading from FORGE 1.x.
  */
+/**
+ * Directories whose presence inside `.forge/` proves a previous install.
+ * A bare, empty `.forge/` proves nothing — it may be hand-created ahead of
+ * a first install — and must not make `--update` succeed on a fresh target.
+ */
+const SYNTHESIS_EVIDENCE_DIRS = [
+  "templates",
+  "specs",
+  "knowledge",
+  "epics",
+  "sprints",
+  "product",
+  "architecture",
+  "docs",
+  "frontend",
+  "mcp-server",
+]
+
 export function needsManifestSynthesis(projectRoot: string): boolean {
   const forgeDir = join(projectRoot, ".forge")
-  return existsSync(forgeDir) && !existsSync(manifestPath(projectRoot))
+  if (!existsSync(forgeDir) || existsSync(manifestPath(projectRoot))) return false
+  try {
+    return readdirSync(forgeDir).some((entry) => {
+      if (!SYNTHESIS_EVIDENCE_DIRS.includes(entry)) return false
+      try {
+        return statSync(join(forgeDir, entry)).isDirectory()
+      } catch {
+        return false
+      }
+    })
+  } catch {
+    return false
+  }
 }
 
 // ---------------------------------------------------------------------------

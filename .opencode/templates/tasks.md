@@ -75,7 +75,7 @@ type (Create/Modify), description, spec reference, dependencies, estimate.
 
 - [ ] **4.2** `[ALL]` Run `/forge-review` for adversarial review
   - **Command**: `/forge-review .forge/specs/NNN-slug/`
-  - **Expected**: Address all HIGH severity findings
+  - **Expected**: Address all CRITICAL findings
   - **Dependencies**: All implementation complete
 
 - [ ] **4.3** Update documentation

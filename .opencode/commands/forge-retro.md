@@ -62,10 +62,10 @@ Append to `.forge/knowledge/lessons-learned.md`:
 
 ### 5. Retrospective Report
 
-Write `.forge/sprints/retrospectives/sprint-NN-retro.md`:
+Write `.forge/sprints/retrospectives/sprint-NNN-retro.md` (NNN matches the sprint file):
 
 ```markdown
-# Sprint NN Retrospective
+# Sprint NNN Retrospective
 
 ## Sprint Summary
 - Goal: [goal]
