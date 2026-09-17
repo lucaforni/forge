@@ -106,19 +106,34 @@ export function readExistingJsonConfig(
 }
 
 /**
- * Strip `//` and block comments from a JSONC document.
+ * Strip `//` and block comments from a JSONC document, and remove trailing
+ * commas.
  *
  * OpenCode accepts JSONC, and FORGE's own `opencode.json` uses comments, so
  * a plain `JSON.parse` would classify a perfectly valid user config as
- * malformed and overwrite it. String literals are respected so that a `//`
- * inside a value (e.g. a URL) is never stripped.
+ * malformed and overwrite it.
+ *
+ * Both transformations are **string-aware**. A naive trailing-comma regex
+ * over the whole document silently deletes commas inside legitimate string
+ * values — `{"a":"hello, }"}` became `{"a":"hello }"}` — which corrupts user
+ * data without ever failing to parse. The tokenizer therefore records which
+ * output characters came from inside a string literal, and the comma pass
+ * only ever touches characters outside one.
  */
 export function stripJsonComments(input: string): string {
-  let out = ""
+  const out: string[] = []
+  /** `true` where the corresponding `out` character came from a string literal. */
+  const inStringMask: boolean[] = []
+
   let inString = false
   let inLineComment = false
   let inBlockComment = false
   let escaped = false
+
+  const push = (ch: string, fromString: boolean) => {
+    out.push(ch)
+    inStringMask.push(fromString)
+  }
 
   for (let i = 0; i < input.length; i++) {
     const ch = input[i]
@@ -127,7 +142,7 @@ export function stripJsonComments(input: string): string {
     if (inLineComment) {
       if (ch === "\n") {
         inLineComment = false
-        out += ch
+        push(ch, false)
       }
       continue
     }
@@ -141,7 +156,10 @@ export function stripJsonComments(input: string): string {
     }
 
     if (inString) {
-      out += ch
+      // The closing quote itself is structural, but marking it as
+      // in-string is harmless: the comma pass only inspects `,`, whitespace
+      // and closing brackets.
+      push(ch, true)
       if (escaped) escaped = false
       else if (ch === "\\") escaped = true
       else if (ch === '"') inString = false
@@ -150,7 +168,7 @@ export function stripJsonComments(input: string): string {
 
     if (ch === '"') {
       inString = true
-      out += ch
+      push(ch, false)
       continue
     }
     if (ch === "/" && next === "/") {
@@ -164,11 +182,39 @@ export function stripJsonComments(input: string): string {
       continue
     }
 
-    out += ch
+    push(ch, false)
   }
 
-  // Trailing commas are legal in JSONC but not in JSON.
-  return out.replace(/,(\s*[}\]])/g, "$1")
+  // An unterminated string or block comment means the document is not
+  // recoverable. Return it as-is so the caller's JSON.parse fails and the
+  // file is classified malformed (backed up, then replaced) rather than
+  // silently reinterpreted.
+  if (inString || inBlockComment) return input
+
+  return removeTrailingCommas(out, inStringMask)
+}
+
+/**
+ * Drop commas that are immediately followed by `}` or `]`, considering only
+ * characters that are outside string literals.
+ */
+function removeTrailingCommas(chars: string[], inStringMask: boolean[]): string {
+  const drop = new Set<number>()
+
+  for (let i = 0; i < chars.length; i++) {
+    if (inStringMask[i] || chars[i] !== ",") continue
+
+    // Look ahead past whitespace that is also outside a string.
+    let j = i + 1
+    while (j < chars.length && !inStringMask[j] && /\s/.test(chars[j])) j++
+
+    if (j < chars.length && !inStringMask[j] && (chars[j] === "}" || chars[j] === "]")) {
+      drop.add(i)
+    }
+  }
+
+  if (drop.size === 0) return chars.join("")
+  return chars.filter((_, i) => !drop.has(i)).join("")
 }
 
 // ---------------------------------------------------------------------------

@@ -59,6 +59,7 @@ export const FORGE_MANAGED_KEYS = [
 export function generateOpenCodeConfig(
   model: ForgeConfigModel,
   existing?: Record<string, unknown>,
+  warnings?: string[],
 ): string {
   // Start from the user's config so unknown keys survive (spec 004 FR-009).
   const config: Record<string, unknown> = { ...(existing ?? {}) }
@@ -67,10 +68,16 @@ export function generateOpenCodeConfig(
   config.default_agent = "forge"
 
   // Governance: load the constitution and decision log into every session.
-  config.instructions = [
+  // Merged, not replaced — a project may list its own instruction files and
+  // FORGE has no business deleting them (spec 004 FR-009).
+  const managedInstructions = [
     ".forge/constitution.md",
     ".forge/knowledge/decision-log.md",
   ]
+  const priorInstructions = Array.isArray(existing?.instructions)
+    ? existing.instructions.filter((v): v is string => typeof v === "string")
+    : []
+  config.instructions = [...new Set([...managedInstructions, ...priorInstructions])]
 
   // Model defaults — only set when the user has not chosen their own.
   if (model.defaultModel && existing?.model === undefined) {
@@ -80,6 +87,12 @@ export function generateOpenCodeConfig(
   // Agent definitions. Merge per agent so a user override of one agent does
   // not get wiped by regenerating the block.
   if (model.agents.length > 0) {
+    if (existing?.agent !== undefined && !isRecord(existing.agent)) {
+      warnings?.push(
+        'opencode.json: "agent" was not an object and could not be merged — ' +
+          "the previous value is preserved in the backup.",
+      )
+    }
     const existingAgents = isRecord(existing?.agent) ? existing.agent : {}
     const agentConfig: Record<string, Record<string, unknown>> = {}
 
@@ -109,6 +122,12 @@ export function generateOpenCodeConfig(
 
   // MCP servers
   if (model.mcpServers.length > 0) {
+    if (existing?.mcp !== undefined && !isRecord(existing.mcp)) {
+      warnings?.push(
+        'opencode.json: "mcp" was not an object and could not be merged — ' +
+          "the previous value is preserved in the backup.",
+      )
+    }
     const existingMcp = isRecord(existing?.mcp) ? existing.mcp : {}
     const mcpConfig: Record<string, unknown> = { ...existingMcp }
     for (const server of model.mcpServers) {
@@ -127,24 +146,23 @@ export function generateOpenCodeConfig(
 /**
  * Default permission block for a fresh install.
  *
- * Read-only and version-control operations are allowed; everything else
- * asks. Destructive shell commands are deliberately NOT pre-approved.
+ * Deliberately conservative. Only commands that cannot mutate the working
+ * tree are pre-approved, and each pattern is anchored to a specific
+ * subcommand.
+ *
+ * Patterns like `npm run test*` or `find *` are NOT used: a trailing `*`
+ * can absorb shell metacharacters, so `npm run test; rm -rf ~` would match
+ * `npm run test*`, and `find . -exec rm {} \;` matches `find *`. Anything
+ * not listed here prompts the user, which is the correct default for a tool
+ * installing into someone else's repository.
  */
 function defaultPermissions(): Record<string, unknown> {
   return {
     bash: {
       "git status": "allow",
-      "git diff *": "allow",
-      "git log *": "allow",
-      "git show *": "allow",
-      "ls *": "allow",
+      "git branch": "allow",
       "pwd": "allow",
-      "cat *": "allow",
-      "grep *": "allow",
-      "find *": "allow",
-      "wc *": "allow",
       "npm test": "allow",
-      "npm run test*": "allow",
       "*": "ask",
     },
     read: "allow",

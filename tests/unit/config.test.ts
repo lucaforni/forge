@@ -12,6 +12,7 @@ import {
   defaultAgentConfigs,
   defaultMcpServerConfig,
   readExistingJsonConfig,
+  stripJsonComments,
   DEFAULT_MODEL,
 } from "../../installer/config"
 
@@ -166,5 +167,54 @@ describe("readExistingJsonConfig", () => {
     withFile("[1,2,3]", (p) => {
       expect(readExistingJsonConfig(p).malformed).toBe(true)
     })
+  })
+})
+
+describe("stripJsonComments — adversarial inputs", () => {
+  /**
+   * A naive `/,(\s*[}\]])/g` pass over the whole document deletes commas
+   * that live inside legitimate string values. The corrupted document still
+   * parses, so the damage is silent and gets written straight back to the
+   * user's config.
+   */
+  const roundTrips: Array<[name: string, input: string]> = [
+    ["comma before brace inside a string", '{"a":"hello, }"}'],
+    ["comma before bracket inside a string", '{"a":"x, ]"}'],
+    ["escaped quote then comma-brace", '{"a":"he said \\"hi\\", }"}'],
+    ["block-comment terminator inside a string", '{"a":"x */ y"}'],
+    ["line-comment marker inside a string", '{"url":"https://example.com/a"}'],
+    ["trailing backslash in a string", '{"a":"c:\\\\","b":2}'],
+    ["newline escape before comma-brace", '{"a":"line\\n, }"}'],
+  ]
+
+  for (const [name, input] of roundTrips) {
+    it(`preserves the value exactly — ${name}`, () => {
+      const out = stripJsonComments(input)
+      expect(JSON.parse(out)).toEqual(JSON.parse(input))
+    })
+  }
+
+  const trailingCommas: Array<[name: string, input: string, expected: unknown]> = [
+    ["object", '{"a":1,}', { a: 1 }],
+    ["array", '{"a":[1,2,]}', { a: [1, 2] }],
+    ["nested", '{"a":{"b":[1,],},}', { a: { b: [1] } }],
+    ["after a line comment", '{"a":1, // note\n}', { a: 1 }],
+    ["after a block comment", '{"a":1, /* note */ }', { a: 1 }],
+  ]
+
+  for (const [name, input, expected] of trailingCommas) {
+    it(`removes a trailing comma — ${name}`, () => {
+      expect(JSON.parse(stripJsonComments(input))).toEqual(expected)
+    })
+  }
+
+  it("leaves an unterminated block comment unparseable rather than guessing", () => {
+    // Recovering here would mean silently reinterpreting a broken file.
+    // Failing to parse routes it to backup-then-replace instead.
+    expect(() => JSON.parse(stripJsonComments('{"a":1 /* oops'))).toThrow()
+  })
+
+  it("leaves an unterminated string unparseable rather than guessing", () => {
+    expect(() => JSON.parse(stripJsonComments('{"a":"oops'))).toThrow()
   })
 })

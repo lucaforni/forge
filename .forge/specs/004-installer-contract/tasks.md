@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Spec** | [`spec.md`](spec.md) |
-| **Status** | In Progress |
+| **Status** | Complete |
 | **Track** | Feature |
 
 Sizing: `[S]` <30min · `[M]` 30min–2h · `[L]` 2–4h · `[P]` parallelizable
@@ -49,5 +49,5 @@ Sizing: `[S]` <30min · `[M]` 30min–2h · `[L]` 2–4h · `[P]` parallelizable
 ## Phase 5 — Verification
 
 - [x] T-013 `[S]` `[AC-6]` `npm test` green; `tsc` error count ≤ 20
-- [ ] T-014 `[S]` `[AC-7]` Dual-model adversarial review; resolve CRITICAL findings
+- [x] T-014 `[S]` `[AC-7]` Dual-model adversarial review; resolve CRITICAL findings
 - [x] T-015 `[S]` Update `INSTALL.md` / `README.md` status tables to reflect what now ships

@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | 004-installer-contract |
 | **Track** | Feature |
-| **Status** | In Progress |
+| **Status** | Implemented |
 | **Created** | 2026-09-17 |
 | **Upstream** | 2026-09 project audit; issues #56, #57 |
 | **Constitution** | `.forge-meta/constitution.md` (5 articles) |
@@ -58,7 +58,7 @@ by documentation.
 | **FR-007** | User-owned files (`constitution.md`, `AGENTS.md`) are **created once, never overwritten** on update | Idempotency test: modify, reinstall, assert unchanged |
 | **FR-008** | Generated `opencode.json` includes `instructions`, `permission`, `model`, `provider`, `agent`, `mcp` | Unit test on `generateOpenCodeConfig` |
 | **FR-009** | An existing `opencode.json` is **merged**, not clobbered: unknown user keys are preserved, FORGE-managed keys win | Unit test with a user config containing custom keys |
-| **FR-010** | Before overwriting any pre-existing config, a backup is written under `.forge/.backups/<timestamp>/` | Contract test |
+| **FR-010** | Before overwriting any pre-existing config, a backup is written under `.forge/.backups/<timestamp>/` | Contract test exercising the real `run()` pipeline — the plan-only harness does not reach this branch |
 | **FR-011** | `forge-reviewer-peer` receives a different-family model so dual-model review is genuinely diverse (#66) | Unit test on generated config |
 | **FR-012** | A contract test asserts that **every path referenced by a distributed artifact exists after install** | The test itself |
 
@@ -127,10 +127,27 @@ no new mechanism.
 
 ## Acceptance Criteria
 
-- [ ] AC-1 — Fresh install into an empty `.opencode/` project yields every path referenced by any distributed artifact
-- [ ] AC-2 — Zero `.opencode/templates` references remain in `.opencode/{agents,commands,skills}/`
-- [ ] AC-3 — Generated `opencode.json` loads the constitution via `instructions`
-- [ ] AC-4 — Re-running the installer preserves a modified `constitution.md`, `AGENTS.md` and `opencode.json`
-- [ ] AC-5 — Contract test fails if a new artifact references an uninstalled path
-- [ ] AC-6 — `npm test` green; `tsc` error count does not increase
-- [ ] AC-7 — Adversarial review passes with CRITICAL findings resolved
+- [x] AC-1 — Fresh install into an empty `.opencode/` project yields every path referenced by any distributed artifact
+- [x] AC-2 — Zero `.opencode/templates` references remain in `.opencode/{agents,commands,skills}/`
+- [x] AC-3 — Generated `opencode.json` loads the constitution via `instructions`
+- [x] AC-4 — Re-running the installer preserves a modified `constitution.md`, `AGENTS.md` and `opencode.json`
+- [x] AC-5 — Contract test fails if a new artifact references an uninstalled path
+- [x] AC-6 — `npm test` green (135 tests); `tsc` errors 20 → 16
+- [x] AC-7 — Adversarial review passed; all CRITICAL and HIGH findings resolved
+
+---
+
+## Review Outcome
+
+The dual-model adversarial review returned **NEEDS CHANGES** with 12
+findings. Three were genuine defects in this change:
+
+| Finding | Resolution |
+|---|---|
+| **CRITICAL** — the trailing-comma regex in `stripJsonComments` deleted commas inside legitimate string values (`{"a":"hello, }"}` → `{"a":"hello }"}`). The result still parsed, so the corruption was silent and was written straight back to the user's config. | Rewritten: the tokenizer now records which output characters came from inside a string, and comma removal only touches characters outside one. Reproduced the corruption first, then added 14 adversarial round-trip tests. |
+| **CRITICAL** — FR-010 claimed test coverage that did not exist. The `materialise()` harness bypasses `install.ts`, so the backup branch was never executed by any test. | Four new tests drive the real `run()` pipeline: backup on drift, backup on malformed config, `.gitignore` creation, and the npm-install guard. |
+| **CRITICAL** — `installMcpServerDeps` ran `npm install` on every invocation, violating NFR-003 and making each install depend on network reachability. | Stamped with the `package.json` checksum; a re-install with no dependency change now does no work. |
+| **HIGH** — `instructions` overwrote the user's list, deleting any instruction files the project had added. | Merged as a set union. |
+| **HIGH** — default permissions used `npm run test*` and `find *`; a trailing `*` can absorb shell metacharacters. | Reduced to four anchored, non-mutating commands; everything else asks. |
+| **WARNING** — user-owned files kept a stale template checksum in the manifest, which would surface as permanent false drift. | Registered in the manifest's `excludedPaths`. |
+| **WARNING** — the contract test's `runtimeOwned` exclusion blanket-covered `knowledge/`, masking the scaffolded decision log. | Narrowed; narrowing immediately surfaced two more references (`knowledge/archives/`) that are genuinely runtime-created. |

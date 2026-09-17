@@ -98,6 +98,16 @@ const EXCLUDED_TEMPLATES = new Set([
  */
 const OPENCODE_ONLY_DIRS = ["plugins"] as const
 
+/**
+ * Files created once from a template and then owned by the user. The
+ * installer writes them on a fresh install and never touches them again.
+ */
+export const SCAFFOLD_FILES: ReadonlyArray<{ template: string; target: string }> = [
+  { template: "constitution.md", target: ".forge/constitution.md" },
+  { template: "decision-log.md", target: ".forge/knowledge/decision-log.md" },
+  { template: "agents.md", target: "AGENTS.md" },
+]
+
 /** Directories scaffolded empty in `.forge/` so FORGE commands have a home. */
 const FORGE_SCAFFOLD_DIRS = [
   "specs",
@@ -226,13 +236,7 @@ export function catalogScaffoldArtifacts(sourceRoot: string): CanonicalArtifact[
   const artifacts: CanonicalArtifact[] = []
   const templatesDir = join(sourceRoot, ".opencode", "templates")
 
-  const scaffold: Array<{ template: string; target: string }> = [
-    { template: "constitution.md", target: join(".forge", "constitution.md") },
-    { template: "decision-log.md", target: join(".forge", "knowledge", "decision-log.md") },
-    { template: "agents.md", target: "AGENTS.md" },
-  ]
-
-  for (const { template, target } of scaffold) {
+  for (const { template, target } of SCAFFOLD_FILES) {
     const sourceFile = join(templatesDir, template)
     if (!existsSync(sourceFile)) continue
 

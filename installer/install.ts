@@ -15,7 +15,7 @@ import { spawnSync } from "node:child_process"
 import type { Platform, PlatformDescriptor, InstallPlan, InstallOperation, InstallResult } from "./types"
 
 import { detectProjectState } from "./detect"
-import { buildInstallPlan, catalogCanonicalArtifacts } from "./projection"
+import { buildInstallPlan, catalogCanonicalArtifacts, SCAFFOLD_FILES } from "./projection"
 import { readManifest, writeManifest, createManifest, needsManifestSynthesis } from "./manifest"
 import { buildDefaultConfig, readExistingJsonConfig } from "./config"
 import { detectDrift } from "./drift"
@@ -56,6 +56,7 @@ const DESCRIPTORS: Record<Platform, PlatformDescriptor> = {
 type ConfigEmitter = (
   model: ReturnType<typeof buildDefaultConfig>,
   existing?: Record<string, unknown>,
+  warnings?: string[],
 ) => { path: string; content: string; instructionsContent?: string }
 
 /** Where each platform's config file lives, relative to the project root. */
@@ -66,9 +67,9 @@ const CONFIG_PATHS: Record<Platform, string> = {
 }
 
 const CONFIG_EMITTERS: Partial<Record<Platform, ConfigEmitter>> = {
-  "opencode": (model, existing) => ({
+  "opencode": (model, existing, warnings) => ({
     path: OPENCODE_DESCRIPTOR.configFile,
-    content: generateOpenCodeConfig(model, existing),
+    content: generateOpenCodeConfig(model, existing, warnings),
   }),
   "claude-code": (model) => ({
     path: CLAUDE_CODE_DESCRIPTOR.configFile,
@@ -188,7 +189,7 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
       configWarnings.push(msg)
     }
 
-    const config = emitter(configModel, existing.data)
+    const config = emitter(configModel, existing.data, configWarnings)
     plan.operations.push({
       platform,
       kind: existing.existed ? "update" : "create",
@@ -337,10 +338,17 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
 
   // Step 8: Write manifest
   section("Summary")
+  // User-owned files are intentionally excluded from drift comparison: the
+  // user is expected to edit them, and their manifest checksum will always
+  // be the pristine template. Recording them as drift would produce a false
+  // warning on every subsequent run.
   const manifestPath = writeManifest(projectRoot, createManifest(
     platforms,
     newChecksums,
-    [".forge/.install-manifest.json"],
+    [
+      ".forge/.install-manifest.json",
+      ...SCAFFOLD_FILES.map((f) => f.target),
+    ],
   ))
   log("ok", `Install manifest written: ${manifestPath}`)
 
@@ -383,13 +391,35 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
 /**
  * Run `npm install` in `.forge/mcp-server/` if needed.
  * Called after the main install pipeline completes.
- * Idempotent: skips if node_modules is already up to date.
+ *
+ * Idempotent: a re-install with no dependency change performs no work and
+ * touches no network. Running `npm install` unconditionally would violate
+ * the "second run writes nothing" guarantee (spec 004 NFR-003) and would
+ * make every install depend on network reachability.
  */
 export function installMcpServerDeps(projectRoot: string): void {
   const mcpDir = join(projectRoot, ".forge", "mcp-server")
   const mcpPackageJson = join(mcpDir, "package.json")
 
   if (!existsSync(mcpPackageJson)) return
+
+  // A marker records the package.json checksum that node_modules was built
+  // from. Matching marker + present node_modules means there is nothing to do.
+  const markerPath = join(mcpDir, "node_modules", ".forge-install-stamp")
+  const pkgChecksum = createHash("sha256")
+    .update(readFileSync(mcpPackageJson, "utf-8"), "utf-8")
+    .digest("hex")
+
+  if (existsSync(markerPath)) {
+    try {
+      if (readFileSync(markerPath, "utf-8").trim() === pkgChecksum) {
+        log("skip", "MCP server dependencies already up to date.")
+        return
+      }
+    } catch {
+      // Unreadable marker — fall through and reinstall.
+    }
+  }
 
   log("info", "Installing MCP server dependencies (npm install)...")
   const result = spawnSync("npm", ["install", "--silent"], {
@@ -400,6 +430,12 @@ export function installMcpServerDeps(projectRoot: string): void {
 
   if (result.status === 0) {
     log("ok", "MCP server dependencies installed.")
+    try {
+      writeFileSync(markerPath, pkgChecksum, "utf-8")
+    } catch {
+      // The stamp is an optimisation; failing to write it only costs a
+      // redundant npm install next time.
+    }
   } else {
     log("warn", "npm install in .forge/mcp-server/ failed. Run it manually if the MCP server doesn't start.")
   }

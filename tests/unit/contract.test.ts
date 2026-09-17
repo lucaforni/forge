@@ -12,12 +12,14 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest"
-import { mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs"
+import { mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync, statSync } from "node:fs"
+import { createHash } from "node:crypto"
 import { join, resolve, dirname } from "node:path"
 import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 
 import { buildInstallPlan, catalogCanonicalArtifacts } from "../../installer/projection"
+import { run } from "../../installer/install"
 import { OPENCODE_DESCRIPTOR } from "../../installer/platforms/opencode"
 import { CLAUDE_CODE_DESCRIPTOR } from "../../installer/platforms/claude-code"
 import { CODEX_DESCRIPTOR } from "../../installer/platforms/codex"
@@ -169,7 +171,11 @@ describe("installer contract — no artifact references an uninstalled path", ()
   function referencedForgePaths(): Map<string, string[]> {
     const refs = new Map<string, string[]>()
     // Directories that exist to be written into at runtime, not shipped.
-    const runtimeOwned = /^\.forge\/(specs|epics|sprints|product|knowledge|architecture|config\.yml|\.backups|\.install-manifest)/
+    // Paths written at runtime by FORGE commands, not shipped by the installer.
+    // `knowledge/decision-log.md` is deliberately NOT excluded — it is
+    // scaffolded, so the reference check must keep covering it.
+    const runtimeOwned =
+      /^\.forge\/(specs|epics|sprints|product|architecture|knowledge\/(adr|archives|lessons-learned)|config\.yml|\.backups|\.install-manifest)/
     for (const artifact of catalogCanonicalArtifacts(REPO_ROOT)) {
       const matches = artifact.content?.match(/\.forge\/[A-Za-z0-9._\/-]+\.(md|yaml|yml|json|tsx|ts)/g) ?? []
       for (const raw of matches) {
@@ -279,10 +285,8 @@ describe("installer contract — idempotency and user ownership", () => {
   })
 })
 
+/** Mirrors the digest used by projection.ts. */
 function hash(content: string): string {
-  // Mirror projection.ts — sha256 over UTF-8.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createHash } = require("node:crypto")
   return createHash("sha256").update(content, "utf-8").digest("hex")
 }
 
@@ -307,4 +311,122 @@ describe("installer contract — non-OpenCode platforms", () => {
       rmSync(target, { recursive: true, force: true })
     }
   })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 004 FR-010 — a pre-existing config is backed up before being replaced.
+//
+// These exercise the real `run()` pipeline, not the `materialise()` harness,
+// because the backup branch lives in install.ts and would otherwise never be
+// executed by any test.
+// ---------------------------------------------------------------------------
+
+describe("installer contract — config backup (FR-010)", () => {
+  function freshTarget(): string {
+    const t = mkdtempSync(join(tmpdir(), "forge-backup-"))
+    mkdirSync(join(t, ".opencode"), { recursive: true })
+    return t
+  }
+
+  it("backs up a user's opencode.json before overwriting it", async () => {
+    const target = freshTarget()
+    try {
+      const original = '{\n  "theme": "dracula",\n  "model": "user/pinned"\n}\n'
+      writeFileSync(join(target, "opencode.json"), original, "utf-8")
+
+      const result = await run({ targetRoot: target })
+
+      expect(result.success).toBe(true)
+      expect(result.backupPaths.length, "no backup was taken").toBeGreaterThan(0)
+
+      const backups = result.backupPaths.filter((p) => p.endsWith("opencode.json"))
+      expect(backups.length).toBe(1)
+      expect(readFileSync(backups[0], "utf-8")).toBe(original)
+      expect(backups[0]).toContain(join(".forge", ".backups"))
+
+      // The live file is merged, not replaced wholesale.
+      const merged = JSON.parse(readFileSync(join(target, "opencode.json"), "utf-8"))
+      expect(merged.theme).toBe("dracula")
+      expect(merged.model).toBe("user/pinned")
+      expect(merged.instructions).toContain(".forge/constitution.md")
+    } finally {
+      rmSync(target, { recursive: true, force: true })
+    }
+  }, 60_000)
+
+  it("backs up and replaces a malformed config instead of discarding it (E-6)", async () => {
+    const target = freshTarget()
+    try {
+      const broken = "{ this is not json"
+      writeFileSync(join(target, "opencode.json"), broken, "utf-8")
+
+      const result = await run({ targetRoot: target })
+
+      expect(result.success).toBe(true)
+      expect(result.warnings.some((w) => w.includes("could not be parsed"))).toBe(true)
+
+      const backups = result.backupPaths.filter((p) => p.endsWith("opencode.json"))
+      expect(backups.length, "malformed config was discarded without a backup").toBe(1)
+      expect(readFileSync(backups[0], "utf-8")).toBe(broken)
+
+      // And the replacement is valid, with governance wired up.
+      const replaced = JSON.parse(readFileSync(join(target, "opencode.json"), "utf-8"))
+      expect(replaced.instructions).toContain(".forge/constitution.md")
+    } finally {
+      rmSync(target, { recursive: true, force: true })
+    }
+  }, 60_000)
+
+  it("gitignores the backup directory so backups are never committed", async () => {
+    const target = freshTarget()
+    try {
+      writeFileSync(join(target, "opencode.json"), "{}", "utf-8")
+      await run({ targetRoot: target })
+      const gitignore = join(target, ".forge", ".gitignore")
+      expect(existsSync(gitignore)).toBe(true)
+      expect(readFileSync(gitignore, "utf-8")).toContain(".backups/")
+    } finally {
+      rmSync(target, { recursive: true, force: true })
+    }
+  }, 60_000)
+
+  it("does not reinstall MCP dependencies when nothing changed (NFR-003)", async () => {
+    const target = freshTarget()
+    try {
+      await run({ targetRoot: target })
+      const stamp = join(target, ".forge", "mcp-server", "node_modules", ".forge-install-stamp")
+      expect(existsSync(stamp), "install stamp not written").toBe(true)
+
+      const before = readFileSync(stamp, "utf-8")
+      const mtime = statSync(stamp).mtimeMs
+
+      await run({ targetRoot: target })
+
+      expect(readFileSync(stamp, "utf-8")).toBe(before)
+      expect(statSync(stamp).mtimeMs, "npm install ran again on an unchanged project").toBe(mtime)
+    } finally {
+      rmSync(target, { recursive: true, force: true })
+    }
+  }, 120_000)
+})
+
+describe("installer contract — manifest hygiene", () => {
+  it("marks user-owned files as excluded from drift comparison", async () => {
+    // Their manifest checksum is the pristine template forever, so comparing
+    // against it would flag drift on every run after the user's first edit.
+    const target = mkdtempSync(join(tmpdir(), "forge-manifest-"))
+    try {
+      mkdirSync(join(target, ".opencode"), { recursive: true })
+      await run({ targetRoot: target })
+
+      const manifest = JSON.parse(
+        readFileSync(join(target, ".forge", ".install-manifest.json"), "utf-8"),
+      )
+      for (const p of [".forge/constitution.md", ".forge/knowledge/decision-log.md", "AGENTS.md"]) {
+        expect(manifest.excludedPaths, `${p} should be excluded`).toContain(p)
+      }
+    } finally {
+      rmSync(target, { recursive: true, force: true })
+    }
+  }, 60_000)
 })

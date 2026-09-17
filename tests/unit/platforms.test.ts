@@ -181,3 +181,47 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     expect(() => JSON.parse(out)).not.toThrow()
   })
 })
+
+describe("generateOpenCodeConfig — user instruction files (FR-009)", () => {
+  const model = buildDefaultConfig("/test")
+
+  it("keeps a project's own instruction files alongside the FORGE ones", () => {
+    // FORGE requires the constitution to be loaded. It has no business
+    // deleting instruction files the project added itself.
+    const cfg = JSON.parse(generateOpenCodeConfig(model, {
+      instructions: [".forge/team-conventions.md", "docs/glossary.md"],
+    }))
+    expect(cfg.instructions).toContain(".forge/constitution.md")
+    expect(cfg.instructions).toContain(".forge/knowledge/decision-log.md")
+    expect(cfg.instructions).toContain(".forge/team-conventions.md")
+    expect(cfg.instructions).toContain("docs/glossary.md")
+  })
+
+  it("does not duplicate an entry the user already listed", () => {
+    const cfg = JSON.parse(generateOpenCodeConfig(model, {
+      instructions: [".forge/constitution.md"],
+    }))
+    const occurrences = cfg.instructions.filter((i: string) => i === ".forge/constitution.md")
+    expect(occurrences).toHaveLength(1)
+  })
+
+  it("ignores a non-array instructions value without crashing", () => {
+    const cfg = JSON.parse(generateOpenCodeConfig(model, { instructions: "oops" }))
+    expect(cfg.instructions).toEqual([
+      ".forge/constitution.md",
+      ".forge/knowledge/decision-log.md",
+    ])
+  })
+
+  it("warns instead of silently discarding a non-object agent block", () => {
+    const warnings: string[] = []
+    generateOpenCodeConfig(model, { agent: "not-an-object" }, warnings)
+    expect(warnings.some((w) => w.includes('"agent"'))).toBe(true)
+  })
+
+  it("warns instead of silently discarding a non-object mcp block", () => {
+    const warnings: string[] = []
+    generateOpenCodeConfig(model, { mcp: ["nope"] }, warnings)
+    expect(warnings.some((w) => w.includes('"mcp"'))).toBe(true)
+  })
+})
