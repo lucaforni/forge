@@ -19,7 +19,7 @@
     "@types/react": "^19.3.0",
     "class-variance-authority": "^0.7.1",
     "jsdom": "^30.0.1",
-    "lucide-react": "^1.45.0",
+    "lucide-react": "^1.46.0",
     "sonner": "^2.0.8",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
