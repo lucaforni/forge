@@ -150,16 +150,9 @@ npx tsx forge/install-forge.ts /path/to/your/project --dry-run
 ```
 
 > [!NOTE]
-> **Known gaps.** The installer contract is now enforced by a test, but two
-> platform projections remain incomplete — see the
-> [`audit`](https://github.com/lucaforni/forge/issues?q=is%3Aissue+is%3Aopen+label%3Aaudit)
-> label.
->
-> | Gap | Issue |
-> |---|---|
-> | Claude Code agents/commands keep OpenCode frontmatter, so subagent routing is lost | [#71](https://github.com/lucaforni/forge/issues/71) |
-> | Codex skills land in `.codex/.agents/`; the TOML agent generator is never called | [#70](https://github.com/lucaforni/forge/issues/70) |
-> | `.opencode/tools/` is not distributed — superseded by the MCP server, pending consolidation | [#68](https://github.com/lucaforni/forge/issues/68) |
+> **Known gaps.** Platform artifacts are projected to native form, but hooks,
+> model tiers and live runs on Claude Code / Codex are still open — see
+> [#87](https://github.com/lucaforni/forge/issues/87).
 
 ### First Steps
 

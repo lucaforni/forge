@@ -6,7 +6,8 @@
  * rather than relying on the .claude/agents/ fallback.
  */
 
-import type { PlatformDescriptor, ForgeConfigModel } from "../types"
+import type { PlatformDescriptor, ForgeConfigModel, CanonicalArtifact } from "../types"
+import { parseFrontmatter, renderProjected, frontmatterValue } from "../frontmatter"
 import { OPENCODE_DESCRIPTOR } from "./opencode"
 
 // ---------------------------------------------------------------------------
@@ -28,6 +29,80 @@ export const CODEX_DESCRIPTOR: PlatformDescriptor = {
 // ---------------------------------------------------------------------------
 // Config Generation
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Artifact Projection (OpenCode -> Codex CLI)
+// ---------------------------------------------------------------------------
+
+/**
+ * Project one canonical artifact to its Codex form. Returns a list because
+ * one agent definition becomes two files (native TOML + Markdown companion).
+ *
+ * - Skills map to `.agents/skills/` at the PROJECT ROOT (leading `/`
+ *   tells the plan builder to join against the target root instead of
+ *   `.codex/`). Without this, skills land in `.codex/.agents/skills/`,
+ *   which Codex does not read.
+ * - Agents become `.codex/agents/<name>.toml` (native format, avoiding the
+ *   `.claude/agents/` fallback per OQ-04/RISK-009) plus a frontmatter-free
+ *   `.codex/agents/<name>.md` companion carrying the system prompt the TOML
+ *   points at. OpenCode frontmatter keys would be meaningless inside a
+ *   system prompt, so the companion ships body-only.
+ * - Commands stay `.codex/commands/*.md` per normative spec 001 FR-006
+ *   (the `prompts/` alternative was unverified speculation). `agent:` /
+ *   `subtask:` are dropped with a neutral note: Codex has no verified
+ *   subtask mechanism, and inventing one would be worse than running inline.
+ *   `$ARGUMENTS` is kept as-is for the same reason — rewriting it to
+ *   unverified Codex syntax would trade a maybe for a certainly.
+ */
+export function projectCodexArtifact(artifact: CanonicalArtifact): Array<{
+  relTarget: string
+  content: string
+}> {
+  const content = artifact.content ?? ""
+  const { entries } = parseFrontmatter(content)
+
+  if (artifact.category === "skill") {
+    const rel = artifact.sourcePath.replace(/^skills\//, ".agents/skills/")
+    const kept = entries.filter((e) => e.key !== "compatibility")
+    return [{ relTarget: `/${rel}`, content: renderProjected(content, kept) }]
+  }
+
+  if (artifact.category === "agent") {
+    const name = artifact.sourcePath.split("/").pop()?.replace(/\.md$/, "") ?? "unknown"
+    const description = frontmatterValue(entries, "description") ?? name
+    const mdTarget = artifact.sourcePath // .codex/agents/<name>.md
+    const tomlTarget = mdTarget.replace(/\.md$/, ".toml")
+    return [
+      { relTarget: mdTarget, content: renderProjected(content, []) },
+      {
+        relTarget: tomlTarget,
+        content: generateCodexAgentToml(name, description, `.codex/${mdTarget}`),
+      },
+    ]
+  }
+
+  if (artifact.category === "command") {
+    const agentName = frontmatterValue(entries, "agent")
+    const kept = entries.filter((e) => e.key !== "agent" && e.key !== "subtask")
+    let out = renderProjected(content, kept)
+    if (agentName) {
+      const note =
+        `\n> **Note:** This command was designed to run in the ` +
+        `\`${agentName}\` subagent; on this platform it runs inline.\n`
+      const lines = out.split("\n")
+      const titleIdx = lines.findIndex((l) => l.startsWith("# "))
+      if (titleIdx === -1) {
+        out = note.trimStart() + "\n" + out
+      } else {
+        lines.splice(titleIdx + 1, 0, ...note.split("\n"))
+        out = lines.join("\n")
+      }
+    }
+    return [{ relTarget: artifact.sourcePath, content: out }]
+  }
+
+  return [{ relTarget: artifact.sourcePath, content }]
+}
 
 /**
  * Generate `.codex/config.toml` from the internal config model.

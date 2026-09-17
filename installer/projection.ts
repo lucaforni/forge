@@ -9,6 +9,8 @@ import { readdirSync, readFileSync, existsSync } from "node:fs"
 import { join, resolve, relative, sep } from "node:path"
 import { createHash } from "node:crypto"
 import type { Platform, PlatformDescriptor, CanonicalArtifact, InstallPlan, InstallOperation } from "./types"
+import { projectClaudeArtifact } from "./platforms/claude-code"
+import { projectCodexArtifact } from "./platforms/codex"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -352,22 +354,53 @@ export function catalogCanonicalArtifacts(sourceRoot: string): CanonicalArtifact
 // ---------------------------------------------------------------------------
 
 /**
- * Determine where a canonical artifact lands on a given platform.
- * Most artifacts map directly (agents/forge-pm.md → agents/forge-pm.md),
- * but skills live in a different root on Codex CLI (.agents/skills/ vs .opencode/skills/).
+ * Projected file: where it lands (relative) and what it contains.
+ * The checksum always covers the PROJECTED content. Comparing the manifest
+ * against the source checksum instead would report drift on every
+ * re-install of a transformed artifact — backing up and rewriting files
+ * that never changed.
  */
-function targetPathForPlatform(descriptor: PlatformDescriptor, artifact: CanonicalArtifact): string {
-  // For skills on Codex CLI, map to .agents/skills/ instead of .codex/skills/
-  // NOTE: the caller joins this under descriptor.rootDir, so the result today
-  // is .codex/.agents/skills/ rather than the documented .agents/skills/.
-  // Tracked in #70 — fixing it requires a project-root escape hatch in the
-  // operation model, which is out of scope for spec 004.
-  if (descriptor.id === "codex" && artifact.category === "skill") {
-    // skills/foo/SKILL.md → .agents/skills/foo/SKILL.md
-    return toPosix(artifact.sourcePath).replace(/^skills\//, ".agents/skills/")
-  }
+interface ProjectedFile {
+  relTarget: string
+  content: string
+  checksum: string
+}
 
-  return artifact.sourcePath
+/**
+ * Project one canonical artifact for a platform.
+ *
+ * OpenCode is the identity (byte-identical). Claude Code translates
+ * frontmatter and injects routing; Codex additionally fans agents out to
+ * TOML + Markdown and escapes skills to the project root.
+ *
+ * A relTarget starting with `/` joins against the target project root
+ * instead of the platform root. Only Codex skills use this: their
+ * descriptor directory (`.agents/skills/`) lives outside `.codex/`, and
+ * joining it under the platform root produced `.codex/.agents/skills/`,
+ * which Codex does not read (#70).
+ */
+function projectForPlatform(
+  platform: Platform,
+  artifact: CanonicalArtifact,
+): ProjectedFile[] {
+  if (platform === "claude-code") {
+    const p = projectClaudeArtifact(artifact)
+    return [{ relTarget: p.relTarget, content: p.content, checksum: sha256(p.content) }]
+  }
+  if (platform === "codex") {
+    return projectCodexArtifact(artifact).map((p) => ({
+      relTarget: p.relTarget,
+      content: p.content,
+      checksum: sha256(p.content),
+    }))
+  }
+  return [
+    {
+      relTarget: artifact.sourcePath,
+      content: artifact.content ?? "",
+      checksum: artifact.checksum,
+    },
+  ]
 }
 
 // ---------------------------------------------------------------------------
@@ -421,49 +454,53 @@ export function buildInstallPlan(
         : platformArtifacts
 
     for (const artifact of artifactsForPlatform) {
-      const relTarget = targetPathForPlatform(descriptor, artifact)
-      const absTarget = join(targetRoot, descriptor.rootDir, relTarget)
-      const targetDir = resolve(join(absTarget, ".."))
+      for (const projected of projectForPlatform(platform, artifact)) {
+        const { relTarget } = projected
+        const absTarget = relTarget.startsWith("/")
+          ? join(targetRoot, relTarget.slice(1))
+          : join(targetRoot, descriptor.rootDir, relTarget)
+        const targetDir = resolve(join(absTarget, ".."))
 
-      requiredDirectories.add(targetDir)
+        requiredDirectories.add(targetDir)
 
-      const fileExists = existsSync(absTarget)
+        const fileExists = existsSync(absTarget)
 
-      if (!fileExists) {
-        operations.push({
-          platform,
-          kind: "create",
-          targetPath: absTarget,
-          content: artifact.content,
-          reason: "new file",
-        })
-      } else {
-        const prevChecksum = existingManifestChecksums?.[absTarget]
-        if (prevChecksum === artifact.checksum) {
+        if (!fileExists) {
           operations.push({
             platform,
-            kind: "skip",
+            kind: "create",
             targetPath: absTarget,
-            previousChecksum: prevChecksum,
-            reason: "unchanged",
-          })
-        } else if (prevChecksum) {
-          operations.push({
-            platform,
-            kind: "backup",
-            targetPath: absTarget,
-            content: artifact.content,
-            previousChecksum: prevChecksum,
-            reason: "drift detected — user file backed up",
+            content: projected.content,
+            reason: "new file",
           })
         } else {
-          operations.push({
-            platform,
-            kind: "update",
-            targetPath: absTarget,
-            content: artifact.content,
-            reason: "update (no prior manifest)",
-          })
+          const prevChecksum = existingManifestChecksums?.[absTarget]
+          if (prevChecksum === projected.checksum) {
+            operations.push({
+              platform,
+              kind: "skip",
+              targetPath: absTarget,
+              previousChecksum: prevChecksum,
+              reason: "unchanged",
+            })
+          } else if (prevChecksum) {
+            operations.push({
+              platform,
+              kind: "backup",
+              targetPath: absTarget,
+              content: projected.content,
+              previousChecksum: prevChecksum,
+              reason: "drift detected — user file backed up",
+            })
+          } else {
+            operations.push({
+              platform,
+              kind: "update",
+              targetPath: absTarget,
+              content: projected.content,
+              reason: "update (no prior manifest)",
+            })
+          }
         }
       }
     }
