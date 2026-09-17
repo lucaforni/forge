@@ -87,7 +87,25 @@ follow-up — not silently passed, not quietly dropped.
 - [x] T-003 `[S]` Delete `.opencode/tools/`; update AGENTS.md structure notes (tools removed, plugins distributed)
 - [x] T-004 `[L]` Split `data-presentation` into core + 2 references; verify core ≤ 2,600 tokens
 - [x] T-005 `[M]` `scripts/check-token-budget.ts` + CI `budgets` job; amend Art. 4.2/4.4
-- [ ] T-006 `[S]` Full verification; adversarial review; resolve CRITICAL findings
+- [x] T-006 `[S]` Full verification; adversarial review; resolve CRITICAL findings
+
+## Review Outcome
+
+Both subagent reviewers were unavailable (primary: quota exhausted;
+peer: provider restriction), so the review was performed directly with the
+same protocol and executed probes. Findings, all fixed:
+
+| Finding | Resolution |
+|---|---|
+| **WARNING** — the ported FR regex missed bold IDs (`| **FR-001** |`), which is the style FORGE's own specs use. Silent false-green on the project's own documents. | Regex extended; 2 tests (match + finding on bold rows). |
+| **INFO** — `README-INSTALLER.md` "What Gets Updated" listed the deleted `tools/` and the moved `templates/`/`docs/` paths. | Rewritten to installed reality. |
+| **INFO** — `mcp-server/*` header comments referenced the deleted files. | Reworded to consolidation history. |
+
+Verified by probe: scoring tuple coherent with no double counting;
+separator/header/prose rows correctly ignored; pipe-in-cell shifts columns
+(documented table-shape assumption); reference files ship via the existing
+recursive walk; budget output matches the constitution numbers exactly;
+3/3 spot-checked rules survive with equal force.
 
 ## Acceptance Criteria
 

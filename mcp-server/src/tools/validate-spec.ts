@@ -1,7 +1,7 @@
 /**
  * mcp-server/src/tools/validate-spec.ts — Spec validation logic.
  *
- * Pure function extracted from .opencode/tools/validate-spec.ts.
+ * Pure function. The OpenCode-native copy was consolidated here and removed (#68).
  * Validates a FORGE spec.md or tech-spec.md for completeness.
  */
 
@@ -125,10 +125,10 @@ export async function validateSpec(specPath: string): Promise<ValidationResult> 
 
   // Check FRs for description, priority and story reference.
   // Matches the table shapes FORGE emits (`| FR-001 | text | prio | ref |`
-  // and shorter variants); a row with fewer cells simply has nothing to
-  // check in the missing positions.
+  // and shorter variants, with optionally bolded IDs); a row with fewer
+  // cells simply has nothing to check in the missing positions.
   if (!isTechSpec) {
-    const frPattern = /^\s*\|\s*(FR-\d+)\s*\|([^\n]*)$/gm
+    const frPattern = /^\s*\|\s*\*{0,2}(FR-\d+)\*{0,2}\s*\|([^\n]*)$/gm
     let frMatch: RegExpExecArray | null
     while ((frMatch = frPattern.exec(content)) !== null) {
       const frId = frMatch[1]

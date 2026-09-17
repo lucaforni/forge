@@ -259,6 +259,26 @@ None.
     expect(r2.crossReferenceIssues).toEqual([])
   })
 
+  it("matches bold FR ids, the style FORGE's own specs use", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| FR-001 | The system does the thing | Must | US-001 |",
+      "| **FR-001** | The system does the thing | Must | US-001 |",
+    ))
+    const r = await validateSpec(p)
+    // Matched (no crash, no false finding) and complete.
+    expect(r.frIssues).toEqual([])
+    expect(r.completeness).toBe(100)
+  })
+
+  it("flags an undescribed bold FR id", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| FR-001 | The system does the thing | Must | US-001 |",
+      "| **FR-001** |  |  |  |",
+    ))
+    const r = await validateSpec(p)
+    expect(r.frIssues).toContain("FR-001: no requirement description")
+  })
+
   it("skips FR and content checks for tech specs", async () => {
     const p = write("tech-spec.md", `## Overview
 Short.
