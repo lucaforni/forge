@@ -126,7 +126,7 @@ console.log("key: present\n")
 // 2. Chat round-trip ------------------------------------------------------------
 {
   const { status, json, raw } = await api("/chat/completions", {
-    model: API_MODEL
+    model: API_MODEL,
     messages: [{ role: "user", content: "Reply with exactly: NIM-OK" }],
     max_tokens: 64,
     temperature: 0,
@@ -147,7 +147,7 @@ console.log("key: present\n")
 // the issue is a request param, not the model/key/account.
 {
   const { status, json, raw } = await api("/chat/completions", {
-    model: API_MODEL
+    model: API_MODEL,
     messages: [{ role: "user", content: "Reply with exactly: NIM-OK" }],
   })
   const text = (json as { choices?: { message?: { content?: string } }[] })?.choices?.[0]?.message
@@ -163,7 +163,7 @@ console.log("key: present\n")
 // 3. Tool-call emission (critical for agentic harnesses) -----------------------
 {
   const { status, json, raw } = await api("/chat/completions", {
-    model: API_MODEL
+    model: API_MODEL,
     messages: [
       {
         role: "user",
@@ -205,7 +205,7 @@ console.log("key: present\n")
 // a normal assistant turn. This is the check that predicts smoke success.
 {
   const { status, json, raw } = await api("/chat/completions", {
-    model: API_MODEL
+    model: API_MODEL,
     messages: [
       {
         role: "user",
@@ -281,7 +281,7 @@ console.log("key: present\n")
     "Follow project conventions. Prefer precise tool calls over guessing. " +
     "When you need file contents, always use the provided file tools. ".repeat(40)
   const { status, json, raw } = await api("/chat/completions", {
-    model: API_MODEL
+    model: API_MODEL,
     messages: [
       { role: "system", content: preamble },
       {
@@ -310,7 +310,7 @@ console.log("key: present\n")
 // 4. Responses API (Codex custom-provider wire) ---------------------------------
 {
   const { status, json, raw } = await api("/responses", {
-    model: API_MODEL
+    model: API_MODEL,
     input: "Reply with exactly: NIM-RESP-OK",
     max_output_tokens: 64,
     temperature: 0,

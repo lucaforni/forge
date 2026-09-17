@@ -1,5 +1,5 @@
 name: 🐛 Bug report
-description: Segnala un bug o un comportamento inatteso
+description: Report a bug or unexpected behaviour
 title: "[Bug]: "
 labels: [bug, triage]
 assignees: []
@@ -7,66 +7,77 @@ body:
   - type: markdown
     attributes:
       value: |
-        Grazie per la segnalazione! Compila tutti i campi per aiutarci a riprodurre il problema.
+        Thanks for the report! Please fill in every field so we can reproduce the problem.
   - type: textarea
     id: description
     attributes:
-      label: Descrizione
-      description: Descrizione chiara e concisa del bug
-      placeholder: Cosa è successo?
+      label: Description
+      description: A clear and concise description of the bug
+      placeholder: What happened?
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Passi per riprodurre
-      description: Come possiamo riprodurre il problema?
+      label: Steps to reproduce
+      description: How can we reproduce the problem?
       placeholder: |
-        1. Vai su '...'
-        2. Esegui '...'
-        3. Vedi errore
+        1. Go to '...'
+        2. Run '...'
+        3. See error
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Comportamento atteso
-      description: Cosa ti aspettavi che succedesse?
+      label: Expected behaviour
+      description: What did you expect to happen?
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
-      label: Comportamento attuale
-      description: Cosa succede invece? Includi messaggi di errore.
+      label: Actual behaviour
+      description: What happens instead? Include any error messages.
   - type: input
     id: node-version
     attributes:
-      label: Versione Node.js
-      description: Output di `node --version`
-      placeholder: "es. 22.14.0"
+      label: Node.js version
+      description: Output of `node --version`
+      placeholder: "e.g. 22.14.0"
   - type: dropdown
     id: os
     attributes:
-      label: Sistema operativo
+      label: Operating system
       options:
         - Linux
         - macOS
         - Windows
     validations:
       required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: AI coding platform
+      options:
+        - OpenCode
+        - Claude Code
+        - Codex CLI
+        - Not applicable
+    validations:
+      required: false
   - type: textarea
     id: logs
     attributes:
-      label: Log rilevanti
-      description: Incolla log o stack trace (usa blocchi ``` per formattare)
+      label: Relevant logs
+      description: Paste logs or stack traces (use ``` blocks to format)
       render: shell
   - type: checkboxes
     id: checks
     attributes:
       label: Checklist
       options:
-        - label: Ho cercato tra le issue esistenti prima di aprirne una nuova
+        - label: I searched existing issues before opening a new one
           required: true
-        - label: Posso riprodurre il bug sull'ultima versione di `main`
+        - label: I can reproduce the bug on the latest `main`
           required: false

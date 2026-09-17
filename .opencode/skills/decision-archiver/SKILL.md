@@ -1,3 +1,13 @@
+---
+name: decision-archiver
+description: Archive completed decision log entries into dated archives while preserving pending, in-progress, and critical decisions
+license: MIT
+compatibility: opencode
+metadata:
+  audience: forge-orchestrator
+  workflow: forge
+---
+
 # Decision Archiver Skill
 
 > **Purpose:** Archive completed decision log entries while preserving pending, in-progress, and critical decisions.
@@ -8,7 +18,7 @@
 
 ## Core Logic
 
-### Archiviation Rules
+### Archival Rules
 
 **ALWAYS KEEP in decision-log.md:**
 1. Entries with status `pending`, `in-progress`, `blocked`.
@@ -63,12 +73,12 @@ knowledge:
 ```
 IF lines > max_lines OR tokens > max_tokens:
    THEN archive
-   ELSE skip, report "No archiviation needed"
+   ELSE skip, report "No archival needed"
 ```
 
 ### Step 4: Identify Archivable Entries
 
-For each entry, KEEP if: status pending/in-progress/blocked, OR within last N, OR tagged critical, OR referenced by active spec. Mark remaining completed/resolved/cancelled/superseded for archiviation.
+For each entry, KEEP if: status pending/in-progress/blocked, OR within last N, OR tagged critical, OR referenced by active spec. Mark remaining completed/resolved/cancelled/superseded for archival.
 
 ### Step 5: Create Archive Structure
 
@@ -218,7 +228,7 @@ Brief description of the situation...
 ```yaml
 knowledge:
   decision_log:
-    # Archiviation triggers
+    # Archival triggers
     max_lines: 500                    # Default: 500
     max_tokens: 20000                 # Default: 20000 (~50k context budget)
     auto_archive: true                # Default: true

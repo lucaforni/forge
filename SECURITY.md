@@ -7,54 +7,58 @@
 | 2.x     | :white_check_mark: |
 | < 2.0   | :x:                |
 
-Ricevono fix di sicurezza solo le release supportate (`2.x`).
-Le versioni precedenti sono EOL: aggiorna all'ultima minor/patch.
+Only supported releases (`2.x`) receive security fixes.
+Earlier versions are EOL — please upgrade to the latest minor/patch.
 
 ## Reporting a Vulnerability
 
-**NON aprire issue pubbliche per vulnerabilità.**
+**Do NOT open public issues for vulnerabilities.**
 
-Usa la segnalazione privata di GitHub:
+Use GitHub's private reporting:
 
 👉 https://github.com/lucaforni/forge/security/advisories/new
 (Private Vulnerability Reporting)
 
-Includi se possibile:
+Where possible, please include:
 
-- Descrizione dell'impatto e scenario di sfruttamento
-- Passi per riprodurre / PoC minimale
-- Versioni affette e commit di riferimento
-- Eventuali mitigazioni o fix suggeriti
+- A description of the impact and an exploitation scenario
+- Steps to reproduce / a minimal PoC
+- Affected versions and reference commits
+- Any mitigations or suggested fixes
 
-### SLA di risposta
+### Response SLA
 
-- **Conferma ricezione**: entro 72 ore
-- **Valutazione iniziale** (severità + piano): entro 7 giorni
-- **Fix + advisory**: tempi proporzionali alla severità (Critical/High prioritari)
+- **Acknowledgement of receipt**: within 72 hours
+- **Initial assessment** (severity + plan): within 7 days
+- **Fix + advisory**: proportional to severity (Critical/High prioritised)
 
-Ti terremo aggiornato tramite il thread privato dell'advisory.
+We will keep you updated through the private advisory thread.
 
 ## Disclosure Policy
 
-- Divulgazione coordinata: pubblichiamo un GitHub Security Advisory solo dopo che il fix è disponibile.
-- Ti accreditiamo come reporter (salvo tua richiesta contraria).
-- Ti chiediamo di non divulgare pubblicamente dettagli o exploit fino alla pubblicazione dell'advisory.
+- Coordinated disclosure: we publish a GitHub Security Advisory only once a
+  fix is available.
+- We credit you as the reporter (unless you ask us not to).
+- We ask that you do not publicly disclose details or exploits until the
+  advisory is published.
 
 ## Scope
 
-- ✅ Codice di questo repo (`forge`), workflow GitHub Actions, installer, MCP server
-- ⛔ Progetti generati *con* FORGE, account social, infrastrutture personale del maintainer
+- ✅ Code in this repository (`forge`), GitHub Actions workflows, the
+  installer, and the MCP server
+- ⛔ Projects generated *with* FORGE, social accounts, and the maintainer's
+  personal infrastructure
 
 ## No Bug Bounty
 
-Al momento non è previsto un programma di bug bounty a pagamento.
+There is currently no paid bug bounty programme.
 
-## Riferimenti operativi
+## Operational References
 
-Protezioni attive sul repo (verificate il 2026-09-09 via API):
+Protections active on this repository (verified 2026-09-09 via API):
 Dependabot alerts + security updates, secret scanning + push protection,
-Private Vulnerability Reporting. CodeQL (security-extended) e OSSF Scorecard
-si attivano al primo push dei workflow su `main`.
+and Private Vulnerability Reporting. CodeQL (security-extended) and OSSF
+Scorecard activate on the first push of their workflows to `main`.
 
-> Fork o nuovo repo? Abilita le stesse protezioni in
-> Settings → Code security, oppure via `gh api` (vedi decision-log).
+> Forking or starting a new repository? Enable the same protections under
+> Settings → Code security, or via `gh api` (see the decision log).

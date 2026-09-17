@@ -43,17 +43,34 @@ FORGE is a methodology framework for AI-assisted software development that provi
 | Packaging | Bun/NPM | Latest | Fast installs |
 | Documentation | Markdown | CommonMark | Universal format |
 
+> **Note (2026-09-17):** the root workspace currently pins TypeScript `^7`
+> while `mcp-server/` pins `^5`. Both satisfy "5+", but the split toolchain
+> is technical debt — see issue #74.
+
 ### 2.2 Dependency Policy
-- **Zero runtime dependencies** for core framework
-- Plugin dependencies are acceptable but minimal
-- All dependencies in devDependencies unless runtime-required
+- **The installer layer (`installer/`, `install-forge.ts`) MUST have zero
+  runtime dependencies** — Node builtins only. This is the part users
+  execute before anything is installed, so it must never require a fetch.
+- **Distributed runtime components MAY declare runtime dependencies**, but
+  each one requires an explicit justification and a committed lockfile.
+  Current approved set:
+
+  | Component | Dependency | Justification |
+  |---|---|---|
+  | `mcp-server/` | `@modelcontextprotocol/sdk` | Protocol implementation; no viable builtin |
+  | `mcp-server/` | `tsx` | Sources ship untranspiled; removable by adding a build step |
+  | `.opencode/` | `@opencode-ai/plugin` | Platform SDK for tools and plugins |
+
+- Anything not in the table above goes in `devDependencies`.
+- Every component that declares runtime dependencies MUST commit a lockfile
+  and be registered in `.github/dependabot.yml`.
 
 ### 2.3 Distribution Policy
 **NEVER distribute these to user projects:**
-- \`.opencode-meta/\` — Meta-development agent versions
-- \`.forge-meta/\` — FORGE's own constitution and specs
-- \`docs/meta-development/\` — FORGE development documentation
-- \`opencode.json\` from FORGE repo (has meta agent config)
+- `.opencode-meta/` — Meta-development agent versions
+- `.forge-meta/` — FORGE's own constitution and specs
+- `docs/meta-development/` — FORGE development documentation
+- `opencode.json` from FORGE repo (has meta agent config)
 
 ---
 
@@ -61,10 +78,10 @@ FORGE is a methodology framework for AI-assisted software development that provi
 
 ### 3.1 System Architecture
 File-based orchestration framework with platform-projection:
-- Agent definitions in platform agents dir (e.g., \`.opencode/agents/\`, \`.claude/agents/\`)
-- Commands in platform commands dir (e.g., \`.opencode/commands/\`, \`.claude/commands/\`)
-- Skills in platform skills dir (e.g., \`.opencode/skills/\`, \`.claude/skills/\`)
-- User artifacts in \`.forge/\`
+- Agent definitions in platform agents dir (e.g., `.opencode/agents/`, `.claude/agents/`)
+- Commands in platform commands dir (e.g., `.opencode/commands/`, `.claude/commands/`)
+- Skills in platform skills dir (e.g., `.opencode/skills/`, `.claude/skills/`)
+- User artifacts in `.forge/`
 - Shared MCP server in repo root for cross-platform custom tools
 
 ### 3.2 Code Organization
@@ -81,11 +98,29 @@ forge/
 ## Article 4: Quality Standards
 
 ### 4.1 Test Coverage
-- Minimum 80% coverage for custom tools
-- Manual testing for all slash commands
+
+Coverage is defined over `installer/**` and `mcp-server/src/**` (the
+`include` scope in `vitest.config.ts`).
+
+| Milestone | Line | Branch | Enforced by |
+|---|--:|--:|---|
+| **Current baseline** | — | — | not measured — `@vitest/coverage-v8` is missing (#61) |
+| **Next gate** | 50% | 40% | `npm run test:coverage` in CI |
+| **Target** | 80% | 60% | same |
+
+Rules:
+- The threshold in `vitest.config.ts` MUST match the gate actually run in
+  CI. A declared-but-unenforced threshold is a constitutional violation in
+  itself.
+- `installer/install.ts` MUST have tests before the next gate is raised —
+  it is the only module that writes to a user's filesystem.
+- `.opencode/tools/` and `.opencode/plugins/` are **out of scope** until
+  they are either distributed or removed (#68).
+- Manual testing for all slash commands.
 
 ### 4.2 Performance Targets
-- Agent instructions < 5000 tokens each
+- **Agent effective context** < 5000 tokens — measured as the agent file
+  **plus every skill it declares as mandatory**, not the file alone
 - Skills < 3000 tokens each
 - Total context per session < 50k tokens
 
@@ -93,14 +128,52 @@ forge/
 - **Meta-development instructions MUST NOT leak into distributed files**
 - Regular token usage audits
 
+### 4.4 Enforceability
+
+**Every article that can be checked mechanically MUST have a corresponding
+CI check.** An article without a check is a statement of intent, not a rule,
+and MUST be labelled as such.
+
+| Article | Check |
+|---|---|
+| 2.2 | lockfile presence + dependabot registration |
+| 2.3, 4.3 | grep for `../.opencode` and `<!-- CUSTOMIZE` in distributed files |
+| 4.1 | `npm run test:coverage` |
+| 4.2 | token budget script |
+| — | installer contract test: everything documented as installed is installed |
+
+**Current status: none of these checks exist yet.** Until each one is wired
+into `.github/workflows/ci.yml`, the corresponding article is a statement of
+intent. Tracked in #60 (typecheck), #61 (coverage), #62 (language),
+#73 (token budget), #56 (installer contract).
+
 ---
 
 ## Article 5: Naming & Conventions
 
 ### 5.1 File Naming
-- Agents: \`forge-[role].md\`
-- Commands: \`forge-[action].md\`
-- Skills: \`.opencode/skills/[name]/SKILL.md\` (or platform equivalent)
+- Agents: `forge-[role].md`
+- Commands: `forge-[action].md`
+- Skills: `.opencode/skills/[name]/SKILL.md` (or platform equivalent)
+
+### 5.2 Language
+- **All distributed and public-facing artifacts MUST be in English** —
+  agents, commands, skills, templates, code templates, `README`,
+  `SECURITY.md`, GitHub issue/PR templates, and any user-visible string.
+- Internal `.forge/` working artifacts may use any language, but English is
+  preferred for consistency.
+
+**Known open violations** (grandfathered, tracked in #62 — no new ones
+are permitted):
+
+| Artifact | Status |
+|---|---|
+| `frontend/patterns/templates/*.tsx` | Italian UI strings and JSDoc remain |
+| `.opencode/docs/automatic-monitoring-setup.md` | Fully Italian; also slated to move out of the distributed docs dir |
+| `.forge/knowledge/decision-log.md`, `.forge/specs/003-harness-tests/` | Internal artifacts — permitted by the rule above |
+
+A CI check for this article is required by Art. 4.4 and is not yet
+implemented.
 
 ---
 
@@ -110,3 +183,8 @@ forge/
 |------|---------|--------|-----------|---------|
 | 2026-02-16 | 2.3, 4.3 | Added distribution exclusions | Prevent meta-dev overhead | N/A |
 | 2026-06-21 | 1.2, 1.3, 2.1, 3.1, 5.1 | Cross-platform amendment: replaced "OpenCode-native" with "Multi-platform", broadened architecture to platform-projection model | Port FORGE to Claude Code and Codex CLI | ADR-001 |
+| 2026-09-17 | 2.2 | Replaced the blanket "zero runtime dependencies" with a scoped rule: zero for the installer layer, explicitly justified and lockfiled for distributed runtime components | The blanket claim was false — `mcp-server/` carries 2 runtime deps and `.opencode/` carries 1. A constitution that asserts falsehoods produces wrong compliance verdicts. | Audit #74 |
+| 2026-09-17 | 4.1 | Replaced the unenforced flat "80% coverage" with a staged baseline → gate → target, tied to what CI actually runs | The 80% gate had never been measured (provider missing) and was unreachable (51% of scope untested) | Audit #61, #74 |
+| 2026-09-17 | 4.2 | Agent budget redefined as effective context (agent file + mandatory skills) | The file-size metric was trivially satisfied by moving instructions into skills; `forge-ux` loads ~9.6k effective tokens | Audit #73 |
+| 2026-09-17 | 4.4 | **New** — every mechanically checkable article requires a CI check | Unenforced articles had silently drifted from reality for 7 months | Audit #74 |
+| 2026-09-17 | 5.2 | **New** — English required for all distributed and public-facing artifacts | `SECURITY.md`, GitHub templates, a distributed skill and 3 code templates had drifted to Italian | Audit #62 |

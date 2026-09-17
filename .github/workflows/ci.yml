@@ -1,4 +1,4 @@
-# CI — test multi-versione Node
+# CI — multi-version Node test matrix
 name: CI
 
 on:

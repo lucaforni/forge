@@ -1,4 +1,4 @@
-# Dependabot — aggiornamenti automatici dipendenze
+# Dependabot — automated dependency updates
 version: 2
 updates:
   - package-ecosystem: npm
@@ -20,11 +20,11 @@ updates:
         update-types:
           - minor
           - patch
-    # Per ricevere anche security updates automatiche, abilitare
-    # "Dependabot security updates" nelle impostazioni repo (non versionabile).
+    # To also receive automatic security updates, enable
+    # "Dependabot security updates" in the repo settings (not versionable).
 
-  # Secondo lockfile del repo (framework OpenCode): senza questa entry le
-  # vulnerabilita' in .opencode/package-lock.json non generano PR (lezione 2026-09-09).
+  # Second lockfile in the repo (OpenCode framework): without this entry,
+  # vulnerabilities in .opencode/package-lock.json produce no PRs (lesson 2026-09-09).
   - package-ecosystem: npm
     directory: "/.opencode"
     schedule:
@@ -38,6 +38,32 @@ updates:
       - dependencies
     groups:
       opencode-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  # Third manifest: the shared MCP server. It declares RUNTIME dependencies
+  # (@modelcontextprotocol/sdk, tsx) and is installed into every user project
+  # as .forge/mcp-server/, so its vulnerabilities reach end users directly.
+  # Required by constitution Art. 2.2.
+  # NOTE: mcp-server/ has no committed lockfile yet (#74) — Dependabot will
+  # still open manifest-level PRs, but `npm ci` is not yet possible there.
+  - package-ecosystem: npm
+    directory: "/mcp-server"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Rome
+    target-branch: main
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      mcp-server-minor-patch:
         applies-to: version-updates
         patterns:
           - "*"
