@@ -78,7 +78,7 @@ Background information...
 - Decision ID (auto-generated if omitted)
 - Context section (background)
 
-See template: `.opencode/templates/decision-log-entry-template.md`
+See template: `../templates/decision-log-entry-template.md`
 
 ---
 
@@ -360,7 +360,7 @@ forge-architect agent references decision log and may add:
 
 ### During Implementation (/forge-implement)
 
-Build agent may add:
+The orchestrator may add:
 
 ```markdown
 ## 2026-02-18 | Session: Implementing Auth API
@@ -525,7 +525,7 @@ knowledge:
       warn_stale_pending_days: 90     # Warn on old pending entries
 ```
 
-See: `.opencode/docs/config-guide.md` for full configuration guide.
+See: `./config-guide.md` for full configuration guide.
 
 ---
 
@@ -586,11 +586,11 @@ grep -A 2 "Status.*blocked" .forge/knowledge/decision-log.md
 
 ## Related Documentation
 
-- **Decision Entry Template:** `.opencode/templates/decision-log-entry-template.md`
+- **Decision Entry Template:** `../templates/decision-log-entry-template.md`
 - **Archive Command:** `.opencode/commands/forge-archive-decisions.md`
 - **Validation Command:** `.opencode/commands/forge-validate-decisions.md`
 - **Decision Archiver Skill:** `.opencode/skills/decision-archiver/SKILL.md`
-- **Configuration Guide:** `.opencode/docs/config-guide.md`
+- **Configuration Guide:** `./config-guide.md`
 - **ADR Creation:** `.opencode/commands/forge-adr.md`
 
 ---

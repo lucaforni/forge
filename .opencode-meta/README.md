@@ -5,7 +5,7 @@ This directory contains **agent definitions with meta-development instructions**
 ## Purpose
 
 When working on FORGE (meta-development), these agent versions include:
-- Path conventions for FORGE source code (`../.opencode/`)
+- Path conventions for FORGE source code (`.opencode/`, repo-root-relative)
 - Component-to-path mappings for FORGE architecture
 - Task specification formats with explicit file paths
 - Template modification guidelines

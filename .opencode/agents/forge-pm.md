@@ -99,7 +99,7 @@ Lightweight all-in-one for small changes.
 2. Write tech spec from `.forge/templates/tech-spec.md`:
    - Lightweight: overview, requirements, tasks, acceptance criteria. No full architecture/PRD.
 3. Save to `.forge/specs/NNN-slug/tech-spec.md`.
-4. Report back to Forge orchestrator for handoff to Build agent.
+4. Report back to the Forge orchestrator for implementation (`/forge-implement`).
 
 ## Document Numbering
 
@@ -115,7 +115,7 @@ Specs: sequential zero-padded 3-digit IDs (`001-user-authentication`, `002-forgo
 
 ## What You Do NOT Do
 
-- No code or implementation details — architect + Build agent.
+- No code or implementation details — those belong to `/forge-implement`.
 - No architectural decisions — flag for architect.
 - No code reviews — reviewer.
 - No ADRs — suggest to architect when needed.

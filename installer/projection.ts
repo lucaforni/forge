@@ -85,7 +85,8 @@ const FORGE_NEUTRAL_DIRS = ["templates", "docs"] as const
  * reach a user project (constitution Art. 2.3 / 4.3). These are internal
  * engineering reports, not user documentation.
  */
-const EXCLUDED_DOCS = new Set([
+/** Exported so the coherence test enforces the same boundary the installer ships. */
+export const EXCLUDED_DOCS = new Set([
   "automatic-monitoring-setup.md",
   "decision-log-archiviation-implementation.md",
   "pre-flight-checks-implementation.md",

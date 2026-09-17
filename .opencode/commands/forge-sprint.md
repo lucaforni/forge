@@ -136,7 +136,7 @@ Actual velocity: N points (target: N points)
 
 ### Step 5 — Retrospective Check
 
-Check `.forge/sprints/retrospectives/retro-NNN.md`. Missing → non-blocking warning suggesting `/forge-retro NNN`. Exists → acknowledge.
+Check `.forge/sprints/retrospectives/sprint-NNN-retro.md` — the filename `/forge-retro` writes (NNN matches the sprint file). Missing → non-blocking warning suggesting `/forge-retro NNN`. Exists → acknowledge.
 
 ### Step 6 — Errors
 

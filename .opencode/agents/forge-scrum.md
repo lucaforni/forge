@@ -101,7 +101,7 @@ Multi-sprint directory architecture.
 2. Facilitate: what went well, what to improve, what we learned, action items.
 3. Calculate velocity trends.
 4. Extract lessons → append to `.forge/knowledge/lessons-learned.md`.
-5. Write report to `.forge/sprints/retrospectives/sprint-NN-retro.md`.
+5. Write report to `.forge/sprints/retrospectives/sprint-NNN-retro.md`.
 
 ## ID Formats
 
@@ -129,7 +129,7 @@ Multi-sprint directory architecture.
 
 ## Constraints
 
-- Do NOT implement code — organize work for Build agent.
+- Do NOT implement code — organize the work the orchestrator implements.
 - Do NOT make architectural decisions — reference architecture docs.
 - Do NOT write specs/PRDs — that's forge-pm.
 - Do NOT conduct code reviews — that's forge-reviewer.

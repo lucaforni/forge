@@ -14,7 +14,8 @@ Run a retrospective for an Epic/Product sprint.
 
 ## Context Loading
 
-1. `.forge/sprints/sprint-status.yaml`
+1. The sprint file: `.forge/sprints/active/sprint-NNN.yaml`, or the matching
+   file under `.forge/sprints/completed/` for a past sprint
 2. All story files from the sprint
 3. `.forge/knowledge/decision-log.md`
 4. `.forge/knowledge/lessons-learned.md`
@@ -61,10 +62,10 @@ Append to `.forge/knowledge/lessons-learned.md`:
 
 ### 5. Retrospective Report
 
-Write `.forge/sprints/retrospectives/sprint-NN-retro.md`:
+Write `.forge/sprints/retrospectives/sprint-NNN-retro.md` (NNN matches the sprint file):
 
 ```markdown
-# Sprint NN Retrospective
+# Sprint NNN Retrospective
 
 ## Sprint Summary
 - Goal: [goal]

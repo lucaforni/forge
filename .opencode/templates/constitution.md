@@ -104,8 +104,8 @@ Any stack change requires:
 
 ### 4.2 Code Review
 - All code must pass adversarial AI review before human review
-- All HIGH severity findings resolved before merge
-- MEDIUM findings require documented justification if not fixed
+- All CRITICAL findings resolved before merge
+- WARNING findings require documented justification if not fixed
 
 ### 4.3 Performance Targets
 <!-- Examples:

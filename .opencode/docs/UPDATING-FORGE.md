@@ -48,8 +48,8 @@ These files are always updated to get the latest FORGE improvements:
 - `.opencode/skills/` — Specialized skills
 - `.opencode/plugins/` — Runtime plugins
 - `.opencode/tools/` — Custom tools
-- `.opencode/templates/` — Document templates
-- `.opencode/docs/` — FORGE documentation
+- `.forge/templates/` — Document templates
+- `.forge/docs/` — FORGE documentation
 - `.opencode/package.json` — Plugin dependencies
 
 ### 🔒 Never Overwritten (Your Work)
@@ -336,6 +336,6 @@ If the update breaks your workflow:
 
 ## Questions?
 
-- Check `.opencode/docs/FORGE-GUIDE.md` for more details
+- Check `./FORGE-GUIDE.md` for more details
 - Run `/forge-help` in OpenCode for command reference
-- Review `.opencode/docs/ARCHITECTURE.md` for system design
+- Review the architecture ADRs in `.forge/knowledge/adr/` for system design

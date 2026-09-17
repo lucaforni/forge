@@ -44,7 +44,7 @@ For a complete list, run `/forge-help`.
 ## Getting Help
 
 - Run `/forge-help` for interactive guidance
-- Read the complete guide: `.opencode/docs/FORGE-GUIDE.md`
+- Read the complete guide: `./FORGE-GUIDE.md`
 - Check the constitution: `.forge/constitution.md`
 - Review project conventions: `AGENTS.md`
 

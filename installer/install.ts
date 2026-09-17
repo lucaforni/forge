@@ -15,7 +15,7 @@ import { spawnSync } from "node:child_process"
 import type { Platform, PlatformDescriptor, InstallPlan, InstallOperation, InstallResult } from "./types"
 
 import { detectProjectState } from "./detect"
-import { buildInstallPlan, catalogCanonicalArtifacts, SCAFFOLD_FILES } from "./projection"
+import { buildInstallPlan, catalogCanonicalArtifacts, catalogForgeArtifacts, SCAFFOLD_FILES } from "./projection"
 import { readManifest, writeManifest, createManifest, needsManifestSynthesis } from "./manifest"
 import { buildDefaultConfig, readExistingJsonConfig } from "./config"
 import { detectDrift } from "./drift"
@@ -101,7 +101,20 @@ export interface CliOptions {
   force?: boolean
   /** Verbose logging. */
   verbose?: boolean
+  /**
+   * Update mode: require a previous install and refuse a fresh one.
+   * Without it the installer reconciles either way (auto-detected).
+   */
+  update?: boolean
 }
+
+/**
+ * Exit codes. 0 is success; 2-7 are caller or environment errors.
+ * 4 specifically means the invocation itself was wrong — bad flags, an
+ * unknown platform, or `--update` with nothing to update — as opposed to
+ * 2 (no platform detected) and 3 (projection check failed).
+ */
+export const EXIT_USAGE = 4
 
 // ---------------------------------------------------------------------------
 // Main Entry
@@ -125,6 +138,13 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   const state = detectProjectState(projectRoot)
   const platforms = options.platform ?? state.platforms
 
+  for (const p of platforms) {
+    if (!(p in DESCRIPTORS)) {
+      log("err", `Unknown platform: "${p}". Supported: ${Object.keys(DESCRIPTORS).join(", ")}.`)
+      return { success: false, installed: [], warnings: [], backupPaths: [], exitCode: EXIT_USAGE }
+    }
+  }
+
   if (platforms.length === 0) {
     log("err", "No supported platform detected.")
     log("info", "FORGE supports: OpenCode (.opencode/), Claude Code (.claude/), Codex CLI (.codex/)")
@@ -140,6 +160,12 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   let existingManifest = readManifest(projectRoot)
   const needsSynthesis = needsManifestSynthesis(projectRoot)
   const isUpdate = existingManifest !== null || needsSynthesis
+
+  if (options.update && !isUpdate) {
+    log("err", "Nothing to update: no FORGE installation found in the target.")
+    log("info", "Run without --update for a fresh install.")
+    return { success: false, installed: [], warnings: [], backupPaths: [], exitCode: EXIT_USAGE }
+  }
 
   if (needsSynthesis) {
     log("info", "Pre-2.0 installation detected — synthesizing install manifest...")
@@ -242,10 +268,16 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   // Step 5: Check mode — verify projection matches expected, don't write
   if (isCheck) {
     log("info", "Check mode: verifying projection correctness...")
-    // Check that the plan is coherent (no missing source dirs, etc.)
-    const sourceExists = existsSync(join(projectRoot, ".opencode"))
-    if (!sourceExists && platforms.includes("opencode")) {
-      log("err", "Projection check failed: .opencode/ source not found for OpenCode platform")
+    // Verify the FORGE source tree (what we install FROM) through the same
+    // cataloguing code the install uses. The previous version probed the
+    // TARGET for `.opencode/`, which inverted the contract: a valid fresh
+    // target failed, while any directory with a stray `.opencode/` passed
+    // without the source ever being verified.
+    const sourceRoot = resolve(_dirname, "..")
+    const canonical = catalogCanonicalArtifacts(sourceRoot)
+    const shared = catalogForgeArtifacts(sourceRoot)
+    if (canonical.length === 0 || shared.length === 0) {
+      log("err", "Projection check failed: FORGE source tree produced no artifacts to install.")
       return { success: false, installed: platforms, warnings: configWarnings, backupPaths: [], exitCode: 3 }
     }
     log("ok", "Projection check passed.")
@@ -262,6 +294,7 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   section("Installing")
   const warnings: string[] = [...configWarnings]
   const backupPaths: string[] = []
+  let interactiveWarned = false
   const newChecksums: Record<string, string> = { ...existingManifest?.checksums }
 
   // Ensure required directories
@@ -303,9 +336,11 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
       }
 
       case "backup": {
-        if (options.interactive) {
-          // TODO: interactive prompt — show diff, ask overwrite/keep/merge
-          log("warn", `Interactive backup for ${op.targetPath} — showing diff (future)`)
+        if (options.interactive && !interactiveWarned) {
+          // Interactive per-file prompts are not implemented (see #72).
+          // Say so once, plainly, instead of "showing diff (future)" per file.
+          log("warn", "Interactive mode is not implemented — proceeding non-interactively; drifted files are backed up automatically.")
+          interactiveWarned = true
         }
         if (options.force) {
           log("warn", `Force mode: overwriting ${op.targetPath} without backup`)

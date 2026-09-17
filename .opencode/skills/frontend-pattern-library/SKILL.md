@@ -4,7 +4,7 @@ description: Integrates the FORGE Frontend Pattern Library into UX design and im
 license: MIT
 compatibility: opencode
 metadata:
-  audience: forge-ux, forge (Build)
+  audience: forge-ux, forge
   workflow: forge
 ---
 
@@ -12,8 +12,8 @@ metadata:
 
 Bridge the gap between UX specification and frontend implementation by providing
 a shared vocabulary of **17 UI patterns** for React + shadcn/ui + Tailwind.
-`forge-ux` references patterns by name in the design-spec. Build loads the
-pattern and uses it as a structural reference to generate consistent code.
+`forge-ux` references patterns by name in the design-spec. The orchestrator loads the
+pattern during `/forge-implement` and uses it as a structural reference to generate consistent code.
 
 ## When to Load
 
@@ -125,9 +125,9 @@ QA Checklist (to validate in review):
   - Empty states: first-visit vs filtered
 ```
 
-## Output for Build (implementation)
+## Output for implementation (Forge)
 
-When Build receives a design-spec containing a Pattern Reference:
+When the orchestrator receives a design-spec containing a Pattern Reference:
 
 1. Load the pattern file → understand structure, states, data flow
 2. Load the template if it exists → use it as a structural base

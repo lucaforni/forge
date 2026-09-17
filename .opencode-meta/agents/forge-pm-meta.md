@@ -50,7 +50,7 @@ When working on FORGE itself (detected by working directory ending in `/dev`):
 All specs, PRDs, and tech-specs must include explicit file paths relative to
 the working directory. Paths use the following convention:
 
-- **FORGE source code**: `../.opencode/` (goes up from `dev/` to `forge/`)
+- **FORGE source code**: `.opencode/` (goes up from `dev/` to `forge/`)
 - **Dev specs/docs**: `./.forge/` (current working directory)
 - **Root config** (template): `../.forge/` (goes up to template config)
 
@@ -65,12 +65,12 @@ implementation will happen. Use these table formats:
 ### Files to Create
 | Path | Type | Description |
 |------|------|-------------|
-| `../.opencode/commands/forge-new.md` | Command | New command implementation |
+| `.opencode/commands/forge-new.md` | Command | New command implementation |
 
 ### Files to Modify
 | Path | Section/Line | Change Description |
 |------|--------------|---------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Add command reference |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Add command reference |
 
 ### Files to Reference (Read-only)
 | Path | Purpose |
@@ -85,17 +85,17 @@ implementation will happen. Use these table formats:
 ### New Components
 | Component Type | Path | Description |
 |----------------|------|-------------|
-| Command | `../.opencode/commands/forge-validate.md` | Validation command |
+| Command | `.opencode/commands/forge-validate.md` | Validation command |
 
 ### Modified Components
 | Path | Modification Type | Description |
 |------|-------------------|-------------|
-| `../.opencode/agents/forge.md` | Enhancement | Add validation orchestration |
+| `.opencode/agents/forge.md` | Enhancement | Add validation orchestration |
 
 ### Documentation Updates
 | Path | Section | Update Description |
 |------|---------|---------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Document new command |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4 | Document new command |
 ```
 
 ### Path Validation Rules
@@ -115,13 +115,13 @@ should look like this:
 ### Files to Create
 | Path | Type | Description |
 |------|------|-------------|
-| `../.opencode/commands/forge-doctor.md` | Command | Health check command definition |
+| `.opencode/commands/forge-doctor.md` | Command | Health check command definition |
 
 ### Files to Modify
 | Path | Section/Line | Change Description |
 |------|--------------|---------------------|
-| `../.opencode/docs/FORGE-GUIDE.md` | Section 4.4 "Command Reference" | Add `/forge-doctor` documentation with usage examples |
-| `../.opencode/agents/forge.md` | Line ~58 "Available Commands" | Register `/forge-doctor` in orchestrator |
+| `.opencode/docs/FORGE-GUIDE.md` | Section 4.4 "Command Reference" | Add `/forge-doctor` documentation with usage examples |
+| `.opencode/agents/forge.md` | Line ~58 "Available Commands" | Register `/forge-doctor` in orchestrator |
 
 ### Files to Reference (Read-only)
 | Path | Purpose |
@@ -233,7 +233,7 @@ Lightweight all-in-one flow for small changes.
      acceptance criteria. No full architecture or PRD.
 3. Save to `.forge/specs/NNN-slug/tech-spec.md`.
 4. Report the tech spec to the Forge orchestrator so it can hand off
-   to the Build agent for implementation.
+   to the orchestrator for implementation (`/forge-implement`).
 
 ## Document Numbering
 
@@ -257,7 +257,7 @@ existing number, then increment by 1.
 ## What You Do NOT Do
 
 - You do not write code or implementation details. That is the architect's
-  and Build agent's job.
+  and the implementation phase's job.
 - You do not make architectural decisions. Flag them for the architect.
 - You do not review code. That is the reviewer's job.
 - You do not create ADRs. Suggest them to the architect when needed.

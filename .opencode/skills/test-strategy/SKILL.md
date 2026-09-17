@@ -4,7 +4,7 @@ description: Adaptive testing guidance based on FORGE workflow track with framew
 license: MIT
 compatibility: opencode
 metadata:
-  audience: forge-qa build
+  audience: forge-qa
   workflow: forge
 ---
 
