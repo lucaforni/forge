@@ -5,11 +5,12 @@ This guide explains how to install or update FORGE in your project.
 auto-detects your platform.
 
 > [!IMPORTANT]
-> **Platform support is uneven today.** OpenCode is the reference platform
-> and is the only one that is fully exercised. Claude Code and Codex CLI
-> projections are incomplete — see
-> [#70](https://github.com/lucaforni/forge/issues/70) and
-> [#71](https://github.com/lucaforni/forge/issues/71) before relying on them.
+> **Platform support:** OpenCode is the reference platform and the only one
+> fully exercised end to end. Claude Code and Codex CLI artifacts are now
+> projected to native form (valid agents, preserved routing, correct paths),
+> but hooks, model tiers and live runs are still open — see
+> [#87](https://github.com/lucaforni/forge/issues/87) before relying on them
+> for production work.
 
 ---
 
@@ -102,21 +103,21 @@ with a message asking you to create one of the platform directories.
 
 | Path | Contents | Status |
 |---|---|:--:|
-| `.claude/agents/` | Same 9 subagents | ⚠️ copied with OpenCode frontmatter; missing `name:` — [#71](https://github.com/lucaforni/forge/issues/71) |
-| `.claude/commands/` | Same 24 slash commands | ⚠️ `agent:` routing is not honoured by Claude Code — [#71](https://github.com/lucaforni/forge/issues/71) |
+| `.claude/agents/` | Same 9 subagents | ✅ projected: `name:` + `tools:` allowlist, OpenCode keys dropped; bash filters re-apply in `settings.json` (noted in-file) |
+| `.claude/commands/` | Same 24 slash commands | ✅ routing preserved as an explicit Task-tool step |
 | `.claude/skills/` | Same 13 skills | ✅ |
 | `.forge/templates/`, `.forge/docs/` | Templates and docs | ✅ platform-neutral |
-| `.claude/hooks/` | Adapted hook-based automation | ❌ [#71](https://github.com/lucaforni/forge/issues/71) |
+| `.claude/hooks/` | Adapted hook-based automation | ❌ not generated (would need the plugins rewritten) — [#87](https://github.com/lucaforni/forge/issues/87) |
 | `.claude/settings.json` | Claude Code config with MCP server reference | ⚠️ MCP only |
-| `CLAUDE.md` | Project instructions (imports `AGENTS.md`) | ⚠️ imports a file that is not created — [#56](https://github.com/lucaforni/forge/issues/56) |
+| `CLAUDE.md` | Project instructions (imports `AGENTS.md`) | ✅ `AGENTS.md` is scaffolded, so the import resolves |
 
 #### Codex CLI
 
 | Path | Contents | Status |
 |---|---|:--:|
-| `.codex/agents/` | Codex-native agent definitions | ❌ raw Markdown; TOML generator is never called — [#70](https://github.com/lucaforni/forge/issues/70) |
-| `.codex/commands/` | Same 24 slash commands | ⚠️ Codex reads prompts from a different directory — [#70](https://github.com/lucaforni/forge/issues/70) |
-| `.agents/skills/` | Same 13 skills | ❌ lands in `.codex/.agents/skills/` — [#70](https://github.com/lucaforni/forge/issues/70) |
+| `.codex/agents/` | Codex-native agent definitions | ✅ `.toml` + clean `.md` companion per agent |
+| `.codex/commands/` | Same 24 slash commands | ✅ routing stripped with a note (no verified subtask mechanism) |
+| `.agents/skills/` | Same 13 skills | ✅ lands at the project root |
 | `.codex/config.toml` | Codex CLI config with MCP server reference | ⚠️ MCP only |
 | `.forge/templates/`, `.forge/docs/` | Templates and docs | ✅ platform-neutral |
 | `AGENTS.md` | Project instructions (native format) | ✅ created once, never overwritten |

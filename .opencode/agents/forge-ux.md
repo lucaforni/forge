@@ -179,7 +179,8 @@ Must include:
 The ASCII formats live in exactly one place — NOT here. When wireframing,
 read `### 2. ASCII Wireframe` (general frame) and `### 2b. Data-View Frame`
 (data frame with data-binding block) from the `forge-wireframe` command file
-(`.opencode/commands/forge-wireframe.md`, shipped in the same install),
+in your platform's commands directory (`.opencode/commands/`,
+`.claude/commands/` or `.codex/commands/` — shipped in the same install),
 then follow the per-screen rules below.
 
 ## Platform-Specific Guidance

@@ -231,4 +231,4 @@ Loads and executes the `decision-archiver` skill:
 4. Update decision-log.md (Edit).
 5. Generate summary report.
 
-See `.opencode/skills/decision-archiver/SKILL.md` for detailed logic.
+See the `decision-archiver` skill (installed alongside this command) for detailed logic.
