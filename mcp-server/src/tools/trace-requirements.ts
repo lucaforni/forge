@@ -1,7 +1,7 @@
 /**
  * mcp-server/src/tools/trace-requirements.ts — Requirements traceability logic.
  *
- * Pure function extracted from .opencode/tools/trace-requirements.ts.
+ * Pure function. The OpenCode-native copy was consolidated here and removed (#68).
  * Traces FR/NFR requirements from a spec through plan, tasks, source files, and test files.
  */
 

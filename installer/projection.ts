@@ -108,10 +108,11 @@ const EXCLUDED_TEMPLATES = new Set([
  * `@opencode-ai/plugin`. Claude Code hooks are a separate projection
  * problem (#71). See spec 004 § D-3.
  *
- * `.opencode/tools/` is deliberately excluded — it duplicates
- * `mcp-server/src/tools/` with divergent algorithms (#68), and the MCP
- * server is the constitutional cross-platform tool surface (Art. 3.1).
- * See spec 004 § D-2.
+ * There is intentionally no `.opencode/tools/` directory. A previous
+ * OpenCode-native copy duplicated `mcp-server/src/tools/` with divergent
+ * algorithms; it was consolidated into the MCP server and deleted (#68).
+ * The MCP server is the constitutional cross-platform tool surface
+ * (Art. 3.1). See spec 004 § D-2 and spec 007.
  */
 const OPENCODE_ONLY_DIRS = ["plugins"] as const
 

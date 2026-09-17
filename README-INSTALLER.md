@@ -126,11 +126,16 @@ During an update, these are refreshed:
 - `.opencode/agents/` - FORGE agents
 - `.opencode/commands/` - Slash commands
 - `.opencode/skills/` - Reusable skills
-- `.opencode/plugins/` - Event-driven plugins
-- `.opencode/tools/` - Custom tools
-- `.opencode/templates/` - Document templates
-- `.opencode/docs/` - Documentation
-- `.opencode/package.json` - Dependencies
+- `.opencode/plugins/` + `.opencode/package.json` - Event-driven plugins and their manifest
+- `.forge/templates/` - Document templates
+- `.forge/docs/` - Documentation
+- `.forge/mcp-server/` - Shared MCP tools (the single tool implementation, #68)
+- `.forge/frontend/` - Frontend pattern library
+
+There is no `.opencode/tools/` anymore: the OpenCode-native copy duplicated
+the MCP tools with divergent results and was consolidated and deleted (#68).
+`.forge/constitution.md` and `AGENTS.md` are created once and never
+overwritten.
 
 ## Smart Configuration Merging
 

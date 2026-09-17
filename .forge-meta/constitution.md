@@ -127,10 +127,30 @@ Rules:
 - Manual testing for all slash commands.
 
 ### 4.2 Performance Targets
-- **Agent effective context** < 5000 tokens — measured as the agent file
-  **plus every skill it declares as mandatory**, not the file alone
-- Skills < 3000 tokens each
-- Total context per session < 50k tokens
+
+Token counts are approximated as words × 1.3 by
+`scripts/check-token-budget.ts`, which is the definition — not an estimate
+of model tokens.
+
+| Budget | Scope | Enforced by |
+|---|---|---|
+| Skill files ≤ 3,000 tokens | every `SKILL.md` | ✅ `budgets` job |
+| Agent files ≤ 5,000 tokens | `.opencode/agents/`, `.opencode-meta/agents/` | ✅ `budgets` job |
+| Effective context per agent | agent file + every declared skill, reported | reported only (see below) |
+| Total context per session < 50k tokens | — | ❌ not implemented |
+
+Measured 2026-09-17 (post split): largest skill `data-presentation` 2,597;
+largest effective contexts `forge-ux` 8,420 and `forge` 5,312 — both over
+the 5,000 aspiration, driven by the UX chain. The 5,000-effective target
+remains an aspiration until that chain is slimmed; gating it today would
+fail CI on the current design, and silently passing it would repeat the
+original file-size fallacy. Tracked as the follow-up below.
+
+- Follow-up: slim the UX invocation chain (`forge-ux` + mandatory skills)
+  toward 5,000 effective — see issue #84.
+- `data-presentation` was split 3,845 → 2,597 core + two on-demand
+  references (#73). Step numbers are stable so existing cross-references
+  (`Step 4.1`) keep working.
 
 ### 4.3 Technical Debt
 - **Meta-development instructions MUST NOT leak into distributed files**
@@ -150,7 +170,7 @@ and MUST be labelled as such.
 | — | installer contract test: everything referenced by an artifact is installed | ✅ `tests/unit/contract.test.ts` |
 | — | shell lint on the scripts users execute | ✅ `shell` job |
 | 2.3, 4.3 | grep for `../.opencode` and `<!-- CUSTOMIZE` in distributed files | ⚠️ partial — the contract test covers `../.opencode` only |
-| 4.2 | token budget script | ❌ not implemented (#73) |
+| 4.2 | `npm run budgets` — file budgets gated, effective reported | ✅ `budgets` job (effective target itself remains intent, see 4.2) |
 | 5.2 | language check on distributed artifacts | ❌ not implemented (#62) |
 
 An article whose row is ❌ is a statement of intent, not an enforced rule,
@@ -195,6 +215,7 @@ implemented.
 | 2026-09-17 | 2.2 | Replaced the blanket "zero runtime dependencies" with a scoped rule: zero for the installer layer, explicitly justified and lockfiled for distributed runtime components | The blanket claim was false — `mcp-server/` carries 2 runtime deps and `.opencode/` carries 1. A constitution that asserts falsehoods produces wrong compliance verdicts. | Audit #74 |
 | 2026-09-17 | 4.1 | Replaced the unenforced flat "80% coverage" with a staged baseline → gate → target, tied to what CI actually runs | The 80% gate had never been measured (provider missing) and was unreachable (51% of scope untested) | Audit #61, #74 |
 | 2026-09-17 | 4.2 | Agent budget redefined as effective context (agent file + mandatory skills) | The file-size metric was trivially satisfied by moving instructions into skills; `forge-ux` loads ~9.6k effective tokens | Audit #73 |
+| 2026-09-17 | 4.2 | Split `data-presentation` 3,845 → 2,597 + references; added the `budgets` job gating file sizes and reporting effective context; 5,000-effective stays an explicit aspiration with measured values on record | Gating effective today would fail CI on the current UX design; the honest state is units-gated plus effective-reported | Phase 3B, #73 |
 | 2026-09-17 | 4.4 | **New** — every mechanically checkable article requires a CI check | Unenforced articles had silently drifted from reality for 7 months | Audit #74 |
 | 2026-09-17 | 5.2 | **New** — English required for all distributed and public-facing artifacts | `SECURITY.md`, GitHub templates, a distributed skill and 3 code templates had drifted to Italian | Audit #62 |
 | 2026-09-17 | 4.1 | Replaced the unmeasured baseline with an enforced gate (85/78/80) and the first real measurement (89.1/84.2/82.5) | Coverage became measurable once `@vitest/coverage-v8` was installed and the MCP tools were tested; the staged plan is superseded by an actual gate | Phase 2, #61 |

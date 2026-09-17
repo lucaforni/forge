@@ -51,9 +51,9 @@ Acceptance Criteria:
 - Given a thing, when I do it, then it is done.
 
 ## Functional Requirements
-| ID | Requirement |
-|---|---|
-| FR-001 | The system does the thing |
+| ID | Requirement | Priority | Story |
+|---|---|---|---|
+| FR-001 | The system does the thing | Must | US-001 |
 
 ## Non-Functional Requirements
 | ID | Category | Requirement | Target |
@@ -70,10 +70,12 @@ None.
 Everything else.
 
 ## Constitution Compliance
-Complies with Article 1.
+| Art. | Status | Notes |
+|---|---|---|
+| Art. 1 | Compliant | Uses the approved stack |
 
 ## Cross-References
-None.
+See 'constitution.md' and the 'architecture' document.
 `
 
 describe("validateSpec", () => {
@@ -86,7 +88,12 @@ describe("validateSpec", () => {
     expect(r.emptyRequiredFields).toEqual([])
     expect(r.storiesWithoutCriteria).toEqual([])
     expect(r.nfrsWithoutMetrics).toEqual([])
+    expect(r.frIssues).toEqual([])
+    expect(r.constitutionIssues).toEqual([])
+    expect(r.crossReferenceIssues).toEqual([])
     expect(r.critical).toBe(0)
+    expect(r.warnings).toBe(0)
+    expect(r.info).toBe(0)
   })
 
   it("reports missing required sections and lowers the score", async () => {
@@ -176,6 +183,124 @@ None.
     // Spec-only sections must not be demanded of a tech-spec.
     expect(r.missingSections).not.toContain("User Stories")
     expect(r.missingSections).not.toContain("Edge Cases")
+  })
+
+  it("flags an FR with no description as critical", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| FR-001 | The system does the thing | Must | US-001 |",
+      "| FR-001 |  | Must | US-001 |",
+    ))
+    const r = await validateSpec(p)
+
+    expect(r.frIssues).toContain("FR-001: no requirement description")
+    expect(r.critical).toBeGreaterThan(0)
+    // An undescribed requirement weighs most: 100 - 10.
+    expect(r.completeness).toBe(90)
+  })
+
+  it("flags an FR with no priority or story reference", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| FR-001 | The system does the thing | Must | US-001 |",
+      "| FR-001 | The system does the thing |  |  |",
+    ))
+    const r = await validateSpec(p)
+
+    expect(r.frIssues).toContain("FR-001: no priority set")
+    expect(r.frIssues).toContain("FR-001: no story reference for traceability")
+    expect(r.warnings).toBe(2)
+    expect(r.critical).toBe(0)
+  })
+
+  it("flags a constitution article row with no status", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| Art. 1 | Compliant | Uses the approved stack |",
+      "| Art. 1 |  | Uses the approved stack |",
+    ))
+    const r = await validateSpec(p)
+
+    expect(r.constitutionIssues).toContain("Article 1: no compliance status")
+    expect(r.warnings).toBe(1)
+  })
+
+  it("flags a Constitution Compliance section with no article entries", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| Art. 1 | Compliant | Uses the approved stack |",
+      "Some prose and no table.",
+    ))
+    const r = await validateSpec(p)
+
+    expect(r.constitutionIssues).toContain(
+      "Constitution Compliance section has no article entries",
+    )
+  })
+
+  it("does not double-report an absent Constitution Compliance section", async () => {
+    // Absence is already covered by missingSections; the ported check must
+    // stay silent so the same gap is not counted twice.
+    const p = write("spec.md", COMPLETE_SPEC.replace("## Constitution Compliance\n", ""))
+    const r = await validateSpec(p)
+
+    expect(r.missingSections).toContain("Constitution Compliance")
+    expect(r.constitutionIssues).toEqual([])
+  })
+
+  it("flags thin cross-references without double-reporting an absent section", async () => {
+    const bare = write("spec.md", COMPLETE_SPEC.replace(
+      "See 'constitution.md' and the 'architecture' document.",
+      "See the glossary.",
+    ))
+    const r = await validateSpec(bare)
+    expect(r.crossReferenceIssues).toHaveLength(2)
+    expect(r.info).toBe(2)
+
+    const gone = write("spec.md", COMPLETE_SPEC.replace("## Cross-References\n", ""))
+    const r2 = await validateSpec(gone)
+    expect(r2.missingSections).toContain("Cross-References")
+    expect(r2.crossReferenceIssues).toEqual([])
+  })
+
+  it("matches bold FR ids, the style FORGE's own specs use", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| FR-001 | The system does the thing | Must | US-001 |",
+      "| **FR-001** | The system does the thing | Must | US-001 |",
+    ))
+    const r = await validateSpec(p)
+    // Matched (no crash, no false finding) and complete.
+    expect(r.frIssues).toEqual([])
+    expect(r.completeness).toBe(100)
+  })
+
+  it("flags an undescribed bold FR id", async () => {
+    const p = write("spec.md", COMPLETE_SPEC.replace(
+      "| FR-001 | The system does the thing | Must | US-001 |",
+      "| **FR-001** |  |  |  |",
+    ))
+    const r = await validateSpec(p)
+    expect(r.frIssues).toContain("FR-001: no requirement description")
+  })
+
+  it("skips FR and content checks for tech specs", async () => {
+    const p = write("tech-spec.md", `## Overview
+Short.
+
+## Requirements
+| ID | Requirement |
+|---|---|
+| FR-001 | Does it |
+
+## Tasks
+- [ ] T-001 do it
+
+## Acceptance Criteria
+- It is done.
+
+## Cross-References
+None.
+`)
+    const r = await validateSpec(p)
+    expect(r.frIssues).toEqual([])
+    expect(r.constitutionIssues).toEqual([])
+    expect(r.crossReferenceIssues).toEqual([])
   })
 
   it("never returns a score outside 0..100", async () => {

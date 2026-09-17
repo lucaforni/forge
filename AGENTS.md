@@ -62,8 +62,7 @@ forge/
 │   ├── commands/           #   24 slash commands
 │   ├── skills/             #   13 reusable skills
 │   ├── templates/          #   Document templates
-│   ├── tools/              #   OpenCode-native tools (not yet distributed, #56)
-│   └── plugins/            #   Event hooks (not yet distributed, #56)
+│   └── plugins/            #   Event hooks (distributed to OpenCode)
 ├── .opencode-meta/         # Meta-dev agent overrides — NOT distributed
 ├── .forge-meta/            # FORGE's own governance — NOT distributed
 ├── .forge/                 # FORGE's own dogfooding artifacts

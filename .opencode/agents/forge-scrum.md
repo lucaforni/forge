@@ -45,7 +45,7 @@ Multi-sprint directory architecture.
 
 **New sprint:**
 1. Read `.forge/sprints/sprint-sequence.yaml` for next number.
-2. If missing, invoke `rebuildSequenceFile()` (scans active/ + completed/).
+2. If missing, rebuild it: glob `.forge/sprints/active/sprint-*.yaml` and `.forge/sprints/completed/*.yaml`, take the max sprint number, write `sprint-sequence.yaml` with `next_sprint_number: max+1` (zero-padded 3 digits), and warn the user the file was regenerated.
 3. Review previous velocity from `.forge/sprints/completed/` (last 5).
 4. Present unassigned story backlog.
 5. Help user select stories, estimate points.

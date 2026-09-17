@@ -238,6 +238,24 @@ export function formatValidateSpecResult(result: ValidationResult): string {
     lines.push("")
   }
 
+  if (result.frIssues?.length) {
+    lines.push(`⚠ Functional requirements needing detail (${result.frIssues.length}):`)
+    for (const f of result.frIssues) lines.push(`  - ${f}`)
+    lines.push("")
+  }
+
+  if (result.constitutionIssues?.length) {
+    lines.push(`⚠ Constitution compliance gaps (${result.constitutionIssues.length}):`)
+    for (const c of result.constitutionIssues) lines.push(`  - ${c}`)
+    lines.push("")
+  }
+
+  if (result.crossReferenceIssues?.length) {
+    lines.push(`ℹ Cross-reference gaps (${result.crossReferenceIssues.length}):`)
+    for (const c of result.crossReferenceIssues) lines.push(`  - ${c}`)
+    lines.push("")
+  }
+
   lines.push(`Issues: ${result.critical ?? 0} critical, ${result.warnings ?? 0} warnings, ${result.info ?? 0} info`)
   return lines.join("\n")
 }

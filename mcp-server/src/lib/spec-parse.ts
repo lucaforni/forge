@@ -1,7 +1,7 @@
 /**
  * mcp-server/src/lib/spec-parse.ts — Shared markdown/frontmatter parser.
  *
- * Extracted from the existing .opencode/tools/ for reuse across all
+ * Shared parsing for the MCP tools (the OpenCode-native copy was consolidated here and removed, #68).
  * MCP tools. Pure functions with no OpenCode imports.
  */
 
