@@ -1,3 +1,13 @@
+---
+name: decision-archiver
+description: Archive completed decision log entries into dated archives while preserving pending, in-progress, and critical decisions
+license: MIT
+compatibility: opencode
+metadata:
+  audience: forge-orchestrator
+  workflow: forge
+---
+
 # Decision Archiver Skill
 
 > **Purpose:** Archive completed decision log entries while preserving pending, in-progress, and critical decisions.

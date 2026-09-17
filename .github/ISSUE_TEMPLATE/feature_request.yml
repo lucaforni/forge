@@ -1,5 +1,5 @@
 name: ✨ Feature request
-description: Proponi una nuova funzionalità o miglioramento
+description: Propose a new feature or improvement
 title: "[Feature]: "
 labels: [enhancement, triage]
 assignees: []
@@ -7,47 +7,47 @@ body:
   - type: markdown
     attributes:
       value: |
-        Grazie per il suggerimento! Descrivi il problema e la soluzione proposta.
+        Thanks for the suggestion! Describe the problem and the proposed solution.
   - type: textarea
     id: problem
     attributes:
-      label: Problema
-      description: Quale problema risolve questa feature? Es. "Sono frustrato quando..."
+      label: Problem
+      description: What problem does this feature solve? e.g. "I'm frustrated when…"
     validations:
       required: true
   - type: textarea
     id: solution
     attributes:
-      label: Soluzione proposta
-      description: Cosa vorresti che succedesse?
+      label: Proposed solution
+      description: What would you like to happen?
     validations:
       required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternative considerate
-      description: Hai valutato soluzioni o workaround alternativi?
+      label: Alternatives considered
+      description: Have you evaluated other solutions or workarounds?
   - type: textarea
     id: context
     attributes:
-      label: Contesto aggiuntivo
-      description: Mockup, esempi, link o riferimenti utili
+      label: Additional context
+      description: Mockups, examples, links or other useful references
   - type: dropdown
     id: track
     attributes:
-      label: Track FORGE stimata (opzionale)
-      description: Quanto è grande secondo te?
+      label: Estimated FORGE track (optional)
+      description: How big do you think this is?
       options:
-        - Non so
-        - Quick (< 1 giorno)
-        - Feature (1-5 giorni)
-        - Epic (settimane)
+        - Not sure
+        - Quick (< 1 day)
+        - Feature (1-5 days)
+        - Epic (weeks)
   - type: checkboxes
     id: checks
     attributes:
       label: Checklist
       options:
-        - label: Ho verificato che non esista già una issue/PR simile
+        - label: I checked that no similar issue or PR already exists
           required: true
-        - label: Sono disponibile a contribuire con una PR (opzionale)
+        - label: I'm willing to contribute a PR (optional)
           required: false

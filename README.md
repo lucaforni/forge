@@ -117,6 +117,22 @@ Knowledge that survives sessions:
 
 ### Installation
 
+> [!IMPORTANT]
+> **Prerequisite — your project must already have a platform directory.**
+> The installer detects your runtime by probing for `.opencode/`, `.claude/`
+> or `.codex/` in the **target** project. A brand-new project has none of
+> them, and the install will exit with code 2 (`No supported platform
+> detected`).
+>
+> Create the directory for your runtime first, or pass `--platform` to
+> declare it explicitly:
+>
+> ```bash
+> mkdir -p /path/to/your/project/.opencode
+> # …or skip detection entirely:
+> npx tsx forge/install-forge.ts /path/to/your/project --platform=opencode
+> ```
+
 FORGE auto-detects your platform. One command works for all:
 
 ```bash
@@ -133,17 +149,35 @@ npx tsx forge/install-forge.ts /path/to/your/project --platform=claude-code
 npx tsx forge/install-forge.ts /path/to/your/project --dry-run
 ```
 
+> [!NOTE]
+> **Known gaps in the current installer.** These are tracked and being
+> fixed — see the [`audit`](https://github.com/lucaforni/forge/issues?q=is%3Aissue+is%3Aopen+label%3Aaudit)
+> label.
+>
+> | Gap | Issue |
+> |---|---|
+> | `templates/`, `docs/`, `tools/`, `plugins/` are not installed | [#56](https://github.com/lucaforni/forge/issues/56) |
+> | `.forge/constitution.md` and `AGENTS.md` are not scaffolded | [#56](https://github.com/lucaforni/forge/issues/56) |
+> | Generated `opencode.json` omits `instructions` (constitution not auto-loaded) | [#57](https://github.com/lucaforni/forge/issues/57) |
+> | An existing `opencode.json` is overwritten, not merged | [#57](https://github.com/lucaforni/forge/issues/57) |
+> | Claude Code and Codex projections are incomplete | [#70](https://github.com/lucaforni/forge/issues/70), [#71](https://github.com/lucaforni/forge/issues/71) |
+
 ### First Steps
 
 1. **Customize your constitution:**
    ```bash
-   # Edit your project principles
+   # Edit your project principles.
+   # Not yet scaffolded by the installer (#56) — copy the template manually:
+   mkdir -p .forge
+   cp forge/.opencode/templates/constitution.md .forge/constitution.md
    code .forge/constitution.md
    ```
 
 2. **Set project conventions:**
    ```bash
    # Define naming, git workflow, etc.
+   # Not yet scaffolded by the installer (#56):
+   cp forge/AGENTS.md AGENTS.md
    code AGENTS.md
    ```
 
@@ -164,7 +198,7 @@ npx tsx forge/install-forge.ts /path/to/your/project --dry-run
 |----------|---------|
 | [**CHEATSHEET.md**](CHEATSHEET.md) | Quick reference for all commands |
 | [**FORGE-GUIDE.md**](.opencode/docs/FORGE-GUIDE.md) | Complete methodology guide |
-| [**FORGE-PHILOSOPHY.md**](.opencode/docs/FORGE-PHILOSOPHY.md) | Principles and rationale |
+| [**philosophy.md**](docs/meta-development/philosophy.md) | Principles and rationale |
 | [**INSTALL.md**](INSTALL.md) | Installation guide & troubleshooting |
 | [**CONTRIBUTING.md**](CONTRIBUTING.md) | How to contribute to FORGE |
 
@@ -478,13 +512,27 @@ FORGE enforces quality through:
 
 ---
 
-## 🌟 Success Stories
+## 🌟 Dogfooding
 
-> "FORGE transformed how we build features. The constitutional governance ensures our microservices stay consistent, and the adversarial review catches issues we would have missed."  
-> — Development Team Lead
+FORGE is developed using FORGE. The most complete example is the
+**Frontend Pattern Library** epic (`E01`), which ran the full chain —
+spec → UX → design-spec → sprints → implementation → adversarial review →
+ADRs → retrospective:
 
-> "Epic workflow with sprint management is perfect for our quarterly planning. Knowledge persistence means new team members can see why decisions were made."  
-> — Engineering Manager
+| Artifact | Path |
+|---|---|
+| Epic | [`.forge/epics/E01-frontend-pattern-library/`](.forge/epics/E01-frontend-pattern-library/) |
+| Spec + design-spec | [`.forge/specs/001-elenco-ordini/`](.forge/specs/001-elenco-ordini/) |
+| Adversarial review output | [`.forge/specs/review-*.md`](.forge/specs/) |
+| ADRs | [`.forge/knowledge/adr/`](.forge/knowledge/adr/) |
+| Retrospective | [`.forge/sprints/retrospectives/`](.forge/sprints/retrospectives/) |
+
+> [!NOTE]
+> Dogfooding is not yet uniform. The v2.0 cross-platform spec
+> (`.forge-meta/specs/001-cross-platform/`) was planned with FORGE but its
+> tracking artifacts were never closed out, and recent test-harness work
+> bypassed the process entirely. Tracked in
+> [#74](https://github.com/lucaforni/forge/issues/74).
 
 ---
 
@@ -500,7 +548,7 @@ FORGE enforces quality through:
 - [ ] Multi-repo support for monorepo workflows
 - [ ] Export to Jira/Linear/Asana
 
-See [FORGE-PROJECT-PLAN.md](.opencode/docs/FORGE-PROJECT-PLAN.md) for full roadmap.
+See [project-plan.md](docs/meta-development/project-plan.md) for full roadmap.
 
 ---
 

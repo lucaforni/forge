@@ -1,17 +1,35 @@
 # FORGE Installation Guide (v2.0.0)
 
 This guide explains how to install or update FORGE in your project.
-**FORGE 2.0 supports OpenCode, Claude Code, and Codex CLI** — the installer
+**FORGE 2.0 targets OpenCode, Claude Code, and Codex CLI** — the installer
 auto-detects your platform.
+
+> [!IMPORTANT]
+> **Platform support is uneven today.** OpenCode is the reference platform
+> and is the only one that is fully exercised. Claude Code and Codex CLI
+> projections are incomplete — see
+> [#70](https://github.com/lucaforni/forge/issues/70) and
+> [#71](https://github.com/lucaforni/forge/issues/71) before relying on them.
 
 ---
 
 ## Quick Install
 
+> [!IMPORTANT]
+> **Prerequisite:** the target project must already contain `.opencode/`,
+> `.claude/` or `.codex/`. The installer probes for these to detect your
+> runtime; with none present it exits with code 2
+> (`No supported platform detected`). Create the directory first, or pass
+> `--platform` to skip detection.
+
 ### Option 1: Direct Install (Recommended)
 
 ```bash
 cd /path/to/forge
+
+# The target needs a platform directory — create it if this is a new project:
+mkdir -p /path/to/your/project/.opencode
+
 npx tsx install-forge.ts /path/to/your/project
 ```
 
@@ -31,13 +49,13 @@ npx tsx install-forge.ts /path/to/your/project --platform=opencode,codex
 ### Option 3: Remote Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/forniluca/forge/main/install.sh | bash -s -- /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/lucaforni/forge/main/install.sh | bash -s -- /path/to/your/project
 ```
 
 ### Option 4: Manual Download
 
 ```bash
-git clone https://github.com/forniluca/forge.git
+git clone https://github.com/lucaforni/forge.git
 cd forge
 npx tsx install-forge.ts /path/to/your/project
 ```
@@ -60,35 +78,56 @@ with a message asking you to create one of the platform directories.
 
 ### What Gets Installed Per Platform
 
+> [!WARNING]
+> **The list below is the target state, not the current behaviour.**
+> `installer/projection.ts` currently projects only `agents`, `commands`
+> and `skills`. Rows marked ❌ are **not installed today** — tracked in
+> [#56](https://github.com/lucaforni/forge/issues/56) and
+> [#57](https://github.com/lucaforni/forge/issues/57).
+
 #### OpenCode
-- `.opencode/agents/` — 9 FORGE subagents
-- `.opencode/commands/` — 24 slash commands (`/forge-*`)
-- `.opencode/skills/` — 12 reusable skills
-- `.opencode/plugins/` — 3 event-driven plugins
-- `.opencode/tools/` — 3 custom tools (OpenCode SDK)
-- `.opencode/templates/` — Document templates
-- `.opencode/docs/` — Methodology documentation
+
+| Path | Contents | Status |
+|---|---|:--:|
+| `.opencode/agents/` | 9 FORGE subagents | ✅ |
+| `.opencode/commands/` | 24 slash commands (`/forge-*`) | ✅ |
+| `.opencode/skills/` | 13 reusable skills | ✅ |
+| `.opencode/plugins/` | 3 event-driven plugins | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `.opencode/tools/` | 3 custom tools (OpenCode SDK) | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `.opencode/templates/` | Document templates | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `.opencode/docs/` | Methodology documentation | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `opencode.json` | Platform config | ⚠️ generated without `instructions`/`permission`, and **overwrites** any existing file — [#57](https://github.com/lucaforni/forge/issues/57) |
 
 #### Claude Code
-- `.claude/agents/` — Same 9 subagents
-- `.claude/commands/` — Same 24 slash commands
-- `.claude/skills/` — Same 12 skills
-- `.claude/hooks/` — Adapted hook-based automation
-- `.claude/settings.json` — Claude Code config with MCP server reference
-- `CLAUDE.md` — Project instructions (imports `AGENTS.md`)
+
+| Path | Contents | Status |
+|---|---|:--:|
+| `.claude/agents/` | Same 9 subagents | ⚠️ copied with OpenCode frontmatter; missing `name:` — [#71](https://github.com/lucaforni/forge/issues/71) |
+| `.claude/commands/` | Same 24 slash commands | ⚠️ `agent:` routing is not honoured by Claude Code — [#71](https://github.com/lucaforni/forge/issues/71) |
+| `.claude/skills/` | Same 13 skills | ✅ |
+| `.claude/hooks/` | Adapted hook-based automation | ❌ [#71](https://github.com/lucaforni/forge/issues/71) |
+| `.claude/settings.json` | Claude Code config with MCP server reference | ⚠️ MCP only |
+| `CLAUDE.md` | Project instructions (imports `AGENTS.md`) | ⚠️ imports a file that is not created — [#56](https://github.com/lucaforni/forge/issues/56) |
 
 #### Codex CLI
-- `.codex/agents/` — Codex-native agent definitions
-- `.codex/commands/` — Same 24 slash commands
-- `.agents/skills/` — Same 12 skills
-- `.codex/config.toml` — Codex CLI config with MCP server reference
-- `AGENTS.md` — Project instructions (native format)
+
+| Path | Contents | Status |
+|---|---|:--:|
+| `.codex/agents/` | Codex-native agent definitions | ❌ raw Markdown; TOML generator is never called — [#70](https://github.com/lucaforni/forge/issues/70) |
+| `.codex/commands/` | Same 24 slash commands | ⚠️ Codex reads prompts from a different directory — [#70](https://github.com/lucaforni/forge/issues/70) |
+| `.agents/skills/` | Same 13 skills | ❌ lands in `.codex/.agents/skills/` — [#70](https://github.com/lucaforni/forge/issues/70) |
+| `.codex/config.toml` | Codex CLI config with MCP server reference | ⚠️ MCP only |
+| `AGENTS.md` | Project instructions (native format) | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
 
 #### All Platforms
-- `.forge/` — Project data directory (specs, knowledge, epics, sprints, product)
-- `.forge/mcp-server/` — Shared MCP server for custom tools
-- `.forge/constitution.md` — Project constitution template
-- `AGENTS.md` — Project conventions template
+
+| Path | Contents | Status |
+|---|---|:--:|
+| `.forge/mcp-server/` | Shared MCP server for custom tools | ✅ |
+| `.forge/frontend/` | Frontend pattern library | ✅ |
+| `.forge/` | Project data (specs, knowledge, epics, sprints, product) | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `.forge/constitution.md` | Project constitution template | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
+| `AGENTS.md` | Project conventions template | ❌ [#56](https://github.com/lucaforni/forge/issues/56) |
 
 ---
 
@@ -122,7 +161,12 @@ Updates FORGE while preserving your project files:
 npx tsx install-forge.ts /path/to/your/project --update
 ```
 
-**Protected files (never overwritten):**
+> [!NOTE]
+> `--update` is currently parsed but is a no-op — the installer always
+> reconciles against the manifest. Tracked in
+> [#72](https://github.com/lucaforni/forge/issues/72).
+
+**Files the installer does not write:**
 - `.forge/constitution.md` — Your project constitution
 - `.forge/specs/**` — All specifications
 - `.forge/knowledge/**` — Decision logs, ADRs, lessons learned
@@ -132,161 +176,25 @@ npx tsx install-forge.ts /path/to/your/project --update
 - `AGENTS.md` — Your project conventions
 - `CONTRIBUTING.md` — Your contribution guide
 
+> [!WARNING]
+> These paths are safe today only because the installer never touches them
+> — **there is no protection logic**. No `PROTECTED_PATTERNS` filter exists
+> in `installer/`. Once
+> [#56](https://github.com/lucaforni/forge/issues/56) adds `.forge/`
+> scaffolding, an explicit guard must be added with it.
+>
+> **`opencode.json` is not protected:** an existing file is overwritten
+> wholesale, with no merge and no backup —
+> [#57](https://github.com/lucaforni/forge/issues/57).
+
 **What gets updated (per platform):**
 - All agents, commands, skills (to each platform's location)
 - MCP server (`.forge/mcp-server/`)
 - Platform config files (opencode.json / settings.json / config.toml)
-- Project instructions (AGENTS.md / CLAUDE.md)
 
 **Backups:**
 Before overwriting any drifted file, a timestamped backup is created inside
 `.forge/.backups/<timestamp>/`. Backups are gitignored by default.
-
-### Choosing Your Model Provider
-
-FORGE supports multiple model providers:
-
-```bash
-# Interactive mode (default) — you'll be prompted
-npx tsx install-forge.ts /path/to/your/project
-
-# Non-interactive (uses default)
-npx tsx install-forge.ts /path/to/your/project --non-interactive
-
-# Specific provider
-npx tsx install-forge.ts /path/to/your/project --provider github-copilot
-```
-
-### Option 2: Remote Install
-
-Install directly from GitHub:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/forniluca/forge/main/install.sh | bash -s -- /path/to/your/project
-```
-
-### Option 3: Manual Download
-
-```bash
-git clone https://github.com/forniluca/forge.git
-cd forge
-npx tsx install-forge.ts /path/to/your/project
-```
-
----
-
-## Installation Options
-
-### Fresh Installation
-
-Installs FORGE in a new project:
-
-```bash
-npx tsx install-forge.ts /path/to/your/project
-```
-
-**What gets installed:**
-- `.opencode/agents/` - FORGE agents (PM, Architect, Reviewer, etc.)
-- `.opencode/commands/` - Slash commands (/forge-specify, /forge-implement, etc.)
-- `.opencode/skills/` - Reusable skills (scope detection, adversarial review, etc.)
-- `.opencode/plugins/` - Event-driven plugins (session-knowledge, spec-watcher, etc.)
-- `.opencode/tools/` - Custom tools (trace-requirements, validate-spec, etc.)
-- `.opencode/templates/` - Document templates (spec.md, architecture.md, etc.)
-- `.opencode/docs/` - Documentation (FORGE-GUIDE.md, etc.)
-- `.forge/` - Directory structure (specs/, knowledge/, epics/, etc.)
-- `AGENTS.md` - Project conventions template
-- `.forge/constitution.md` - Project constitution template
-
-### Update Existing Installation
-
-Updates FORGE while preserving your project files:
-
-```bash
-npx tsx install-forge.ts /path/to/your/project --update
-```
-
-**Protected files (never overwritten):**
-- `.forge/constitution.md` - Your project constitution
-- `.forge/specs/**` - All specifications
-- `.forge/knowledge/**` - Decision logs, ADRs, lessons learned
-- `.forge/epics/**` - Epic documents
-- `.forge/sprints/**` - Sprint documents
-- `.forge/product/**` - Product documents
-- `AGENTS.md` - Your project conventions
-- `CONTRIBUTING.md` - Your contribution guide
-
-**What gets updated:**
-- All `.opencode/` components (agents, commands, skills, plugins, tools, docs)
-- `.opencode/templates/` - Latest templates
-- Dependencies in `.opencode/package.json`
-
-**Backups:**
-Before overwriting any file, a timestamped backup is created:
-```
-file.md → file.md.backup-2026-02-14T15-30-45-123Z
-```
-
-### Choosing Your Model Provider
-
-Starting from v1.0.0, FORGE supports multiple model providers and asks you to
-choose during installation.
-
-**Interactive mode (default):**
-
-```bash
-npx tsx install-forge.ts /path/to/your/project
-# → You'll be prompted to select a provider and review the configuration
-```
-
-**Non-interactive mode (use defaults):**
-
-```bash
-npx tsx install-forge.ts /path/to/your/project --non-interactive
-# → Uses github-copilot with recommended defaults
-```
-
-**Specify provider explicitly:**
-
-```bash
-npx tsx install-forge.ts /path/to/your/project --provider opencode-deepseek
-# → Uses OpenCode Zen (no prompts)
-```
-
-**Reconfigure provider during update:**
-
-```bash
-npx tsx install-forge.ts /path/to/your/project --update --reconfigure
-# → Opens provider selection again while preserving other settings
-```
-
-**Supported providers:**
-
-| Provider ID | Name | Model Family | Best For |
-|---|---|---|---|
-| `github-copilot` | GitHub Copilot | Claude (Anthropic) | Default, most users |
-| `opencode-anthropic` | OpenCode Anthropic | Claude (Anthropic) via Zen | Maximum quality |
-| `opencode-deepseek` | OpenCode DeepSeek | DeepSeek V4 via Zen | Cost-effective quality |
-| `opencode-free` | OpenCode Free | Free-tier models via Zen | Zero-cost experimentation |
-| `openai` | OpenAI | GPT / o-series | OpenAI ecosystem |
-| `google` | Google | Gemini | Google ecosystem |
-
-**Model tiers:**
-
-FORGE assigns agents to two tiers:
-
-| Tier | Agents | Recommended Model |
-|---|---|---|
-| **Reasoning** | `forge-pm`, `forge-architect`, `forge-reviewer`, `forge-ux` | Premium reasoning model (e.g., Claude Opus, o3, Gemini Pro) |
-| **Execution** | `forge`, `forge-scrum`, `forge-qa`, `forge-analyst` | Standard (Sonnet / GPT-4o / Gemini Flash) |
-
-You can override individual tier models with CLI flags:
-
-```bash
-npx tsx install-forge.ts /path/to/project \
-  --provider opencode-anthropic \
-  --reasoning-model opencode/claude-opus-4.6 \
-  --execution-model opencode/claude-sonnet-4.6
-```
 
 ---
 
@@ -486,7 +394,7 @@ const PROTECTED_PATTERNS = [
 
 ### Dry Run Mode
 
-To see what would be changed without actually modifying files, add a `--dry-run` flag (requires modification of the script).
+To see what would be changed without writing any files, use the `--dry-run` flag (see [Preview Without Installing](#preview-without-installing)). To verify that the install plan is coherent without writing, use `--check`.
 
 ---
 
@@ -500,4 +408,4 @@ To see what would be changed without actually modifying files, add a `--dry-run`
 
 ## License
 
-FORGE is licensed under [LICENSE_TYPE]. See LICENSE file for details.
+FORGE is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

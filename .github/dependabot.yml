@@ -1,4 +1,4 @@
-# Dependabot — aggiornamenti automatici dipendenze
+# Dependabot — automated dependency updates
 version: 2
 updates:
   - package-ecosystem: npm
@@ -20,11 +20,11 @@ updates:
         update-types:
           - minor
           - patch
-    # Per ricevere anche security updates automatiche, abilitare
-    # "Dependabot security updates" nelle impostazioni repo (non versionabile).
+    # To also receive automatic security updates, enable
+    # "Dependabot security updates" in the repo settings (not versionable).
 
-  # Secondo lockfile del repo (framework OpenCode): senza questa entry le
-  # vulnerabilita' in .opencode/package-lock.json non generano PR (lezione 2026-09-09).
+  # Second lockfile in the repo (OpenCode framework): without this entry,
+  # vulnerabilities in .opencode/package-lock.json produce no PRs (lesson 2026-09-09).
   - package-ecosystem: npm
     directory: "/.opencode"
     schedule:

@@ -1,10 +1,10 @@
 ## Summary
 
-<!-- Breve descrizione della modifica -->
+<!-- Brief description of the change -->
 
 ## Related Issue
 
-<!-- Es. Closes #123 -->
+<!-- e.g. Closes #123 -->
 
 - Closes #
 
@@ -12,22 +12,23 @@
 
 - [ ] 🐛 Bug fix (non-breaking)
 - [ ] ✨ New feature (non-breaking)
-- [ ] 💥 Breaking change (fix o feature che rompe compatibilità)
+- [ ] 💥 Breaking change (fix or feature that breaks compatibility)
 - [ ] 📝 Docs only
 - [ ] 🔧 Chore / CI / refactor
 
 ## Testing
 
-<!-- Come hai testato? Es. `npm test`, `npm run lint`, dogfooding FORGE -->
+<!-- How did you test this? e.g. `npm test`, `npm run typecheck`, FORGE dogfooding -->
 
-- [ ] `npm test` verde
-- [ ] `npm run lint` verde (se presente)
-- [ ] Test manuale / dogfooding: ...
+- [ ] `npm test` passes
+- [ ] `npx tsc --noEmit -p tsconfig.json` passes
+- [ ] Manual test / dogfooding: ...
 
 ## Checklist
 
-- [ ] Spec reference: `.forge/specs/NNN-slug/` oppure "Hotfix track"
-- [ ] Adversarial review (`/forge-review`) passata per Feature/Epic
-- [ ] Documentazione aggiornata (README / guide se necessario)
-- [ ] Constitution compliance verificata
-- [ ] Nessun secret o dato sensibile nel diff
+- [ ] Spec reference: `.forge/specs/NNN-slug/` or "Hotfix track"
+- [ ] Adversarial review (`/forge-review`) passed, for Feature/Epic tracks
+- [ ] Documentation updated (README / guides, if needed)
+- [ ] Constitution compliance verified
+- [ ] No secrets or sensitive data in the diff
+- [ ] All user-facing text is in English
