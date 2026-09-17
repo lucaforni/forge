@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect } from "vitest"
-import { readdirSync, readFileSync, statSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { join, dirname, basename } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -34,12 +34,15 @@ interface Doc {
 
 function collectMarkdown(roots: string[]): Doc[] {
   const docs: Doc[] = []
+  // withFileTypes answers "is this a directory" from the same readdir
+  // call — a separate statSync afterwards would be a check-then-use race
+  // (js/file-system-race).
   const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      const full = join(dir, entry)
-      if (statSync(full).isDirectory()) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
         walk(full)
-      } else if (entry.endsWith(".md")) {
+      } else if (entry.name.endsWith(".md")) {
         docs.push({
           path: full,
           rel: full.slice(REPO_ROOT.length + 1),
