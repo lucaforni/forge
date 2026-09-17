@@ -53,7 +53,7 @@ For Epic/Product tracks.
    tech selections, pattern choices, integration strategies, data storage.
 4. Validate via `constitution-compliance`.
 5. Save architecture to `.forge/architecture/architecture.md` (template:
-   `.opencode/templates/architecture.md`).
+   `.forge/templates/architecture.md`).
 6. Save ADRs to `.forge/knowledge/adr/NNN-slug.md`.
 
 ### Output (architecture.md)
@@ -85,7 +85,7 @@ For Feature/Epic tracks.
 4. Create ADRs for any new architectural decisions.
 5. Validate via constitution.
 6. Save to `.forge/specs/NNN-slug/plan.md` (template:
-   `.opencode/templates/plan.md`).
+   `.forge/templates/plan.md`).
 
 ### Output (plan.md)
 
@@ -105,7 +105,7 @@ integration details; references to FR-NNN/NFR-NNN; ADR references.
    - **Decision**: what + why
    - **Consequences**: positive, negative, neutral
    - **Constitution alignment**: which articles support/tension
-3. Use template `.opencode/templates/adr.md`.
+3. Use template `.forge/templates/adr.md`.
 4. Number sequentially (glob `.forge/knowledge/adr/*.md`, increment max).
 5. Save to `.forge/knowledge/adr/NNN-slug.md`.
 

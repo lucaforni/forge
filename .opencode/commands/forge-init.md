@@ -27,33 +27,49 @@ Report findings before proceeding.
 
 ### 2. Directory Structure
 
-Verify or create:
+The installer scaffolds this tree. Verify it, and create anything missing:
 
 ```
 .forge/
-  constitution.md
+  constitution.md            # user-owned — never overwritten by an update
+  templates/                 # document templates used by the commands
+  docs/                      # methodology documentation
+  frontend/                  # pattern library (patterns, design system)
+  mcp-server/                # shared MCP tools
   knowledge/
     adr/
     decision-log.md
     lessons-learned.md
   product/
-  architecture/
-    diagrams/
   specs/
   epics/
   sprints/
+    active/                  # sprint-NNN.yaml, one file per active sprint
+    completed/
     retrospectives/
+    sprint-sequence.yaml
 ```
+
+`AGENTS.md` sits at the project root, not inside `.forge/`.
 
 ### 3. Constitution Setup
 
 If not customized:
-1. Read `.opencode/templates/constitution.md`.
-2. Walk user through 9 Articles via `question` tool:
-   - 1: Core Principles · 2: Technology Stack · 3: Architecture Patterns
-   - 4: Quality · 5: Security · 6: Error Handling
-   - 7: Naming · 8: Testing · 9: Operational
-3. Write customized constitution to `.forge/constitution.md`.
+1. Read `.forge/templates/constitution.md`.
+2. Walk the user through each Article present in that template via the
+   `question` tool. **Do not assume a fixed article count** — read the
+   headings from the template and use those. The shipped user template has
+   9 articles (Core Principles, Technology Stack, Architecture Patterns,
+   Quality, Security, Error Handling, Naming, Testing, Operational), but a
+   project may amend it.
+3. Write the customized constitution to `.forge/constitution.md`.
+4. Confirm the platform config loads it — for OpenCode, `opencode.json`
+   must contain:
+   ```json
+   "instructions": [".forge/constitution.md", ".forge/knowledge/decision-log.md"]
+   ```
+   Without this the constitution never enters model context and every
+   compliance check is vacuous.
 
 ### 4. Configuration Verification
 

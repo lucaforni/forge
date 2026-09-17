@@ -52,7 +52,7 @@ Mark `[P]` for tasks with no intra-phase dependencies.
 
 ### 7. Authoring
 
-Use `.opencode/templates/tasks.md`. Write to `.forge/specs/NNN-slug/tasks.md`.
+Use `.forge/templates/tasks.md`. Write to `.forge/specs/NNN-slug/tasks.md`.
 
 ```markdown
 ## Phase 1: Foundation

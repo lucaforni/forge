@@ -64,7 +64,7 @@ Load `constitution-compliance` skill. Verify: tech choices, patterns, testing ap
 
 ### Step 10: Plan Authoring
 
-Read template from `.opencode/templates/plan.md`. Write to `.forge/specs/NNN-slug/plan.md`.
+Read template from `.forge/templates/plan.md`. Write to `.forge/specs/NNN-slug/plan.md`.
 
 ### Step 11: Summary
 

@@ -60,7 +60,7 @@ Compare implementation against `.forge/specs/NNN-slug/design-spec.md`:
 
 ### 6c. Design System Consistency
 
-If `.forge/ux/design-system.md` exists:
+If `.forge/frontend/design-system.md` exists:
 
 - [ ] Colors match defined tokens (no hardcoded hex).
 - [ ] Spacing uses tokens (no magic px).

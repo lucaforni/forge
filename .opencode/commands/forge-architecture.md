@@ -40,7 +40,7 @@ API style (REST/GraphQL/gRPC) with rationale, endpoint groups, auth model, versi
 ### 5. Key Decisions
 
 For each significant decision:
-1. Create ADR via `.opencode/templates/adr.md`
+1. Create ADR via `.forge/templates/adr.md`
 2. Document ≥3 options with pros/cons
 3. Record decision with rationale
 4. Check constitution compliance
@@ -57,7 +57,7 @@ Load `constitution-compliance` skill; verify Articles 2, 3, 4, 5, 9. Document co
 
 ### 8. Authoring
 
-Use `.opencode/templates/architecture.md`. Write to `.forge/architecture/architecture.md`.
+Use `.forge/templates/architecture.md`. Write to `.forge/architecture/architecture.md`.
 
 ### 9. Summary
 

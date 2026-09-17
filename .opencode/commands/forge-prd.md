@@ -51,7 +51,7 @@ Categories: technical, business, operational, timeline. Each: description, likel
 
 ### 5. Authoring
 
-Use `.opencode/templates/prd.md`. Write to `.forge/product/prd.md`. Sections:
+Use `.forge/templates/prd.md`. Write to `.forge/product/prd.md`. Sections:
 - Vision/overview (from brief)
 - Personas (≥3)
 - FRs by module with MoSCoW

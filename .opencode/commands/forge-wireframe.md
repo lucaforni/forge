@@ -20,7 +20,7 @@ Screen/component description: $ARGUMENTS
 
 1. `.forge/specs/NNN-slug/spec.md` — screen requirements (source of truth).
 2. `.forge/specs/NNN-slug/design-spec.md` — append target (if exists).
-3. `.forge/ux/design-system.md` — components/tokens (optional).
+3. `.forge/frontend/design-system.md` — components/tokens (optional).
 
 ## Wireframe Protocol
 

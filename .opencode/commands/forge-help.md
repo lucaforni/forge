@@ -26,15 +26,17 @@ Workflow Tracks (by complexity):
   Epic      /forge-brief      20-50 tasks, 1-4 weeks
   Product   /forge-init       50+ tasks, 4+ weeks
 
-Commands:
+Commands (24):
   Setup:      /forge-init
   Discovery:  /forge-brief, /forge-specify, /forge-clarify, /forge-prd
-  Design:     /forge-architecture, /forge-plan
+  Design:     /forge-architecture, /forge-ux, /forge-wireframe, /forge-plan
   Validate:   /forge-analyze
   Manage:     /forge-tasks, /forge-sprint, /forge-story
   Build:      /forge-implement, /forge-hotfix, /forge-quick
+  Test:       /forge-test
   Review:     /forge-review
-  Knowledge:  /forge-adr, /forge-retro
+  Knowledge:  /forge-adr, /forge-retro,
+              /forge-archive-decisions, /forge-validate-decisions
   Info:       /forge-status, /forge-help
 
 Type /forge-help [topic] for details.
@@ -42,7 +44,9 @@ Type /forge-help [topic] for details.
 
 ## Command Help
 
-Read `.opencode/commands/forge-[name].md` and present: purpose, agent, arguments, upstream docs, outputs, next steps.
+Read the command file for `forge-[name]` from the platform's commands
+directory (`.opencode/commands/`, `.claude/commands/` or `.codex/commands/`)
+and present: purpose, agent, arguments, upstream docs, outputs, next steps.
 
 ## Track Help
 
@@ -64,8 +68,17 @@ Scan current state:
 
 ## Documentation Reference
 
-- `.opencode/docs/FORGE-GUIDE.md` — usage guide
-- `.opencode/docs/FORGE-PHILOSOPHY.md` — methodology principles
-- `.opencode/docs/FORGE-CUSTOMIZATION.md` — customization
-- `.opencode/docs/FORGE-DECISIONS.md` — design decisions
-- `.opencode/docs/FORGE-PROJECT-PLAN.md` — system specification
+Installed with FORGE:
+
+- `.forge/docs/FORGE-GUIDE.md` — usage guide
+- `.forge/docs/FORGE-CUSTOMIZATION.md` — customization reference
+- `.forge/docs/knowledge-management.md` — decision log, ADRs, archives
+- `.forge/docs/config-guide.md` — `.forge/config.yml` reference
+- `.forge/docs/UPDATING-FORGE.md` — update behaviour
+- `.forge/templates/` — document templates used by the commands
+
+Only in the FORGE source repository (not installed):
+
+- `docs/meta-development/philosophy.md` — methodology principles
+- `docs/meta-development/design-decisions.md` — design decisions
+- `docs/meta-development/project-plan.md` — roadmap

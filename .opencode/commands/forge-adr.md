@@ -50,7 +50,7 @@ Scan `.forge/knowledge/adr/`, take max+1 (3 digits).
 
 ### 6. Authoring
 
-Use `.opencode/templates/adr.md`. Write to `.forge/knowledge/adr/NNN-slug.md`:
+Use `.forge/templates/adr.md`. Write to `.forge/knowledge/adr/NNN-slug.md`:
 - Status: `Accepted` (default)
 - Context: problem, constraints
 - Options: ≥3 with full analysis

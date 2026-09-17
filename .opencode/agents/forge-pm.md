@@ -38,7 +38,7 @@ Create a feature spec for Feature, Epic, or Product tracks.
    - 3-5 focused questions.
    - Group by theme (functionality, edge cases, security, UX).
    - Use `question` tool for clear choices.
-3. Write spec from template `.opencode/templates/spec.md`:
+3. Write spec from template `.forge/templates/spec.md`:
    - Fill all sections with concrete details.
    - Mark ambiguities `[NEEDS CLARIFICATION]`.
    - Acceptance criteria in Given/When/Then.
@@ -77,7 +77,7 @@ Comprehensive PRD for Epic/Product tracks.
    - NFRs with measurable targets.
    - Risks with mitigations.
    - Success metrics.
-3. Write from template `.opencode/templates/prd.md`.
+3. Write from template `.forge/templates/prd.md`.
 4. Advanced elicitation: offer Pre-mortem or First Principles.
 5. Validate against constitution.
 6. Save to `.forge/product/prd.md`.
@@ -96,7 +96,7 @@ Comprehensive PRD for Epic/Product tracks.
 Lightweight all-in-one for small changes.
 
 1. Brief discovery (2-3 questions max).
-2. Write tech spec from `.opencode/templates/tech-spec.md`:
+2. Write tech spec from `.forge/templates/tech-spec.md`:
    - Lightweight: overview, requirements, tasks, acceptance criteria. No full architecture/PRD.
 3. Save to `.forge/specs/NNN-slug/tech-spec.md`.
 4. Report back to Forge orchestrator for handoff to Build agent.

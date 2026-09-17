@@ -62,7 +62,7 @@ and richer journeys focused on information flow.
 1. Load `context-chain` and read:
    - `.forge/specs/NNN-slug/spec.md` (required)
    - `.forge/constitution.md`
-   - `.forge/ux/design-system.md` (if exists)
+   - `.forge/frontend/design-system.md` (if exists)
    - `.forge/architecture/architecture.md` (if exists)
 
 2. Load `ux-design`. Assess:
@@ -97,7 +97,7 @@ and richer journeys focused on information flow.
 6. Save:
    - `.forge/specs/NNN-slug/design-spec.md`
    - `.forge/specs/NNN-slug/user-journey.md`
-   - `.forge/ux/design-system.md` (create or update)
+   - `.forge/frontend/design-system.md` (create or update)
 
 ### Output: design-spec.md
 

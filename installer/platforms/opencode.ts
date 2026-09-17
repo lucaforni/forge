@@ -25,35 +25,92 @@ export const OPENCODE_DESCRIPTOR: PlatformDescriptor = {
 }
 
 // ---------------------------------------------------------------------------
+// FORGE-managed config keys
+// ---------------------------------------------------------------------------
+
+/**
+ * Top-level keys the installer owns. On update these are regenerated; every
+ * other key in an existing `opencode.json` is preserved verbatim.
+ *
+ * `instructions` is the mechanism by which the constitution and decision log
+ * reach the model. Omitting it — as the pre-004 installer did — silently
+ * disables FORGE's governance pillar in every user project (spec 004 FR-008).
+ */
+export const FORGE_MANAGED_KEYS = [
+  "$schema",
+  "default_agent",
+  "instructions",
+  "agent",
+  "mcp",
+] as const
+
+// ---------------------------------------------------------------------------
 // Config Generation
 // ---------------------------------------------------------------------------
 
 /**
  * Generate the platform-specific opencode.json content from the internal model.
  * Produces a JSON string matching the OpenCode schema.
+ *
+ * @param model     - internal FORGE configuration model
+ * @param existing  - parsed contents of an existing opencode.json, if any.
+ *                    User-owned keys are carried through unchanged.
  */
-export function generateOpenCodeConfig(model: ForgeConfigModel): string {
-  const config: Record<string, unknown> = {
-    $schema: "https://opencode.ai/config.json",
-    default_agent: "forge",
-    subagent_depth: 3,
+export function generateOpenCodeConfig(
+  model: ForgeConfigModel,
+  existing?: Record<string, unknown>,
+): string {
+  // Start from the user's config so unknown keys survive (spec 004 FR-009).
+  const config: Record<string, unknown> = { ...(existing ?? {}) }
+
+  config.$schema = "https://opencode.ai/config.json"
+  config.default_agent = "forge"
+
+  // Governance: load the constitution and decision log into every session.
+  config.instructions = [
+    ".forge/constitution.md",
+    ".forge/knowledge/decision-log.md",
+  ]
+
+  // Model defaults — only set when the user has not chosen their own.
+  if (model.defaultModel && existing?.model === undefined) {
+    config.model = model.defaultModel
   }
 
-  // Agent definitions
+  // Agent definitions. Merge per agent so a user override of one agent does
+  // not get wiped by regenerating the block.
   if (model.agents.length > 0) {
+    const existingAgents = isRecord(existing?.agent) ? existing.agent : {}
     const agentConfig: Record<string, Record<string, unknown>> = {}
+
     for (const agent of model.agents) {
-      const entry: Record<string, unknown> = {}
-      if (agent.model) entry.model = agent.model
-      if (agent.path) entry.path = agent.path
+      const priorEntry = existingAgents[agent.name]
+      const prior: Record<string, unknown> = isRecord(priorEntry) ? priorEntry : {}
+      const entry: Record<string, unknown> = { ...prior }
+      // FORGE supplies a default model; an explicit user value wins.
+      if (agent.model && prior.model === undefined) entry.model = agent.model
+      if (agent.path && prior.path === undefined) entry.path = agent.path
       agentConfig[agent.name] = entry
     }
+
+    // Preserve any user-defined agents FORGE does not manage.
+    for (const [name, entry] of Object.entries(existingAgents)) {
+      if (!(name in agentConfig)) agentConfig[name] = entry as Record<string, unknown>
+    }
+
     config.agent = agentConfig
+  }
+
+  // Permissions — only seeded on a fresh install; never rewritten, because
+  // narrowing a user's permissions silently would be a security regression.
+  if (existing?.permission === undefined) {
+    config.permission = defaultPermissions()
   }
 
   // MCP servers
   if (model.mcpServers.length > 0) {
-    const mcpConfig: Record<string, unknown> = {}
+    const existingMcp = isRecord(existing?.mcp) ? existing.mcp : {}
+    const mcpConfig: Record<string, unknown> = { ...existingMcp }
     for (const server of model.mcpServers) {
       mcpConfig[server.name] = {
         type: "local",
@@ -64,5 +121,42 @@ export function generateOpenCodeConfig(model: ForgeConfigModel): string {
     config.mcp = mcpConfig
   }
 
-  return JSON.stringify(config, null, 2)
+  return JSON.stringify(config, null, 2) + "\n"
+}
+
+/**
+ * Default permission block for a fresh install.
+ *
+ * Read-only and version-control operations are allowed; everything else
+ * asks. Destructive shell commands are deliberately NOT pre-approved.
+ */
+function defaultPermissions(): Record<string, unknown> {
+  return {
+    bash: {
+      "git status": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git show *": "allow",
+      "ls *": "allow",
+      "pwd": "allow",
+      "cat *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
+      "wc *": "allow",
+      "npm test": "allow",
+      "npm run test*": "allow",
+      "*": "ask",
+    },
+    read: "allow",
+    glob: "allow",
+    grep: "allow",
+    skill: "allow",
+    question: "allow",
+    edit: "ask",
+    write: "ask",
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }

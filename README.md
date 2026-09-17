@@ -150,34 +150,29 @@ npx tsx forge/install-forge.ts /path/to/your/project --dry-run
 ```
 
 > [!NOTE]
-> **Known gaps in the current installer.** These are tracked and being
-> fixed — see the [`audit`](https://github.com/lucaforni/forge/issues?q=is%3Aissue+is%3Aopen+label%3Aaudit)
+> **Known gaps.** The installer contract is now enforced by a test, but two
+> platform projections remain incomplete — see the
+> [`audit`](https://github.com/lucaforni/forge/issues?q=is%3Aissue+is%3Aopen+label%3Aaudit)
 > label.
 >
 > | Gap | Issue |
 > |---|---|
-> | `templates/`, `docs/`, `tools/`, `plugins/` are not installed | [#56](https://github.com/lucaforni/forge/issues/56) |
-> | `.forge/constitution.md` and `AGENTS.md` are not scaffolded | [#56](https://github.com/lucaforni/forge/issues/56) |
-> | Generated `opencode.json` omits `instructions` (constitution not auto-loaded) | [#57](https://github.com/lucaforni/forge/issues/57) |
-> | An existing `opencode.json` is overwritten, not merged | [#57](https://github.com/lucaforni/forge/issues/57) |
-> | Claude Code and Codex projections are incomplete | [#70](https://github.com/lucaforni/forge/issues/70), [#71](https://github.com/lucaforni/forge/issues/71) |
+> | Claude Code agents/commands keep OpenCode frontmatter, so subagent routing is lost | [#71](https://github.com/lucaforni/forge/issues/71) |
+> | Codex skills land in `.codex/.agents/`; the TOML agent generator is never called | [#70](https://github.com/lucaforni/forge/issues/70) |
+> | `.opencode/tools/` is not distributed — superseded by the MCP server, pending consolidation | [#68](https://github.com/lucaforni/forge/issues/68) |
 
 ### First Steps
 
 1. **Customize your constitution:**
    ```bash
-   # Edit your project principles.
-   # Not yet scaffolded by the installer (#56) — copy the template manually:
-   mkdir -p .forge
-   cp forge/.opencode/templates/constitution.md .forge/constitution.md
+   # Created by the installer from the template. Follow the
+   # <!-- CUSTOMIZE: ... --> markers; updates never overwrite it.
    code .forge/constitution.md
    ```
 
 2. **Set project conventions:**
    ```bash
-   # Define naming, git workflow, etc.
-   # Not yet scaffolded by the installer (#56):
-   cp forge/AGENTS.md AGENTS.md
+   # Define naming, git workflow, etc. Also created once, never overwritten.
    code AGENTS.md
    ```
 
@@ -316,6 +311,8 @@ your-project/
 │
 ├── .forge/                     # Your project data (all platforms)
 │   ├── mcp-server/             # Shared MCP server (forge-mcp-server)
+│   ├── templates/              # Document templates used by the commands
+│   ├── docs/                   # Methodology documentation
 │   ├── frontend/               # Frontend pattern library
 │   │   ├── patterns/           # 17 UI pattern specs + templates
 │   │   ├── design-system.md    # Shared design tokens & components

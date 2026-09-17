@@ -32,7 +32,7 @@ Load `scope-detection` skill:
 
 Invoke `forge-pm`:
 1. Conversational discovery (2–4 questions max)
-2. Use `.opencode/templates/tech-spec.md`
+2. Use `.forge/templates/tech-spec.md`
 3. Determine next spec number from `.forge/specs/`
 4. Write `.forge/specs/NNN-slug/tech-spec.md`:
    - Overview (2–3 sentences)
