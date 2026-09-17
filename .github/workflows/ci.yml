@@ -46,6 +46,14 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # mcp-server ships its own toolchain (TS 7 + @types/node 26, aligned
+      # with the root in #78/#80). The root typecheck above already covers
+      # these files, but only this step proves the component is
+      # self-consistent for the toolchain it actually declares.
+      - name: Typecheck MCP server with its own toolchain
+        run: npx tsc -p tsconfig.json --noEmit
+        working-directory: mcp-server
+
       - name: Test
         run: npm test
 
