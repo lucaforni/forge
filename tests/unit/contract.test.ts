@@ -12,7 +12,10 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest"
-import { mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync, statSync } from "node:fs"
+import {
+  mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync,
+  openSync, closeSync, fstatSync, readSync,
+} from "node:fs"
 import { createHash } from "node:crypto"
 import { join, resolve, dirname } from "node:path"
 import { tmpdir } from "node:os"
@@ -285,6 +288,25 @@ describe("installer contract — idempotency and user ownership", () => {
   })
 })
 
+/**
+ * Read a file's contents and mtime through a single descriptor.
+ *
+ * Separate `readFileSync` + `statSync` calls on the same path are a
+ * check-then-use file-system race (js/file-system-race). Same approach as
+ * `ensureBackupGitignore` in installer/backup.ts.
+ */
+function readStamp(path: string): { content: string; mtimeMs: number } {
+  const fd = openSync(path, "r")
+  try {
+    const { size, mtimeMs } = fstatSync(fd)
+    const buf = Buffer.alloc(size)
+    readSync(fd, buf, 0, size, 0)
+    return { content: buf.toString("utf-8"), mtimeMs }
+  } finally {
+    closeSync(fd)
+  }
+}
+
 /** Mirrors the digest used by projection.ts. */
 function hash(content: string): string {
   return createHash("sha256").update(content, "utf-8").digest("hex")
@@ -396,15 +418,14 @@ describe("installer contract — config backup (FR-010)", () => {
       await run({ targetRoot: target })
       const stamp = join(target, ".forge", "mcp-server", "node_modules", ".forge-install-stamp")
 
-      // Read directly instead of existsSync-then-read (js/file-system-race);
-      // a missing stamp surfaces as a thrown ENOENT, which fails the test.
-      const before = readFileSync(stamp, "utf-8")
-      const mtime = statSync(stamp).mtimeMs
+      // A missing stamp surfaces as a thrown ENOENT, which fails the test.
+      const before = readStamp(stamp)
 
       await run({ targetRoot: target })
 
-      expect(readFileSync(stamp, "utf-8")).toBe(before)
-      expect(statSync(stamp).mtimeMs, "npm install ran again on an unchanged project").toBe(mtime)
+      const after = readStamp(stamp)
+      expect(after.content).toBe(before.content)
+      expect(after.mtimeMs, "npm install ran again on an unchanged project").toBe(before.mtimeMs)
     } finally {
       rmSync(target, { recursive: true, force: true })
     }
