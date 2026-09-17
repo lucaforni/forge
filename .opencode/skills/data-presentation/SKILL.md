@@ -12,13 +12,18 @@ metadata:
 
 FORGE **data presentation protocol**. Specializes UX design for data-heavy interfaces: dashboards, analytics, admin panels, list/detail systems, reports — any UI whose primary purpose is to **understand, navigate, filter, and act on data**.
 
-Complementary to `ux-design`. Load together when the feature involves significant data presentation. Does NOT replace personas, accessibility, or component spec work — it sharpens five dimensions:
+Complementary to `ux-design`. Load together for significant data presentation. Does NOT replace personas, accessibility, or component spec work — it sharpens five dimensions:
 
 1. Visualization choice (chart / table / form / card / map / timeline)
 2. Information architecture + hierarchical navigation
 3. Dashboard design + view composition
 4. Filters, search, segmentation, query building
 5. Data storytelling
+
+Detail tables live in `reference/` next to this file — load one only when designing that pattern:
+
+- `reference/visualization.md` — hygiene, anti-patterns, KPIs, composition, responsive
+- `reference/interaction.md` — navigation, states, filters, search, query builders, narrative
 
 ## When to Apply
 
@@ -107,25 +112,7 @@ Wireframes MUST show all three; sparse is most often forgotten.
 | User exports / cites data | User communicates a single insight | Item identity matters more than position |
 | User sorts / filters / searches | Density would harm readability | Mobile-first browsing |
 
-### 1.3 Chart Hygiene (non-negotiable)
-
-- Axes always labeled; units always specified.
-- Zero baseline for bar charts; explicit baseline annotation otherwise.
-- Max 7 categorical series per chart (small multiples beyond).
-- Color encodes ONE dimension; don't overload with size + shape on same axis.
-- Provide tabular alternative for every chart (a11y).
-- Tooltips show exact values; chart alone shows the shape.
-- Time axes ascending left-to-right; latest period highlighted if relevant.
-- Currency, percentage, units always explicit on every value.
-
-### 1.4 Anti-patterns
-
-- Pie chart with > 5 slices, or two pie charts side-by-side.
-- Dual y-axis line charts (use small multiples).
-- 3D charts, any kind.
-- Truncated y-axes exaggerating small differences.
-- "Donut with center label" as a glorified KPI (use a KPI card).
-- Chart-when-table: showing 4 values as a bar chart instead of 4 numbers.
+→ Chart hygiene rules and anti-patterns: `reference/visualization.md`.
 
 ---
 
@@ -154,16 +141,9 @@ For each level specify:
 
 ### 2.2 Navigation Patterns
 
-| Pattern | When | Key requirements |
-|--------|------|-----------------|
-| Master-detail (side-by-side) | Frequent context switches, comparing items | Persisted selection, keyboard nav between items |
-| List → Detail (drill-down) | Long workflows on one item at a time | Breadcrumb, "back to list" preserves filters/scroll |
-| Tabs within detail | Multiple facets of one entity | Tab state in URL, lazy-load expensive tabs |
-| Faceted browse | Exploration with multiple criteria | Filter state in URL, clear-all affordance |
-| Hierarchical tree | Deep nesting, parent/child semantics | Expand/collapse persistence, keyboard arrow nav |
-| Card grid | Visual browsing, heterogeneous items | Consistent card heights, lazy image loading |
-| Kanban / board | Status-based workflows | Drag affordance, optimistic updates, column counts |
-| Timeline | Temporal events, audit logs | Density toggle, time-range zoom |
+Pick from `reference/interaction.md` (master-detail, drill-down, tabs,
+faceted browse, tree, card grid, kanban, timeline) and record the choice
+with its key requirements.
 
 ### 2.3 Preserving Context Across Navigation
 
@@ -177,17 +157,10 @@ Most violated principle in data UIs. Mandatory:
 
 ### 2.4 Empty / Loading / Error States
 
-For each node in the hierarchy:
-
-| State | Required design |
-|-------|----------------|
-| First-visit empty | Onboarding affordance (CTA to create / import / connect) |
-| Filtered empty | "No results match" + clear filters CTA + suggestion |
-| Loading (initial) | Skeleton matching final layout (no spinner-only) |
-| Loading (refresh) | Inline indicator, keep stale data visible |
-| Error (recoverable) | Inline error + retry + collapsible technical detail |
-| Error (permission) | Explanation + who to contact / how to request access |
-| Partial failure | Show what loaded + flag what didn't; never blank everything |
+Every node in the hierarchy needs all seven states — table in
+`reference/interaction.md`. Non-negotiable pairs: skeleton (not
+spinner-only) for initial loading, stale-data-visible for refresh, and a
+partial-failure design that never blanks everything.
 
 ---
 
@@ -211,39 +184,18 @@ Dashboards are not "a bunch of charts on a page".
 +--------------------------------------------------+
 ```
 
-Not every dashboard has all five, but zones must appear in this order. **KPIs above charts above tables.** Never the reverse.
+Zones must appear in this order, even when some are absent. **KPIs above charts above tables.** Never the reverse.
 
-### 3.2 KPI Design Rules
+### 3.2 KPI Essentials
 
-Each KPI card must include:
-- Current value (large, prominent).
-- Unit (currency, %, count, duration).
-- Comparison (vs previous period / target / benchmark).
-- Directional indicator (↑ ↓ →) with semantic color (improvement, not just direction).
-- Sparkline or micro-trend (optional, recommended).
-- Click-through to underlying data view.
+Every KPI card: current value, unit, comparison (vs period / target /
+benchmark), directional indicator with semantic color, click-through to the
+underlying data. Max 5 KPIs; no vanity metrics; green-up only when up is
+good. Full anatomy in `reference/visualization.md`.
 
-Anti-patterns:
-- KPI without comparison ("Revenue: $42,300" — vs what?).
-- Green-up-arrow when up is bad (errors, churn, latency).
-- > 6 KPIs (dilutes attention; pick 3–5 that drive decisions).
-- Vanity metrics (totals that never change meaningfully).
+### 3.3 Composition in One Rule
 
-### 3.3 Composition Principles
-
-- **Grid alignment.** 12-column grid. Charts span 4, 6, 8, or 12.
-- **Visual weight = business weight.** Most important chart = largest, topmost.
-- **Same dimension → same encoding.** If "region" is blue in chart A, must be blue in chart B. Consistent legends.
-- **Cross-filtering.** Where feasible, clicking a segment in one chart filters the others. Document explicitly in wireframe.
-- **Time-range coherence.** Single time-range control affects all time-series unless noted.
-- **Refresh model.** Specify: live / periodic / on-demand. Show last-updated timestamp.
-
-### 3.4 Responsive Dashboards (mandatory)
-
-- < 768px: single-column stack; KPIs become horizontal scroll.
-- Charts readable at 320px OR "view in landscape" prompt.
-- Tables: horizontal scroll with sticky first column; never reflow into cards (loses comparability).
-- Filter bar collapses to single "Filters (N)" button opening a sheet.
+Visual weight = business weight; same dimension → same encoding; one time-range control; specify the refresh model (`reference/visualization.md`).
 
 ---
 
@@ -270,48 +222,14 @@ Data finite or open-ended?
 └── Open-ended   → search input + autocomplete + recent searches
 ```
 
-### 4.2 Filter UX Rules
+### 4.2 Non-negotiable Filter Rules
 
-- **Always show active filter state.** "Filters (3)" badge or chip row.
-- **Always provide "Clear all".** Reaching "no results" must never be a trap.
-- **Show counts per facet option.** "Region: EU (1,243)". If expensive, lazy but show them.
-- **Empty filter result offers recovery.** Show which filter to relax.
+- Active filter state always visible; "Clear all" always present.
+- Empty filter result offers recovery (which filter to relax).
 - **Filter state in URL.** Always.
-- **Apply on change vs explicit Apply?** On-change for fast queries; explicit Apply for multi-step/expensive. Pick one per view, be consistent.
-- **Persist user filter preferences** where appropriate.
+- On-change vs explicit Apply: pick one per view, be consistent.
 
-### 4.3 Search Patterns
-
-| Pattern | When | Notes |
-|--------|------|-------|
-| Global search | Cross-entity, top-of-app | Categorize results by entity type |
-| Scoped search | Within current view | "Search this table…" placeholder |
-| Autocomplete | Known vocabulary, taxonomies | Show category of each suggestion |
-| Faceted search | Free text + filters | Filters refine search results |
-| Command palette | Power users, action+navigation | Ctrl/Cmd-K, keyboard-first |
-
-Document:
-- Fields searched.
-- Match type: exact, prefix, fuzzy, semantic.
-- Debounce: 250–400ms client-side, 400–600ms server.
-- Empty-query state (recent searches, suggestions, top results).
-
-### 4.4 Query Builders (advanced)
-
-For power-user tools (analytics, admin, observability). Required:
-- Visual query representation (nested AND/OR groups).
-- Field selector with types (operators valid per type).
-- Operators per field type (`=`, `contains`, `between`, `in`, `is null`, `regex`).
-- Live result-count preview.
-- Save / load / share named queries (URL-shareable).
-- Plain-text equivalent (read-only) for power users + a11y.
-
-### 4.5 Segmentation
-
-Filtering elevated to first-class. When users repeatedly view same slices:
-- **Saved views / segments** — named, persisted, optionally shared.
-- **Comparison mode** — 2–3 segments side-by-side (small multiples).
-- **Cohort definition UI** — explicit time-anchor + inclusion criteria.
+Full rules: `reference/interaction.md`.
 
 ---
 
@@ -331,42 +249,7 @@ Apply within a view, section, or single chart:
 
 Stopping at step 3 = report. Reaching step 5 = tool. **Design for step 5.**
 
-### 5.2 Annotation as First-Class Element
-
-- **Inline chart annotations.** Mark known events (launch, outage, policy change) so trends are interpretable.
-- **Threshold lines.** Targets, SLAs, budgets directly on chart.
-- **Narrative text near charts.** One-sentence "what this means" beats a chart title.
-- **Anomaly callouts.** Statistically unusual values flagged in UI (badge, color, text) — don't rely on user to spot.
-
-### 5.3 Progressive Disclosure
-
-Lead with the answer; let user descend into evidence:
-
-```
-KPI card               ← the answer
-  └─ click → chart     ← the trend behind the answer
-      └─ click → table ← the rows behind the trend
-          └─ click → entity detail ← the record itself
-```
-
-Preserve context (time range, filters, segment) at each level so the user never feels they "lost" the question.
-
-### 5.4 Voice + Microcopy
-
-- Avoid jargon unless persona is technical.
-- Numbers: thousands separators, locale-aware decimals.
-- Time: contextual ("2 hours ago" for real-time; full timestamps in audit logs/exports).
-- Currency and units always present.
-- Empty states warm: "Nothing here yet — start by [action]" not "No data."
-- Errors constructive: what failed, what to try, who to contact.
-
-### 5.5 Storytelling Anti-patterns
-
-- "Dashboard zoo" — many charts, no narrative or priority.
-- "Mystery meat KPIs" — large numbers without units or context.
-- "Look how much data we have" — breadth without insight.
-- Charts requiring mental math (use derived measures explicitly).
-- Charts whose conclusion changes with filter state but conclusion text doesn't update.
+Annotation, disclosure, voice, anti-patterns: `reference/interaction.md`.
 
 ---
 

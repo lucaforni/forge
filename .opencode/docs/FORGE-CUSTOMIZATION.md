@@ -1566,7 +1566,6 @@ plugins use OpenCode-specific APIs. If you also use Cursor or Windsurf:
 | Commands            | `.opencode/commands/*.md`          | Markdown |
 | Skills              | `.opencode/skills/*/SKILL.md`      | Markdown |
 | Templates           | `.forge/templates/*.md`           | Markdown |
-| Tools               | `.opencode/tools/*.ts`             | TypeScript |
 | Plugins             | `.opencode/plugins/*.ts`           | TypeScript |
 | Constitution        | `.forge/constitution.md`           | Markdown |
 | Config              | `opencode.json`                    | JSON/JSONC |

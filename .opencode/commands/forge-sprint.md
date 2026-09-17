@@ -37,7 +37,7 @@ Parse `$ARGUMENTS`:
 ## Smart Default (No Args)
 
 1. Check `.forge/sprints/active/`.
-2. Active sprints exist → invoke `/sprint-status` tool (dashboard).
+2. Active sprints exist → render the dashboard via the `sprint-status` MCP tool.
 3. None → proceed to **Start**.
 
 ---
@@ -48,7 +48,7 @@ Trigger: `start` subcommand, or smart default when no active sprints.
 
 ### Step 1 — Read Sprint Sequence
 
-Read `.forge/sprints/sprint-sequence.yaml` → `next_sprint_number`. If missing, call `rebuildSequenceFile()` from sprint-status tool (scans active+completed for max, sets next=max+1, warns user). Store as `NNN` (zero-padded 3 digits).
+Read `.forge/sprints/sprint-sequence.yaml` → `next_sprint_number`. If missing, rebuild it: glob `active/sprint-*.yaml` and `completed/*.yaml`, take the max sprint number, write `sprint-sequence.yaml` with `next_sprint_number: max+1`, and warn the user. Store as `NNN` (zero-padded 3 digits).
 
 ### Step 2 — Review Velocity
 
@@ -170,7 +170,7 @@ Next steps:
 
 ## Action: List
 
-Invoke `sprint-status` tool in list mode (handles reading active/ + completed/). Expected compact format:
+List via the `sprint-status` MCP tool (it reads active/ + completed/). Expected compact format:
 
 ```
 Sprint List (all active + last 5 completed)
@@ -231,7 +231,7 @@ Updated: .forge/sprints/active/sprint-NNN.yaml
 
 ## Migration from Old Format
 
-Trigger: `/sprint-status` tool reports old single-file format.
+Trigger: the `sprint-status` MCP tool reports `⚠ Could not parse` for a legacy single file, or you find `.forge/sprints/sprint-status.yaml`.
 
 ### Step 1 — Explain
 
@@ -254,7 +254,7 @@ Safe: current → active/; previous → completed/; old file renamed .bak.
 
 ### Step 3 — Invoke Migration
 
-Call sprint-status tool's migration function. It creates dirs, converts current/previous sprints, creates sprint-sequence.yaml, renames old file `.bak`. Show:
+Migrate by hand — there is no migration function, only these steps. Create the directories, convert the legacy `current`/`previous` blocks into per-sprint files, create `sprint-sequence.yaml`, rename the old file to `.bak`. Show:
 
 ```
 ✓ Migration complete

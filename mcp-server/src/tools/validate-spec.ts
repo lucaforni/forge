@@ -21,6 +21,12 @@ export interface ValidationResult {
   storiesWithoutCriteria: string[]
   nfrsWithoutMetrics: string[]
   missingSections: string[]
+  /** FRs missing a description, priority or story reference ("FR-001: no description"). */
+  frIssues: string[]
+  /** Constitution article rows without a status ("Article 5: no status"). */
+  constitutionIssues: string[]
+  /** Thin cross-reference sections ("no mention of the constitution"). */
+  crossReferenceIssues: string[]
   critical: number
   warnings: number
   info: number
@@ -70,6 +76,10 @@ export async function validateSpec(specPath: string): Promise<ValidationResult> 
   const storiesWithoutCriteria: string[] = []
   const nfrsWithoutMetrics: string[] = []
   const missingSections: string[] = []
+  const frIssues: string[] = []
+  let frMissingDescription = 0
+  const constitutionIssues: string[] = []
+  const crossReferenceIssues: string[] = []
 
   // Check required sections.
   //
@@ -113,6 +123,46 @@ export async function validateSpec(specPath: string): Promise<ValidationResult> 
     }
   }
 
+  // Check FRs for description, priority and story reference.
+  // Matches the table shapes FORGE emits (`| FR-001 | text | prio | ref |`
+  // and shorter variants); a row with fewer cells simply has nothing to
+  // check in the missing positions.
+  if (!isTechSpec) {
+    const frPattern = /^\s*\|\s*(FR-\d+)\s*\|([^\n]*)$/gm
+    let frMatch: RegExpExecArray | null
+    while ((frMatch = frPattern.exec(content)) !== null) {
+      const frId = frMatch[1]
+      const cells = frMatch[2].split("|").map((c) => c.trim())
+      const [requirement = "", priority = "", storyRef = ""] = cells
+      if (!requirement) {
+        frIssues.push(`${frId}: no requirement description`)
+        frMissingDescription++
+      } else {
+        if (!priority) frIssues.push(`${frId}: no priority set`)
+        if (!storyRef) frIssues.push(`${frId}: no story reference for traceability`)
+      }
+    }
+  }
+
+  // Check constitution article rows for a status. An absent section is
+  // already reported via missingSections; only the rows are new here.
+  if (!isTechSpec) {
+    const complianceBody = sections.get("Constitution Compliance") ?? ""
+    if (complianceBody) {
+      const articlePattern = /\|\s*Art\.\s*(\d+)\s*\|([^\n]*)$/gm
+      let artMatch: RegExpExecArray | null
+      let articlesFound = 0
+      while ((artMatch = articlePattern.exec(complianceBody)) !== null) {
+        articlesFound++
+        const status = (artMatch[2].split("|")[0] ?? "").trim()
+        if (!status) constitutionIssues.push(`Article ${artMatch[1]}: no compliance status`)
+      }
+      if (articlesFound === 0) {
+        constitutionIssues.push("Constitution Compliance section has no article entries")
+      }
+    }
+  }
+
   // Check NFRs for metrics
   // NFR rows: | ID | Category | Requirement | Target/Metric |
   // Match the full row after the NFR ID to check all cells
@@ -128,11 +178,39 @@ export async function validateSpec(specPath: string): Promise<ValidationResult> 
     }
   }
 
-  // Compute completeness
-  const totalChecks = requiredSections.length + Math.max(needsClarification.length, 1)
+  // Check cross-reference content. An absent section is already reported
+  // via missingSections; only a thin section is new here.
+  if (!isTechSpec) {
+    const crossRefBody = sections.get("Cross-References") ?? ""
+    if (crossRefBody) {
+      if (!/constitution/i.test(crossRefBody)) {
+        crossReferenceIssues.push("Cross-References: no mention of the constitution")
+      }
+      if (!/architect/i.test(crossRefBody)) {
+        crossReferenceIssues.push("Cross-References: no mention of the architecture document")
+      }
+    }
+  }
+
+  // Compute completeness. Section-level findings set the base score; the
+  // content checks ported from the OpenCode implementation (#68) penalise
+  // on top, with an undescribed FR weighing most — a requirement row with
+  // no requirement is not a requirement.
+  const FR_DESCRIPTION_PENALTY = 10
+  const CONTENT_FINDING_PENALTY = 2
+  const contentPenalty =
+    FR_DESCRIPTION_PENALTY * frMissingDescription +
+    CONTENT_FINDING_PENALTY *
+      (frIssues.length - frMissingDescription + constitutionIssues.length + crossReferenceIssues.length)
   const passedChecks = requiredSections.length - missingSections.length - emptyRequiredFields.length
   const clarificationPenalty = Math.min(needsClarification.length * 5, 30) // up to 30% penalty
-  const completeness = Math.max(0, Math.min(100, Math.round((passedChecks / requiredSections.length) * 100 - clarificationPenalty)))
+  const completeness = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round((passedChecks / requiredSections.length) * 100 - clarificationPenalty - contentPenalty),
+    ),
+  )
 
   return {
     specPath: absPath,
@@ -142,9 +220,16 @@ export async function validateSpec(specPath: string): Promise<ValidationResult> 
     storiesWithoutCriteria,
     nfrsWithoutMetrics,
     missingSections,
-    critical: emptyRequiredFields.length + missingSections.length,
-    warnings: storiesWithoutCriteria.length + nfrsWithoutMetrics.length,
-    info: needsClarification.length,
+    frIssues,
+    constitutionIssues,
+    crossReferenceIssues,
+    critical: emptyRequiredFields.length + missingSections.length + frMissingDescription,
+    warnings:
+      storiesWithoutCriteria.length +
+      nfrsWithoutMetrics.length +
+      (frIssues.length - frMissingDescription) +
+      constitutionIssues.length,
+    info: needsClarification.length + crossReferenceIssues.length,
   }
 }
 
