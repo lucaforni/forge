@@ -121,25 +121,31 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
 
 ## Testing Requirements
 
-Coverage scope is `installer/**` + `mcp-server/src/**` (see
-`vitest.config.ts`). Thresholds are staged — see constitution Art. 4.1.
+Coverage scope is `installer/**`, `mcp-server/src/**` and `mcp-server/index.ts`
+(see `vitest.config.ts`). Thresholds are staged — see constitution Art. 4.1.
 
-| Metric | Baseline | Next gate | Target |
-| --- | --- | --- | --- |
-| Line coverage | not measured (#61) | 50% | 80% |
-| Branch coverage | not measured (#61) | 40% | 60% |
-| Critical paths | 100% | 100% | 100% |
+| Metric | Enforced gate | Measured 2026-09-17 |
+| --- | --- | --- |
+| Lines | 85% | 89.1% |
+| Branches | 78% | 84.2% |
+| Functions | 80% | 82.5% |
 
-> **Do not cite a coverage number as satisfied until
-> `npm run test:coverage` actually runs in CI.** Declaring a threshold that
-> is not enforced is itself a constitution violation (Art. 4.4).
+The gate lives in `vitest.config.ts` and is run by the `coverage` job in
+CI. It must stay in sync with that job — a declared-but-unenforced
+threshold is itself a constitution violation (Art. 4.4).
 
 Commands:
 
 ```bash
-npm test                                  # unit tests (fast: sub-second)
-npx tsc --noEmit -p tsconfig.json         # typecheck
+npm test              # unit tests
+npm run typecheck     # tsc --noEmit
+npm run test:coverage # tests + coverage gate
+npm run test:smoke    # level-3 harness smokes (needs a provider key)
 ```
+
+`frontend/**/__tests__/` is **not** run here: those are reference tests that
+ship with the pattern templates and exercise a React stack this repository
+does not contain.
 
 ### Required Test Types
 

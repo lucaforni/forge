@@ -8,6 +8,16 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { catalogCanonicalArtifacts, catalogForgeArtifacts, buildInstallPlan } from "../../installer/projection"
 import { OPENCODE_DESCRIPTOR } from "../../installer/platforms/opencode"
+import { CLAUDE_CODE_DESCRIPTOR } from "../../installer/platforms/claude-code"
+import { CODEX_DESCRIPTOR } from "../../installer/platforms/codex"
+import type { Platform, PlatformDescriptor } from "../../installer/types"
+
+/** buildInstallPlan takes the full descriptor map; only the listed platforms are used. */
+const DESCRIPTORS: Record<Platform, PlatformDescriptor> = {
+  "opencode": OPENCODE_DESCRIPTOR,
+  "claude-code": CLAUDE_CODE_DESCRIPTOR,
+  "codex": CODEX_DESCRIPTOR,
+}
 
 function createForgeSource(artifacts: Record<string, string>): string {
   const tmpDir = mkdtempSync(join(tmpdir(), "forge-projection-test-"))
@@ -140,7 +150,7 @@ describe("buildInstallPlan", () => {
 
     const plan = buildInstallPlan(
       ["opencode"],
-      { opencode: OPENCODE_DESCRIPTOR },
+      DESCRIPTORS,
       src,
       target,
     )
@@ -164,7 +174,7 @@ describe("buildInstallPlan", () => {
 
     const plan = buildInstallPlan(
       ["opencode"],
-      { opencode: OPENCODE_DESCRIPTOR },
+      DESCRIPTORS,
       src,
       target,
     )
@@ -193,7 +203,7 @@ describe("buildInstallPlan", () => {
 
     const plan = buildInstallPlan(
       ["opencode"],
-      { opencode: OPENCODE_DESCRIPTOR },
+      DESCRIPTORS,
       src,
       target,
     )

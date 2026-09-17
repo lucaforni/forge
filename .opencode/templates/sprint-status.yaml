@@ -4,6 +4,10 @@
 # This template is used to create individual sprint files in .forge/sprints/active/
 # Format version 1: supports multiple concurrent sprints with automatic archiving
 
+# QUOTING: any value containing '#' MUST be quoted. Per the YAML spec a '#'
+# preceded by whitespace starts a comment, so `goal: Fix #42` parses as
+# "Fix" and the issue number is lost. Write `goal: "Fix #42"`.
+
 version: 1
 sprint:
   number: 1                    # Sprint number (matches filename sprint-NNN.yaml)

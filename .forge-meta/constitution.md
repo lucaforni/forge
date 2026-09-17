@@ -102,20 +102,28 @@ forge/
 Coverage is defined over `installer/**` and `mcp-server/src/**` (the
 `include` scope in `vitest.config.ts`).
 
-| Milestone | Line | Branch | Enforced by |
-|---|--:|--:|---|
-| **Current baseline** | — | — | not measured — `@vitest/coverage-v8` is missing (#61) |
-| **Next gate** | 50% | 40% | `npm run test:coverage` in CI |
-| **Target** | 80% | 60% | same |
+| Milestone | Line | Branch | Function | Status |
+|---|--:|--:|--:|---|
+| **Enforced gate** | 85% | 78% | 80% | `vitest.config.ts` + `coverage` job in CI |
+| **Measured 2026-09-17** | 89.1% | 84.2% | 82.5% | `npm run test:coverage` |
+
+Scope is `installer/**`, `mcp-server/src/**` **and `mcp-server/index.ts`**.
+The entry point ships and runs in every user project; excluding it would
+flatter the number by 260 lines.
 
 Rules:
 - The threshold in `vitest.config.ts` MUST match the gate actually run in
   CI. A declared-but-unenforced threshold is a constitutional violation in
   itself.
-- `installer/install.ts` MUST have tests before the next gate is raised —
-  it is the only module that writes to a user's filesystem.
+- The gate sits below the current measurement so an ordinary refactor does
+  not break the build, and above it enough that coverage cannot silently
+  decay. Raise it when the measurement moves up durably; never lower it
+  without an amendment entry.
 - `.opencode/tools/` and `.opencode/plugins/` are **out of scope** until
   they are either distributed or removed (#68).
+- `frontend/**/__tests__/` ships to user projects as reference tests for the
+  pattern templates. It exercises a React stack this repository does not
+  contain and is out of scope by design, not by neglect.
 - Manual testing for all slash commands.
 
 ### 4.2 Performance Targets
@@ -134,18 +142,19 @@ Rules:
 CI check.** An article without a check is a statement of intent, not a rule,
 and MUST be labelled as such.
 
-| Article | Check |
-|---|---|
-| 2.2 | lockfile presence + dependabot registration |
-| 2.3, 4.3 | grep for `../.opencode` and `<!-- CUSTOMIZE` in distributed files |
-| 4.1 | `npm run test:coverage` |
-| 4.2 | token budget script |
-| — | installer contract test: everything documented as installed is installed |
+| Article | Check | Status |
+|---|---|---|
+| 2.2 | `npm ci` in `mcp-server/` — proves the lockfile exists and resolves | ✅ `test` job |
+| 4.1 | `npm run test:coverage` | ✅ `coverage` job |
+| — | typecheck: `tsc --noEmit` across installer, mcp-server and tests | ✅ `test` job |
+| — | installer contract test: everything referenced by an artifact is installed | ✅ `tests/unit/contract.test.ts` |
+| — | shell lint on the scripts users execute | ✅ `shell` job |
+| 2.3, 4.3 | grep for `../.opencode` and `<!-- CUSTOMIZE` in distributed files | ⚠️ partial — the contract test covers `../.opencode` only |
+| 4.2 | token budget script | ❌ not implemented (#73) |
+| 5.2 | language check on distributed artifacts | ❌ not implemented (#62) |
 
-**Current status: none of these checks exist yet.** Until each one is wired
-into `.github/workflows/ci.yml`, the corresponding article is a statement of
-intent. Tracked in #60 (typecheck), #61 (coverage), #62 (language),
-#73 (token budget), #56 (installer contract).
+An article whose row is ❌ is a statement of intent, not an enforced rule,
+and must be described as such wherever it is cited.
 
 ---
 
@@ -188,3 +197,5 @@ implemented.
 | 2026-09-17 | 4.2 | Agent budget redefined as effective context (agent file + mandatory skills) | The file-size metric was trivially satisfied by moving instructions into skills; `forge-ux` loads ~9.6k effective tokens | Audit #73 |
 | 2026-09-17 | 4.4 | **New** — every mechanically checkable article requires a CI check | Unenforced articles had silently drifted from reality for 7 months | Audit #74 |
 | 2026-09-17 | 5.2 | **New** — English required for all distributed and public-facing artifacts | `SECURITY.md`, GitHub templates, a distributed skill and 3 code templates had drifted to Italian | Audit #62 |
+| 2026-09-17 | 4.1 | Replaced the unmeasured baseline with an enforced gate (85/78/80) and the first real measurement (89.1/84.2/82.5) | Coverage became measurable once `@vitest/coverage-v8` was installed and the MCP tools were tested; the staged plan is superseded by an actual gate | Phase 2, #61 |
+| 2026-09-17 | 4.4 | Marked each check as enforced or not, per CI reality | Four of the eight checks are now wired into `ci.yml`; the remaining four must be labelled as intent | Phase 2, #60 |

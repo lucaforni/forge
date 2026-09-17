@@ -13,7 +13,7 @@
 
 set -e
 
-VERSION="1.0.0"
+VERSION="2.0.0"
 FORGE_REPO="https://github.com/lucaforni/forge.git"
 TEMP_DIR=$(mktemp -d)
 
@@ -109,13 +109,13 @@ fi
 log_info "Checking prerequisites..."
 
 if ! command -v node &> /dev/null; then
-    log_error "Node.js is not installed. Please install Node.js 18+ first."
+    log_error "Node.js is not installed. Please install Node.js 20+ first."
     exit 1
 fi
 
 NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-    log_error "Node.js version 18+ required. Current version: $(node -v)"
+if [ "$NODE_VERSION" -lt 20 ]; then
+    log_error "Node.js version 20+ required. Current version: $(node -v)"
     exit 1
 fi
 log_success "Node.js $(node -v) ✓"

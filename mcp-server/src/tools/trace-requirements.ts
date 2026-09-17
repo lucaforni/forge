@@ -6,6 +6,7 @@
  */
 
 import { readFile, readdir, access } from "node:fs/promises"
+import type { Dirent } from "node:fs"
 import { resolve, join, relative } from "node:path"
 import { extractRequirementIds } from "../lib/spec-parse"
 
@@ -16,6 +17,12 @@ import { extractRequirementIds } from "../lib/spec-parse"
 export interface TraceOptions {
   specId?: string
   specPath?: string
+  /**
+   * Project to resolve `src/` and `tests/` against. Defaults to the process
+   * CWD, which is what the MCP server wants; taking it as a parameter is
+   * what makes source/test discovery testable.
+   */
+  projectRoot?: string
 }
 
 export interface RequirementTrace {
@@ -39,7 +46,7 @@ export interface TraceResult {
 // ---------------------------------------------------------------------------
 
 export async function traceRequirements(options: TraceOptions): Promise<TraceResult> {
-  const projectRoot = process.cwd()
+  const projectRoot = options.projectRoot ?? process.cwd()
   let specDir: string | null = null
   let specId = options.specId || ""
 
@@ -186,17 +193,55 @@ function findPlanSections(planContent: string, reqId: string): string[] {
   return [...new Set(sections)]
 }
 
+/**
+ * Collect checklist items in tasks.md that reference a requirement.
+ *
+ * FORGE emits three different task shapes and the previous matcher
+ * (`[ ] **T-001** ...`) recognised none of them, so `taskItems` was always
+ * empty and the traceability matrix always reported zero task coverage:
+ *
+ *   - [ ] **1.1** `[FR-001]` Create the component      ← templates/tasks.md
+ *   - [ ] `[M]` `[FR-001]` `[P]` Description           ← forge-scrum / forge-tasks
+ *   - [ ] T-001 `[M]` `[FR-001]` Description           ← spec 004 tasks.md
+ *
+ * The matcher below accepts any checklist line that mentions the
+ * requirement, and extracts an identifier when one of the known shapes is
+ * present. The underlying format inconsistency is tracked separately.
+ */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
 function findTaskItems(tasksContent: string, reqId: string): string[] {
   const items: string[] = []
-  const lines = tasksContent.split("\n")
-  for (const line of lines) {
-    if (line.includes(reqId)) {
-      const taskMatch = line.match(/\[.\]\s+\*\*(T-\d+)\*\*\s+(.+)/)
-      if (taskMatch) {
-        items.push(`${taskMatch[1]}: ${taskMatch[2].trim()}`)
-      }
-    }
+
+  for (const rawLine of tasksContent.split("\n")) {
+    const line = rawLine.trim()
+
+    // Must be a markdown checklist item mentioning this requirement. The
+    // requirement id is matched on a word boundary so FR-001 does not also
+    // match FR-0010.
+    if (!/^[-*]\s+\[.\]/.test(line)) continue
+    if (!new RegExp(`\\b${escapeRegExp(reqId)}\\b`).test(line)) continue
+
+    const body = line.replace(/^[-*]\s+\[.\]\s*/, "")
+    const id =
+      body.match(/^\*\*(T-\d+)\*\*/)?.[1] ??      // **T-001**
+      body.match(/^(T-\d+)\b/)?.[1] ??             // T-001
+      body.match(/^\*\*([\d.]+)\*\*/)?.[1] ??      // **1.1**
+      null
+
+    // Only strip LEADING tag groups. A global strip would also delete a
+    // legitimate `[...]` in the middle of a description.
+    const description = body
+      .replace(/^\*\*[^*]+\*\*\s*/, "")
+      .replace(/^T-\d+\s*/, "")
+      .replace(/^(?:`\[[^\]]*\]`\s*)+/, "")
+      .trim()
+
+    items.push(id ? `${id}: ${description}` : description)
   }
+
   return items
 }
 
@@ -213,7 +258,7 @@ async function findFilesReferencing(
   }
 
   async function walk(dir: string): Promise<void> {
-    let entries: string[]
+    let entries: Dirent[]
     try {
       entries = await readdir(dir, { withFileTypes: true })
     } catch {

@@ -31,28 +31,66 @@ export function getFrontmatterField(frontmatter: string, key: string): string | 
 // Sections
 // ---------------------------------------------------------------------------
 
-/** Extract all markdown headings and their content. */
+/**
+ * Extract all markdown headings and their content.
+ *
+ * A heading's body runs until the next heading **of the same or higher
+ * level**, so a section keeps its own subsections. FORGE's spec template
+ * puts `### US-001:` directly under `## User Stories`; treating the `###`
+ * as a terminator left `User Stories` with an empty body, and every
+ * correctly formatted spec was reported as missing that section.
+ *
+ * Subsections are still registered under their own names, so callers can
+ * address either level.
+ */
 export function extractSections(content: string): Map<string, string> {
   const sections = new Map<string, string>()
   const lines = content.split("\n")
-  let currentSection = ""
-  let currentBody: string[] = []
 
-  for (const line of lines) {
-    const headerMatch = line.match(/^#{1,3}\s+(?:\d+\.\s*)?(.+)/)
-    if (headerMatch) {
-      if (currentSection) {
-        sections.set(currentSection, currentBody.join("\n").trim())
-      }
-      currentSection = headerMatch[1].trim()
-      currentBody = []
-    } else {
-      currentBody.push(line)
+  /** Headings currently open, outermost first. */
+  const open: Array<{ name: string; level: number; body: string[] }> = []
+
+  const close = (downToLevel: number) => {
+    while (open.length > 0 && open[open.length - 1].level >= downToLevel) {
+      const done = open.pop()!
+      sections.set(done.name, done.body.join("\n").trim())
     }
   }
-  if (currentSection) {
-    sections.set(currentSection, currentBody.join("\n").trim())
+
+  // A `#` inside a fenced code block is a shell comment, not a heading.
+  // Specs routinely contain ```bash blocks; treating those lines as headings
+  // registers bogus sections and truncates the real one.
+  let fence: string | null = null
+
+  for (const line of lines) {
+    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/)
+    if (fenceMatch) {
+      const marker = fenceMatch[1]
+      if (fence === null) fence = marker[0]
+      else if (marker[0] === fence) fence = null
+      for (const entry of open) entry.body.push(line)
+      continue
+    }
+    if (fence !== null) {
+      for (const entry of open) entry.body.push(line)
+      continue
+    }
+
+    const headerMatch = line.match(/^(#{1,3})\s+(?:\d+\.\s*)?(.+)/)
+    if (headerMatch) {
+      const level = headerMatch[1].length
+      close(level)
+      // The heading line belongs to its ancestors' bodies, so that a parent
+      // section is not considered empty merely because it delegates to
+      // subsections.
+      for (const ancestor of open) ancestor.body.push(line)
+      open.push({ name: headerMatch[2].trim(), level, body: [] })
+    } else {
+      for (const entry of open) entry.body.push(line)
+    }
   }
+
+  close(1)
   return sections
 }
 
