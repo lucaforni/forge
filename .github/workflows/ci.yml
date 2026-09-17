@@ -1,4 +1,4 @@
-# CI — multi-version Node test matrix
+# CI — typecheck, tests, coverage gate, shell lint
 name: CI
 
 on:
@@ -36,11 +36,54 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint (if present)
-        run: npm run lint --if-present
+      # The MCP server has its own manifest and lockfile. Its types are needed
+      # for the typecheck below, and constitution Art. 2.2 requires the
+      # lockfile to be installable.
+      - name: Install MCP server dependencies
+        run: npm ci
+        working-directory: mcp-server
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Test
         run: npm test
 
-      - name: Build (if present)
-        run: npm run build --if-present
+  coverage:
+    name: coverage gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install MCP server dependencies
+        run: npm ci
+        working-directory: mcp-server
+
+      # Enforces constitution Art. 4.1. The thresholds live in
+      # vitest.config.ts and must match this job (Art. 4.4).
+      - name: Coverage
+        run: npm run test:coverage
+
+  shell:
+    name: shell lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # install.sh is what users pipe into bash; update-multiple-projects.sh
+      # runs against several repositories at once. Neither was ever linted.
+      - name: ShellCheck
+        run: shellcheck install.sh update-multiple-projects.sh

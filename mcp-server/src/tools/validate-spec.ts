@@ -71,14 +71,18 @@ export async function validateSpec(specPath: string): Promise<ValidationResult> 
   const nfrsWithoutMetrics: string[] = []
   const missingSections: string[] = []
 
-  // Check required sections
+  // Check required sections.
+  //
+  // `has` rather than truthiness: a present-but-empty section must be
+  // reported as empty, not as missing. Testing `!sectionBody` collapsed the
+  // two cases, which made `emptyRequiredFields` unreachable and mislabelled
+  // every empty section as absent.
   for (const sectionName of requiredSections) {
-    const sectionBody = sections.get(sectionName)
-    if (!sectionBody) {
+    if (!sections.has(sectionName)) {
       missingSections.push(sectionName)
       continue
     }
-    if (isSectionEmpty(sectionBody)) {
+    if (isSectionEmpty(sections.get(sectionName) ?? "")) {
       emptyRequiredFields.push(sectionName)
     }
   }

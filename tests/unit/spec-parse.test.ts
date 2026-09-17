@@ -46,8 +46,11 @@ describe("getFrontmatterField", () => {
 describe("extractSections", () => {
   it("maps h1-h3 headings to trimmed bodies", () => {
     const sections = extractSections("# Alpha\nhello\n## Beta\nworld\n")
-    expect(sections.get("Alpha")).toBe("hello")
     expect(sections.get("Beta")).toBe("world")
+    // A heading's body runs until the next heading of the same or higher
+    // level, so a parent keeps its subsections.
+    expect(sections.get("Alpha")).toContain("hello")
+    expect(sections.get("Alpha")).toContain("## Beta")
   })
 
   it("strips numeric prefixes from headings", () => {
@@ -58,6 +61,37 @@ describe("extractSections", () => {
   it("ignores h4+ headings (treated as body text)", () => {
     const sections = extractSections("# A\n#### deep\ntext\n")
     expect(sections.get("A")).toContain("#### deep")
+  })
+
+  it("closes a section at the next heading of the same level", () => {
+    const sections = extractSections("## One\na\n## Two\nb\n")
+    expect(sections.get("One")).toBe("a")
+    expect(sections.get("Two")).toBe("b")
+  })
+
+  it("keeps a parent section non-empty when it only holds subsections", () => {
+    // FORGE's spec template puts `### US-001:` directly under
+    // `## User Stories`. Treating the `###` as a terminator left the parent
+    // empty, and every correctly formatted spec was reported as missing its
+    // User Stories section.
+    const sections = extractSections("## User Stories\n\n### US-001: Login\nAs a user...\n")
+    expect(sections.has("User Stories")).toBe(true)
+    expect(isSectionEmpty(sections.get("User Stories") ?? "")).toBe(false)
+    expect(sections.get("US-001: Login")).toContain("As a user")
+  })
+
+  it("registers a present-but-empty section rather than omitting it", () => {
+    // The caller distinguishes "missing" from "empty"; that requires the
+    // key to exist even when the body is blank.
+    const sections = extractSections("## Edge Cases\n\n## Next\nx\n")
+    expect(sections.has("Edge Cases")).toBe(true)
+    expect(isSectionEmpty(sections.get("Edge Cases") ?? "")).toBe(true)
+  })
+
+  it("handles a deeper heading following a shallower one", () => {
+    const sections = extractSections("### Deep\na\n## Shallow\nb\n")
+    expect(sections.get("Deep")).toBe("a")
+    expect(sections.get("Shallow")).toBe("b")
   })
 })
 

@@ -32,6 +32,9 @@ if (!cfg) {
 const BASE_URL = cfg.baseUrl
 const MODEL = cfg.model
 const API_KEY = cfg.apiKey
+// Captured here because `hintForStatus` is a hoisted function declaration,
+// so TypeScript cannot carry the null-narrowing of `cfg` into its body.
+const PROVIDER_ID = cfg.id
 // The `opencode/` prefix is opencode's local provider/model syntax — Zen's API
 // wants the bare model id. NIM ids (org/model) pass through untouched.
 const API_MODEL = MODEL.replace(/^opencode\//, "")
@@ -330,7 +333,7 @@ process.exit(failures === 0 ? 0 : 1)
 
 /** Map common failure signatures to actionable next steps. */
 function hintForStatus(status: number, raw: string): void {
-  const nim = cfg.id === "nim"
+  const nim = PROVIDER_ID === "nim"
   if (status === 401) {
     console.log(
       nim
