@@ -130,53 +130,14 @@ Naming: `--token-category-scale` (e.g., `--color-primary-500`, `--space-4`, `--r
 
 ## Accessibility Checklist (WCAG 2.1 AA)
 
-Apply per screen before finalizing.
-
-**Perceivable**
-- [ ] All images have `alt` (decorative: `alt=""`).
-- [ ] Color is not the only way to convey info.
-- [ ] Text contrast ≥ 4.5:1 (body), ≥ 3:1 (large text ≥ 18px bold); interactive elements ≥ 3:1.
-- [ ] Text resizable to 200% without horizontal scroll; no flashing > 3/sec.
-
-**Operable**
-- [ ] All functionality keyboard-accessible; no keyboard traps (except intentional: modals trap, Esc releases).
-- [ ] Skip-nav link; tab order logical and matches visual order.
-- [ ] Focus indicator visible; touch targets ≥ 44×44px (mobile); no time limits (or user can extend).
-
-**Understandable**
-- [ ] Page language declared; error messages identify field + describe issue.
-- [ ] All inputs have visible labels (not only placeholders); required fields indicated beyond color.
-- [ ] Consistent navigation + component behavior across pages.
-
-**Robust**
-- [ ] Valid HTML structure (headings, landmarks, lists used correctly).
-- [ ] All form elements have associated labels; status updates announced via `aria-live`.
-- [ ] Modals: focus trap + `role="dialog"` + `aria-labelledby`; custom components have correct ARIA roles.
+Apply per screen before finalizing. Full checklist:
+`reference/accessibility.md` (Perceivable, Operable, Understandable,
+Robust — contrast ratios, keyboard, labels, ARIA).
 
 ## Platform-Specific Conventions
 
-### Web (SPA/SSR)
-- Navigation: `<nav>` landmark, keyboard-navigable.
-- Loading: skeleton screens preferred over spinners for content.
-- SSR: define loading skeleton in wireframe to prevent layout shift.
-- Forms: validate on blur, not on keystroke.
-
-### Mobile
-- **iOS** (Apple HIG): NavigationController pattern + back gesture; tap targets ≥ 44pt; modal as bottom sheet (not full screen).
-- **Android / Material 3**: FAB for primary action; bottom nav for 3-5 sections; Snackbar for non-critical feedback (not Toast).
-- **Both**: define safe area insets in wireframe.
-
-### API (DX Design)
-- Error format: `{ "error": { "code": "...", "message": "...", "field": "..." } }`.
-- Pagination: cursor-based preferred for large datasets.
-- Field naming: consistent casing (camelCase for JSON).
-- Document all 4xx responses in design spec.
-
-### Design System
-- Component inventory before adding new: search existing first.
-- Variants over new components: prefer extending.
-- Document usage guidelines AND anti-patterns.
-- Include visual regression test targets in component spec.
+Web, Mobile (iOS HIG / Material 3), API DX design, and design-system rules:
+`reference/platforms.md`. Load when designing for that platform.
 
 ## Quality Gates
 

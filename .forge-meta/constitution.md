@@ -43,9 +43,6 @@ FORGE is a methodology framework for AI-assisted software development that provi
 | Packaging | Bun/NPM | Latest | Fast installs |
 | Documentation | Markdown | CommonMark | Universal format |
 
-> **Note (2026-09-17):** the root workspace currently pins TypeScript `^7`
-> while `mcp-server/` pins `^5`. Both satisfy "5+", but the split toolchain
-> is technical debt — see issue #74.
 
 ### 2.2 Dependency Policy
 - **The installer layer (`installer/`, `install-forge.ts`) MUST have zero
@@ -136,21 +133,26 @@ of model tokens.
 |---|---|---|
 | Skill files ≤ 3,000 tokens | every `SKILL.md` | ✅ `budgets` job |
 | Agent files ≤ 5,000 tokens | `.opencode/agents/`, `.opencode-meta/agents/` | ✅ `budgets` job |
-| Effective context per agent | agent file + every declared skill, reported | reported only (see below) |
+| Mandatory effective per agent | agent file + mandatory skills | ✅ `budgets` job (≤ 5,000) |
+| Worst-case effective per agent | + conditional skills | reported |
 | Total context per session < 50k tokens | — | ❌ not implemented |
 
 Measured 2026-09-17 (post split): largest skill `data-presentation` 2,597;
-largest effective contexts `forge-ux` 8,420 and `forge` 5,312 — both over
-the 5,000 aspiration, driven by the UX chain. The 5,000-effective target
-remains an aspiration until that chain is slimmed; gating it today would
-fail CI on the current design, and silently passing it would repeat the
-original file-size fallacy. Tracked as the follow-up below.
+largest mandatory-effective agent `forge-ux` 4,522 — inside the gate, with
+worst-case (conditional skills loaded) reported alongside at 8,080.
 
-- Follow-up: slim the UX invocation chain (`forge-ux` + mandatory skills)
-  toward 5,000 effective — see issue #84.
-- `data-presentation` was split 3,845 → 2,597 core + two on-demand
-  references (#73). Step numbers are stable so existing cross-references
-  (`Step 4.1`) keep working.
+How the UX chain got there (#84): `data-presentation` split 3,845 → 2,597
+core + references (#73); wireframe format blocks deduplicated out of
+`forge-ux.md` into the `forge-wireframe` command file (single home);
+`ux-design` split 1,313 → 909 core + accessibility/platform references;
+conditional skills (`data-presentation`, `frontend-pattern-library`,
+`ux-review`, `pre-flight-checks`, `brownfield-analysis`) explicitly marked
+and partitioned into worst-case. Step numbers are stable so existing
+cross-references (`Step 4.1`) keep working.
+
+- The gate covers the guaranteed load. Conditionals are reported, not
+  gated: you cannot budget what you cannot predict, and the old number
+  over-counted by construction.
 
 ### 4.3 Technical Debt
 - **Meta-development instructions MUST NOT leak into distributed files**
@@ -170,7 +172,7 @@ and MUST be labelled as such.
 | — | installer contract test: everything referenced by an artifact is installed | ✅ `tests/unit/contract.test.ts` |
 | — | shell lint on the scripts users execute | ✅ `shell` job |
 | 2.3, 4.3 | grep for `../.opencode` and `<!-- CUSTOMIZE` in distributed files | ⚠️ partial — the contract test covers `../.opencode` only |
-| 4.2 | `npm run budgets` — file budgets gated, effective reported | ✅ `budgets` job (effective target itself remains intent, see 4.2) |
+| 4.2 | `npm run budgets` — file budgets and mandatory effective gated | ✅ `budgets` job |
 | 5.2 | language check on distributed artifacts | ❌ not implemented (#62) |
 
 An article whose row is ❌ is a statement of intent, not an enforced rule,

@@ -160,6 +160,27 @@ describe("coherence — who implements (#67)", () => {
   })
 })
 
+describe("coherence — no uncustomized templates outside templates/ (#74)", () => {
+  it("no live file still carries a CUSTOMIZE placeholder", () => {
+    // `<!-- CUSTOMIZE: ... -->` markers are a template author's prompt to
+    // the user — they belong in `.opencode/templates/` by design.
+    // Anywhere else a bare (unquoted) marker means the file was never
+    // customised: that is how the repo's own AGENTS.md shipped for seven
+    // months. Mentions *quoted in backticks* — e.g. instructions telling
+    // an agent to detect placeholders in user files — are prose, not
+    // placeholders, and do not count.
+    const live = shippedDocs().filter((d) => !d.rel.startsWith(".opencode/templates/"))
+    const out: string[] = []
+    for (const d of live) {
+      for (const line of d.content.split("\n")) {
+        const unquoted = line.replace(/`[^`]*`/g, "")
+        if (unquoted.includes("<!-- CUSTOMIZE")) out.push(`${d.rel}: ${line.trim().slice(0, 80)}`)
+      }
+    }
+    expect(out).toEqual([])
+  })
+})
+
 describe("coherence — template paths (#56, still enforced)", () => {
   it("no distributed artifact references .opencode/templates, .opencode/docs or a ../ escape", () => {
     // .opencode-meta/ is excluded here on purpose: those files run at the

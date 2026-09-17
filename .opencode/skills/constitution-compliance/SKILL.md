@@ -10,18 +10,33 @@ metadata:
 
 ## Purpose
 
-Verify compliance against `.forge/constitution.md`. Read the constitution first,
+Verify compliance against the project's constitution. Read the constitution first,
 then check the target artifact (spec, plan, architecture, code, ADR) against
 each relevant article.
 
 ## Process
 
-### Step 1: Load Constitution
+### Step 0: Determine Which Constitution Governs
 
-Read `.forge/constitution.md` in full. If missing or still contains
-`<!-- CUSTOMIZE -->` placeholders, note it and skip uncustomized articles.
+Two shapes exist — using the wrong map produces confidently wrong verdicts:
 
-### Step 2: Identify Relevant Articles
+| Context | Constitution | Articles |
+|---|---|---|
+| User project (installed FORGE) | `.forge/constitution.md`, from the 9-article template | Map A below |
+| FORGE itself (meta-development) | `.forge-meta/constitution.md` | Map B below |
+
+Read the governing file in full first; its headings are authoritative. If both
+constitutions exist (you are inside the FORGE repository itself), you are doing
+meta-development — use Map B unless the task explicitly concerns an installed
+user project. If it is missing
+or still contains `<!-- CUSTOMIZE -->` placeholders, note it and skip
+uncustomized articles. If an article number below does not exist in the loaded
+constitution, say so explicitly instead of guessing its meaning — "Article 5"
+is Security in Map A but Naming & Conventions in Map B.
+
+### Step 1: Identify Relevant Articles
+
+Map A — user projects (9 articles):
 
 | Artifact     | Relevant Articles                            |
 | ------------ | -------------------------------------------- |
@@ -32,7 +47,19 @@ Read `.forge/constitution.md` in full. If missing or still contains
 | ADR          | 1, 2, 3                                      |
 | Test code    | 7, 8                                         |
 
-### Step 3: Article-by-Article Verification
+Map B — FORGE itself (5 articles):
+
+| Artifact              | Relevant Articles |
+| --------------------- | ----------------- |
+| Spec / tech-spec      | 1, 4, 5           |
+| Architecture / plan   | 1, 2, 3, 4        |
+| Code / PR             | 2, 3, 4, 5        |
+| ADR                   | 1, 2, 3           |
+| Test code             | 4                 |
+
+### Step 2: Article-by-Article Verification
+
+Map A — user projects:
 
 - **Art. 1 — Core Principles**: alignment with mission and values.
 - **Art. 2 — Technology Stack**: prescribed stack used, versions in range; new tech requires an ADR.
@@ -44,13 +71,21 @@ Read `.forge/constitution.md` in full. If missing or still contains
 - **Art. 8 — Testing Standards**: required test types present, coverage thresholds met, naming, critical paths tested.
 - **Art. 9 — Operational Requirements**: logging, monitoring/observability, deployment constraints, performance.
 
-### Step 4: Handle Tensions
+Map B — FORGE itself (`.forge-meta/constitution.md`):
+
+- **Art. 1 — Core Principles**: multi-platform, agent-first, constitution as law, zero-breaking-change discipline.
+- **Art. 2 — Technology Stack**: Node 20+, scoped dependency policy (zero for the installer layer; justified + lockfiled elsewhere), distribution boundary (`.opencode-meta/`, `.forge-meta/`, `docs/meta-development/`, repo `opencode.json` never ship).
+- **Art. 3 — Architecture Patterns**: file-based orchestration, platform projection from `.opencode/`.
+- **Art. 4 — Quality Standards**: enforced coverage gate, token budgets, and — critically — every mechanically checkable rule must have a CI check (Art. 4.4). A claim without a check is intent, not a rule.
+- **Art. 5 — Naming & Conventions**: `forge-[role]` agents, `forge-[action]` commands, `SKILL.md` skills; English for all distributed artifacts.
+
+### Step 3: Handle Tensions
 
 When an artifact conflicts with multiple articles: identify conflicts, assess
 priority for the context, document the tension, recommend resolution. If
 unresolved, flag for human decision.
 
-### Step 5: Apply Amendments
+### Step 4: Apply Amendments
 
 Check the Amendments Log; use amended rules where present and note which
 amendments were applied.

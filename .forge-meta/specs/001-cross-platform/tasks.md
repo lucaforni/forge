@@ -5,7 +5,7 @@
 
 | Field  | Value                                             |
 | ------ | ------------------------------------------------- |
-| Status | Pending                                           |
+| Status | Shipped 2026-06-21 — closed out 2026-09-17 (see record below) |
 | Author | forge-scrum                                       |
 | Date   | 2026-06-21                                        |
 | Spec   | [spec.md](./spec.md)                              |
@@ -19,7 +19,33 @@
 - `[P]` — Parallelizable with other `[P]` tasks in the same phase
 - Status: `[ ]` pending · `[x]` done · `[-]` skipped
 - **Effort**: `[S]` <30min · `[M]` 30min–2h · `[L]` 2–4h · `[XL]` >4h (split)
-- All paths are relative to repo root (`/Users/luca/dev/opencode/forge/`)
+- All paths are relative to repo root (originally an absolute local path;
+  rewritten repo-relative at close-out)
+
+---
+
+## Close-out Record (2026-09-17)
+
+The v2.0 port shipped 2026-06-21 by direct implementation; the 32 boxes
+below were never worked as tracked tasks, and ticking them now by another
+hand would falsify the record. They stay as written. What follows is the
+honest accounting, verified against the tree:
+
+| Tasks | Verdict | Evidence / follow-up |
+|---|---|---|
+| T-003–T-005, T-007–T-011 | **Shipped** | `installer/types.ts`, `detect.ts`, `log.ts`, `platforms/opencode.ts`, `config.ts`, `manifest.ts`, `projection.ts`, `drift.ts`, `backup.ts`, `install.ts`, CLI shim all exist and are tested |
+| T-013–T-016, T-018 | **Shipped** | `mcp-server/` scaffold, three extracted tool cores, MCP wiring in `opencode.json` |
+| T-021–T-023 | **Shipped, degraded** | Both platform adapters and multi-platform wiring exist; projection quality gaps tracked in #70 (Codex), #71 (Claude) |
+| T-026, T-027 | **Shipped** | `docs/meta-development/`, README, AGENTS.md exist |
+| T-032 | **Shipped** | `v2.0.0` tag exists |
+| T-006 | **Closed here** | ADR-002 + ADR-003 authored at close-out (see ADR dir) |
+| T-001, T-002, T-024, T-025 | **Never done** | No regression suite or equivalence gate was ever built. Intent covered differently since: installer contract test (#56) and cross-platform CI matrix. No resurrection planned. |
+| T-012 | **Partial** | `.gitignore` maintained (`dev/` ignored 2026-09-15); ADR-006/007 never written — no open decision requires them, waived |
+| T-017 | **Superseded** | Thin-wrapper refactor rendered moot: `.opencode/tools/` consolidated into the MCP server and deleted (#68) |
+| T-019 | **Open** | Codex TOML generation never implemented → tracked in #70 |
+| T-020 | **Open** | `subagent-contract.md` never written; cross-platform spec FR-011 normative reference still dangling → part of #71 scope |
+| T-028–T-030 | **Open** | Plugin core/binding split and integration tests never done; plugins ship OpenCode-only → tracked with #71 |
+| T-031 | **Partial** | Node matrix (20/22/24) in CI; OS matrix and perf audit never done — waived (installer is single-file Node, no native deps) |
 
 ---
 
