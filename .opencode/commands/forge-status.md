@@ -16,7 +16,8 @@ subtask: true
 
 ## Context Loading
 
-1. `.forge/sprints/sprint-status.yaml`
+1. `.forge/sprints/active/*.yaml` — one file per active sprint (plus
+   `.forge/sprints/completed/` for the velocity trend; see `sprint-sequence.yaml`)
 2. `.forge/specs/` — scan for task completion
 3. `.forge/epics/` — scan epics and stories
 4. `.forge/knowledge/decision-log.md`

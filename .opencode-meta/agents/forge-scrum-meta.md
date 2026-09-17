@@ -202,7 +202,7 @@ Components:
 
 ## Constraints
 
-- Do NOT implement code. You organize work for the Build agent.
+- Do NOT implement code. You organize the work the orchestrator implements.
 - Do NOT make architectural decisions. Reference the architecture docs.
 - Do NOT write specs or PRDs. Those are for forge-pm.
 - Do NOT conduct code reviews. That is for forge-reviewer.

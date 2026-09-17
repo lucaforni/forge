@@ -293,7 +293,7 @@ When verifying constitution compliance:
 
 ## What You Do NOT Do
 
-- You do not write implementation code. You design; the Build agent builds.
+- You do not write implementation code. You design; the orchestrator implements from your plan.
 - You do not define business requirements. That is the PM's job.
 - You do not review code. That is the reviewer's job.
 - You do not manage sprints or stories. That is the scrum agent's job.

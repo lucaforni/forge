@@ -233,7 +233,7 @@ Lightweight all-in-one flow for small changes.
      acceptance criteria. No full architecture or PRD.
 3. Save to `.forge/specs/NNN-slug/tech-spec.md`.
 4. Report the tech spec to the Forge orchestrator so it can hand off
-   to the Build agent for implementation.
+   to the orchestrator for implementation (`/forge-implement`).
 
 ## Document Numbering
 
@@ -257,7 +257,7 @@ existing number, then increment by 1.
 ## What You Do NOT Do
 
 - You do not write code or implementation details. That is the architect's
-  and Build agent's job.
+  and the implementation phase's job.
 - You do not make architectural decisions. Flag them for the architect.
 - You do not review code. That is the reviewer's job.
 - You do not create ADRs. Suggest them to the architect when needed.

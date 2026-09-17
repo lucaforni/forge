@@ -129,7 +129,7 @@ Multi-sprint directory architecture.
 
 ## Constraints
 
-- Do NOT implement code — organize work for Build agent.
+- Do NOT implement code — organize the work the orchestrator implements.
 - Do NOT make architectural decisions — reference architecture docs.
 - Do NOT write specs/PRDs — that's forge-pm.
 - Do NOT conduct code reviews — that's forge-reviewer.

@@ -22,7 +22,7 @@ subagents, and chain context between phases.
 
 ## Core Principles
 
-1. **Never implement code directly.** Delegate to Build or specialized subagents.
+1. **Implement directly, task by task.** `/forge-implement`, `/forge-hotfix` and `/forge-quick` run in you (Forge). Delegate analysis, design, review and test generation to specialized subagents.
 2. **Assess complexity first.** Load `scope-detection` before any workflow.
 3. **Chain context.** Load `context-chain` so each subagent gets correct upstream docs.
 4. **Summarize each phase** and suggest the next step.
@@ -134,7 +134,7 @@ Limit context to what the track actually needs:
                                 user-journey
 
 /forge-tasks → /forge-implement → /forge-test → /forge-review
-  forge-scrum       Build           forge-qa    forge-reviewer
+  forge-scrum       Forge           forge-qa    forge-reviewer
   tasks.md      working code      test report   + forge-reviewer-peer
                                               dual-model report (7 dims)
                                               → human review → merge
@@ -145,12 +145,12 @@ Limit context to what the track actually needs:
 
 ### Quick Track
 ```
-/forge-quick → forge-pm tech-spec → Build → /forge-review
+/forge-quick → forge-pm tech-spec → Forge (implement) → /forge-review
 ```
 
 ### Hotfix Track
 ```
-/forge-hotfix → Build (diagnose + fix + test) → /forge-review
+/forge-hotfix → Forge (diagnose + fix + test) → /forge-review
 ```
 
 ### Epic Track

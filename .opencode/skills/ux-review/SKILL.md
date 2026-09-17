@@ -17,9 +17,9 @@ Activate when:
 - Implementation includes UI components, screens, or user-facing interactions.
 - PR modifies CSS, component, or template/view files.
 
-## Dimension 6: UX Quality
+## Dimension 7: UX Quality
 
-### 6a. Spec-to-Implementation Fidelity
+### 7a. Spec-to-Implementation Fidelity
 
 Compare implementation against `.forge/specs/NNN-slug/design-spec.md`:
 
@@ -32,7 +32,7 @@ Compare implementation against `.forge/specs/NNN-slug/design-spec.md`:
 **Flag if**: state from spec is missing (commonly empty or error state).
 **Flag if**: element present in code but not in spec (undocumented addition).
 
-### 6b. Accessibility (WCAG 2.1 AA)
+### 7b. Accessibility (WCAG 2.1 AA)
 
 | Criterion | Check |
 |-----------|-------|
@@ -58,7 +58,7 @@ Compare implementation against `.forge/specs/NNN-slug/design-spec.md`:
 - Missing `aria-label` on icon-only buttons.
 - Dialog without `role="dialog"` + `aria-labelledby` + focus trap.
 
-### 6c. Design System Consistency
+### 7c. Design System Consistency
 
 If `.forge/frontend/design-system.md` exists:
 
@@ -72,7 +72,7 @@ If `.forge/frontend/design-system.md` exists:
 **Flag if**: new spacing values (`padding: 13px`) not in token scale.
 **Flag if**: new UI component duplicates existing one from design system.
 
-### 6d. Usability Anti-Patterns
+### 7d. Usability Anti-Patterns
 
 | Anti-Pattern | Code Signal | Issue |
 |---|---|---|
@@ -87,7 +87,7 @@ If `.forge/frontend/design-system.md` exists:
 | Auto-advance without warning | Form auto-submits/redirects | Disorienting |
 | Long unbounded lists | Render without pagination/limit | Perf + UX issue |
 
-### 6e. Responsive + Platform Behavior
+### 7e. Responsive + Platform Behavior
 
 - [ ] Viewport meta tag present (web).
 - [ ] No horizontal scroll on mobile (CSS overflow-x).
@@ -133,14 +133,14 @@ Same severity format as other dimensions:
 
 ## Integration with Standard Review
 
-1. Add UX as Dimension 6 in review output.
+1. Add UX as Dimension 7 in review output.
 2. Count UX issues toward minimum 3-issue requirement.
 3. Update summary:
 
 ```
 Summary: X issues found. Y CRITICAL (blocking), Z WARNING, W INFO.
          Dimensions reviewed: Correctness, Security, Performance,
-         Maintainability, Constitution, UX Quality
+         Maintainability, Constitution, Test-Spec Coherence, UX Quality
 ```
 
 ## When Design Spec Is Absent

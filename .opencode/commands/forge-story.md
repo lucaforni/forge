@@ -20,7 +20,7 @@ Prepare a user story for implementation in Epic/Product workflows.
 1. Parent epic: `.forge/epics/epic-NN-slug/epic.md`
 2. `.forge/product/prd.md`
 3. `.forge/architecture/architecture.md`
-4. `.forge/sprints/sprint-status.yaml`
+4. The active sprint file (`.forge/sprints/active/sprint-NNN.yaml`, if any)
 5. Existing stories in epic dir (numbering, context)
 
 ## Process
@@ -56,7 +56,9 @@ Use `.forge/templates/story.md`. Write to `.forge/epics/epic-NN-slug/story-NNN-s
 
 ### 6. Sprint Assignment
 
-If sprint active: ask if story should be added, estimate points, update `sprint-status.yaml`, check velocity impact.
+If a sprint is active: ask if the story should be added, estimate points,
+append it to the `stories:` list in `.forge/sprints/active/sprint-NNN.yaml`,
+and check the velocity impact.
 
 ### 7. Summary
 

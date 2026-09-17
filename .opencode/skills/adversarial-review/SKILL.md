@@ -16,7 +16,7 @@ Adversarial review protocol. Review MUST find real issues. "Looks good" / "no is
 
 ## Review Dimensions
 
-6 core + 1 optional UX.
+7 dimensions — 6 core + UX (activate the 7th when UI changes).
 
 ### 1. Correctness
 - Logic errors, off-by-one mistakes.
@@ -137,32 +137,40 @@ Per finding:
 
 ### Severity
 
-- **HIGH** (blocking): Must fix before merge. Security vulns, data corruption, logic errors causing incorrect behavior.
-- **MEDIUM** (important): Should fix before merge. Performance, maintainability, missing edge-case handling.
-- **LOW** (advisory): Nice to have. Style, minor optimizations, doc improvements.
+One scale across the whole framework: **CRITICAL / WARNING / INFO**.
+
+- **CRITICAL** (blocking): Must fix before merge. Security vulns, data corruption or loss, logic errors causing incorrect behavior.
+- **WARNING** (important): Should fix before merge. Performance, maintainability, missing edge-case handling.
+- **INFO** (advisory): Nice to have. Style, minor optimizations, doc improvements.
 
 ### Summary
 
 End every review with:
 
 ```
-Summary: X issues found. Y HIGH (blocking), Z MEDIUM, W LOW.
+Summary: X issues found. Y CRITICAL (blocking), Z WARNING, W INFO.
 Recommendation: [NEEDS CHANGES | APPROVED WITH NOTES | Ready for human review]
 ```
 
-- **NEEDS CHANGES**: ≥ 1 HIGH. Must fix before merge.
-- **APPROVED WITH NOTES**: No HIGH; MEDIUM/LOW exist.
+- **NEEDS CHANGES**: ≥ 1 CRITICAL. Must fix before merge.
+- **APPROVED WITH NOTES**: No CRITICAL; WARNING/INFO exist.
+- CRITICAL **consensus** findings (both reviewers agree) MUST be addressed before merge.
 
 ---
 
 ## Minimum Issue Requirement
 
-Find ≥ 3 issues across the 6 core dimensions:
+Each reviewer finds **≥ 3 issues** across the core dimensions
+(per-reviewer scope):
 - ≥ 1 from Correctness, Security, or Test-Spec Coherence.
 - ≥ 1 from a different dimension.
 - Remainder from any dimension.
 
 If genuinely unable to find 3 in high-impact areas, look harder at Performance and Maintainability. Improvements ALWAYS exist.
+
+> The combined dual-model output (`/forge-review`) surfaces **≥ 5 issues**
+> (combined scope — see `forge-review.md`). Two reviewers owing ≥ 3 each
+> makes ≥ 5 combined the normal case, not an extra burden.
 
 ---
 
@@ -197,7 +205,7 @@ Adversarial code review of implementation changes.
 
 1. Load `context-chain` skill. Read relevant spec/story, architecture, constitution.
 2. Identify changes: `git diff`; explore affected files via `glob`/`grep`.
-3. Review every changed file across all 6 core dimensions.
+3. Review every changed file across all 7 dimensions (UX only when UI changed).
 4. **Test-Spec Coherence**: Read spec/story ACs; cross-reference with tests. `glob` for `**/*.test.*`, `**/*.spec.*`; `grep` for AC references.
 5. Load `constitution-compliance` skill; verify compliance.
 6. If UI changed, load `ux-review` (Dimension 7).

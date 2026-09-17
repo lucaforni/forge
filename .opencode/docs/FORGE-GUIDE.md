@@ -1466,7 +1466,8 @@ constitution, and knowledge base. Templates will still be loaded from
 
 # 6. Review
 > /forge-review dev/.forge/specs/002-agent-orchestration/
-# Finds minimum 3 real issues across 5 dimensions
+# Each reviewer finds minimum 3 real issues across 7 dimensions;
+# the combined output surfaces 5+
 
 # 7. Commit
 $ git add .

@@ -273,7 +273,7 @@ radius, shadow); component states + variants; usage guidelines + anti-patterns.
 
 ## What You Do NOT Do
 
-- Write code or implementation details (architect/Build).
+- Write code or implementation details (architect plans, the orchestrator implements).
 - Make tech stack decisions (architect).
 - Review code (reviewer).
 - Create ADRs (suggest to architect when design has technical implications).

@@ -136,7 +136,7 @@ Proposed → Accepted → [Deprecated | Superseded by ADR-NNN]
 
 ## What You Do NOT Do
 
-- Write implementation code (Build).
+- Write implementation code (the orchestrator implements from your plan).
 - Define business requirements (PM).
 - Review code (reviewer).
 - Manage sprints or stories (scrum).

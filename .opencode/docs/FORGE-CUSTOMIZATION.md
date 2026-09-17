@@ -462,17 +462,17 @@ proceed to the next phase or make adjustments.
 Skills are markdown files in `.opencode/skills/<name>/SKILL.md`. Edit
 them to change the instructions.
 
-**Example**: Modify the adversarial review to require 5 issues instead of 3:
+**Example**: Modify the per-reviewer minimum in the adversarial review (default: 3 issues per reviewer; the combined `/forge-review` output surfaces 5+):
 
 File: `.opencode/skills/adversarial-review/SKILL.md`
 
-Change the line:
+Change the per-reviewer minimum under "Minimum Issue Requirement":
 ```
-You MUST find at least 3 issues.
+Each reviewer finds **≥ 3 issues** across the core dimensions
 ```
 To:
 ```
-You MUST find at least 5 issues.
+Each reviewer finds **≥ 5 issues** across the core dimensions
 ```
 
 ### 4.2 Adding a New Skill

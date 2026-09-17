@@ -172,9 +172,9 @@ npx tsx install-forge.ts /path/to/your/project --update
 ```
 
 > [!NOTE]
-> `--update` is currently parsed but is a no-op — the installer always
-> reconciles against the manifest. Tracked in
-> [#72](https://github.com/lucaforni/forge/issues/72).
+> Without `--update`, fresh install and update are auto-detected from the
+> manifest. With `--update`, the installer refuses a target that has no
+> previous installation instead of silently performing a fresh one.
 
 **Files the installer does not write:**
 - `.forge/constitution.md` — Your project constitution

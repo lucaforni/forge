@@ -14,7 +14,8 @@ Run a retrospective for an Epic/Product sprint.
 
 ## Context Loading
 
-1. `.forge/sprints/sprint-status.yaml`
+1. The sprint file: `.forge/sprints/active/sprint-NNN.yaml`, or the matching
+   file under `.forge/sprints/completed/` for a past sprint
 2. All story files from the sprint
 3. `.forge/knowledge/decision-log.md`
 4. `.forge/knowledge/lessons-learned.md`
