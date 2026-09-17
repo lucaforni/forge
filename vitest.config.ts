@@ -5,6 +5,14 @@ export default defineConfig({
     globals: true,
     include: ["tests/**/*.test.ts"],
 
+    // The installer contract tests materialise ~140 files per install and
+    // run the pipeline twice to prove idempotency. Vitest's 5s default is
+    // sized for unit tests and made them flaky on slower CI runners —
+    // they passed on Node 22/24 and timed out on Node 20 for no reason
+    // other than machine speed.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
+
     // Level-3 harness smokes live here but run only via vitest.smoke.config.ts
     // (they need a provider API key + real CLIs; they skip without them).
     //
