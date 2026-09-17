@@ -121,14 +121,14 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
 
 ## Testing Requirements
 
-Coverage scope is `installer/**` + `mcp-server/src/**` (see
-`vitest.config.ts`). Thresholds are staged — see constitution Art. 4.1.
+Coverage scope is `installer/**`, `mcp-server/src/**` and `mcp-server/index.ts`
+(see `vitest.config.ts`). Thresholds are staged — see constitution Art. 4.1.
 
 | Metric | Enforced gate | Measured 2026-09-17 |
 | --- | --- | --- |
-| Lines | 85% | 91.2% |
-| Branches | 78% | 84.6% |
-| Functions | 82% | 87.6% |
+| Lines | 85% | 89.1% |
+| Branches | 78% | 84.2% |
+| Functions | 80% | 82.5% |
 
 The gate lives in `vitest.config.ts` and is run by the `coverage` job in
 CI. It must stay in sync with that job — a declared-but-unenforced

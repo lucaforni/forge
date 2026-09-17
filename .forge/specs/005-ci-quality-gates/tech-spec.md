@@ -33,7 +33,8 @@ a CI check. None existed.
 | FR-004 | `mcp-server/` has a committed lockfile and `npm ci` succeeds | ✅ |
 | FR-005 | Shell scripts users execute are linted | ✅ `shell` job |
 | FR-006 | The frontend test situation is resolved explicitly, not left ambiguous | ✅ scoped out by design, documented |
-| FR-007 | No devDependency exists solely to support code that never runs | ✅ 9 removed |
+| FR-007 | No devDependency exists solely to support code that never runs | ✅ 10 removed |
+| FR-008 | Coverage scope includes the shipped MCP entry point, not a curated subset | ✅ `mcp-server/index.ts` added |
 
 ## Tasks
 
@@ -47,6 +48,7 @@ a CI check. None existed.
 - [x] T-008 Remove the 9 phantom devDependencies; document the frontend test scope
 - [x] T-009 Amend constitution Art. 4.1 and 4.4 with measured reality
 - [x] T-010 Adversarial review
+- [x] T-011 Resolve review findings (4 CRITICAL, 7 WARNING)
 
 ## Bugs found by writing the tests
 
@@ -67,9 +69,27 @@ shellcheck does not flag this at default severity; it was found by running it.
 
 | Metric | Before | After |
 |---|--:|--:|
-| Tests | 135 | 192 |
+| Tests | 135 | **214** |
 | `tsc` errors | 16 | **0** |
-| Line coverage | not measurable | **91.2%** |
-| Branch coverage | not measurable | **84.6%** |
-| CI checks enforcing the constitution | 0 | 5 |
-| Phantom devDependencies | 9 | 0 |
+| Line coverage | not measurable | **89.1%** |
+| Branch coverage | not measurable | **84.2%** |
+| CI checks enforcing the constitution | 0 | 4 enforced + 1 partial |
+| Phantom devDependencies | 10 | 0 |
+
+## Review Outcome
+
+The dual-model review returned **NEEDS CHANGES** with 13 findings, 4 of them
+CRITICAL. All are resolved.
+
+| Finding | Resolution |
+|---|---|
+| **CRITICAL** — `extractSections` treated a `#` inside a fenced code block as a heading. A spec containing a ```` ```bash ```` example registered a bogus section and truncated the real one. The rewrite made it worse, because closing a level now pops every open ancestor. | Fence state is tracked (backticks and tildes, runs of 3+). Two tests added. |
+| **CRITICAL** — a YAML block scalar (`goal: \|`) stored the literal marker, so the dashboard printed `Sprint 1: \|` with no warning. | Block scalars are consumed, including the folded and chomping variants. Parsing resumes correctly after the block. |
+| **CRITICAL** — `mcp-server/index.ts` (260 lines, the shipped entry point) was outside the coverage scope, so the 91.2% figure measured a curated subset. | Added to the scope. Importing it used to spawn a stdio transport, so an entry-point guard was added and the formatters exported and tested. The honest number is 89.1%. |
+| **CRITICAL** — an unquoted `#` truncated the value. | Verified against a real YAML parser: this **is** YAML semantics, and PyYAML behaves identically. Not a defect. The template now states that values containing `#` must be quoted, and a test documents both branches. |
+| **WARNING** — tab indentation silently mis-nested the document. | Rejected outright; the caller renders a per-file warning. |
+| **WARNING** — `findTaskItems` stripped every `` `[...]` `` group globally, mangling legitimate text mid-description. | Anchored to leading groups. Test asserts a mid-description `` `[login]` `` survives. |
+| **WARNING** — `reqId` was interpolated into a `RegExp` unescaped. | Escaped. |
+| **WARNING** — three tests were tautological (`typeof x === "string"`, `coverage ∈ [0,100]`). | Replaced with exact assertions — which immediately exposed the bug below. |
+| **CRITICAL (found by strengthening a test)** — `traceRequirements` hardcoded `process.cwd()`, so it scanned the FORGE repo instead of the project under test and **reported 100% coverage for a fixture with no source files at all**. The source/test discovery walk was entirely untested. | `projectRoot` is now a parameter. Four tests cover discovery, the NO TESTS branch, and the node_modules/dotfile exclusions. |
+| **INFO** — `vite` was as phantom as the 9 removed devDependencies. | Removed; vitest supplies its own. |

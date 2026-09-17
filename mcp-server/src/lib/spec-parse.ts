@@ -57,7 +57,25 @@ export function extractSections(content: string): Map<string, string> {
     }
   }
 
+  // A `#` inside a fenced code block is a shell comment, not a heading.
+  // Specs routinely contain ```bash blocks; treating those lines as headings
+  // registers bogus sections and truncates the real one.
+  let fence: string | null = null
+
   for (const line of lines) {
+    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/)
+    if (fenceMatch) {
+      const marker = fenceMatch[1]
+      if (fence === null) fence = marker[0]
+      else if (marker[0] === fence) fence = null
+      for (const entry of open) entry.body.push(line)
+      continue
+    }
+    if (fence !== null) {
+      for (const entry of open) entry.body.push(line)
+      continue
+    }
+
     const headerMatch = line.match(/^(#{1,3})\s+(?:\d+\.\s*)?(.+)/)
     if (headerMatch) {
       const level = headerMatch[1].length

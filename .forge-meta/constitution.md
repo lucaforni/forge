@@ -104,8 +104,12 @@ Coverage is defined over `installer/**` and `mcp-server/src/**` (the
 
 | Milestone | Line | Branch | Function | Status |
 |---|--:|--:|--:|---|
-| **Enforced gate** | 85% | 78% | 82% | `vitest.config.ts` + `coverage` job in CI |
-| **Measured 2026-09-17** | 91.2% | 84.6% | 87.6% | `npm run test:coverage` |
+| **Enforced gate** | 85% | 78% | 80% | `vitest.config.ts` + `coverage` job in CI |
+| **Measured 2026-09-17** | 89.1% | 84.2% | 82.5% | `npm run test:coverage` |
+
+Scope is `installer/**`, `mcp-server/src/**` **and `mcp-server/index.ts`**.
+The entry point ships and runs in every user project; excluding it would
+flatter the number by 260 lines.
 
 Rules:
 - The threshold in `vitest.config.ts` MUST match the gate actually run in
@@ -193,5 +197,5 @@ implemented.
 | 2026-09-17 | 4.2 | Agent budget redefined as effective context (agent file + mandatory skills) | The file-size metric was trivially satisfied by moving instructions into skills; `forge-ux` loads ~9.6k effective tokens | Audit #73 |
 | 2026-09-17 | 4.4 | **New** — every mechanically checkable article requires a CI check | Unenforced articles had silently drifted from reality for 7 months | Audit #74 |
 | 2026-09-17 | 5.2 | **New** — English required for all distributed and public-facing artifacts | `SECURITY.md`, GitHub templates, a distributed skill and 3 code templates had drifted to Italian | Audit #62 |
-| 2026-09-17 | 4.1 | Replaced the unmeasured baseline with an enforced gate (85/78/82) and the first real measurement (91.2/84.6/87.6) | Coverage became measurable once `@vitest/coverage-v8` was installed and the MCP tools were tested; the staged plan is superseded by an actual gate | Phase 2, #61 |
+| 2026-09-17 | 4.1 | Replaced the unmeasured baseline with an enforced gate (85/78/80) and the first real measurement (89.1/84.2/82.5) | Coverage became measurable once `@vitest/coverage-v8` was installed and the MCP tools were tested; the staged plan is superseded by an actual gate | Phase 2, #61 |
 | 2026-09-17 | 4.4 | Marked each check as enforced or not, per CI reality | Four of the eight checks are now wired into `ci.yml`; the remaining four must be labelled as intent | Phase 2, #60 |

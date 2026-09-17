@@ -68,6 +68,11 @@ function indentOf(line: string): number {
   return line.length - line.trimStart().length
 }
 
+/** `|`, `>`, and their chomping/indent variants (`|-`, `>+`, `|2`). */
+function isBlockScalarMarker(value: string): boolean {
+  return /^[|>][-+]?\d*$/.test(value.trim())
+}
+
 /**
  * Parse a FORGE sprint file.
  *
@@ -75,6 +80,11 @@ function indentOf(line: string): number {
  *          `sprint:` block.
  */
 export function parseSprintFile(content: string): SprintData | null {
+  // Tabs are invalid for YAML indentation, and treating one as a single
+  // column silently mis-nests the document. Reject rather than guess: the
+  // caller renders a per-file warning.
+  if (/^\t+\s*\S/m.test(content)) return null
+
   const lines = content
     .split("\n")
     .map(stripComment)
@@ -91,9 +101,17 @@ export function parseSprintFile(content: string): SprintData | null {
   const stories: Story[] = []
   const velocity = { planned: 0, completed: 0 }
 
-  let mode: "scalar" | "stories" | "velocity" = "scalar"
+  let mode: "scalar" | "stories" | "velocity" | "block" = "scalar"
   let blockIndent = 0
   let current: Partial<Story> | null = null
+  let blockScalar: { key: string; indent: number; lines: string[] } | null = null
+
+  const flushBlockScalar = () => {
+    if (blockScalar) {
+      scalars.set(blockScalar.key, blockScalar.lines.join("\n").trim())
+      blockScalar = null
+    }
+  }
 
   const flushStory = () => {
     if (current && typeof current.id === "string") {
@@ -114,7 +132,7 @@ export function parseSprintFile(content: string): SprintData | null {
     const indent = indentOf(line)
     const trimmed = line.trim()
 
-    if (mode !== "scalar" && indent <= blockIndent && !trimmed.startsWith("-")) {
+    if (mode !== "scalar" && mode !== "block" && indent <= blockIndent && !trimmed.startsWith("-")) {
       // Dedented out of the block.
       if (mode === "stories") flushStory()
       mode = "scalar"
@@ -132,6 +150,30 @@ export function parseSprintFile(content: string): SprintData | null {
         continue
       }
       const m = trimmed.match(/^([A-Za-z_][\w-]*):\s*(.*)$/)
+      if (m) {
+        if (isBlockScalarMarker(m[2])) {
+          // `key: |` / `key: >` — the value is the indented block that
+          // follows. Storing the marker itself would silently display "|".
+          blockScalar = { key: m[1], indent, lines: [] }
+          mode = "block"
+          continue
+        }
+        if (m[2] !== "") scalars.set(m[1], unquote(m[2]))
+      }
+      continue
+    }
+
+    if (mode === "block") {
+      if (blockScalar && indent > blockScalar.indent) {
+        blockScalar.lines.push(line.slice(blockScalar.indent + 2))
+        continue
+      }
+      flushBlockScalar()
+      mode = "scalar"
+      // Fall through and reprocess this line as a scalar.
+      const m = trimmed.match(/^([A-Za-z_][\w-]*):\s*(.*)$/)
+      if (trimmed === "stories:") { mode = "stories"; blockIndent = indent; continue }
+      if (trimmed === "velocity:") { mode = "velocity"; blockIndent = indent; continue }
       if (m && m[2] !== "") scalars.set(m[1], unquote(m[2]))
       continue
     }
@@ -160,6 +202,7 @@ export function parseSprintFile(content: string): SprintData | null {
     }
   }
   flushStory()
+  flushBlockScalar()
 
   const number = Number(scalars.get("number"))
 

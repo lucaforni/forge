@@ -216,7 +216,7 @@ describe("traceRequirements", () => {
 
   it("extracts every FR and NFR from the spec", async () => {
     const specPath = scaffoldSpec()
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
     const ids = r.requirements.map((x) => x.id)
     expect(ids).toContain("FR-001")
@@ -226,7 +226,7 @@ describe("traceRequirements", () => {
 
   it("carries the requirement description through", async () => {
     const specPath = scaffoldSpec()
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
     const fr001 = r.requirements.find((x) => x.id === "FR-001")
     expect(fr001?.description).toContain("Log in")
@@ -234,7 +234,7 @@ describe("traceRequirements", () => {
 
   it("links a task back to its requirement", async () => {
     const specPath = scaffoldSpec({ tasks: "- [ ] T-001 [FR-001] build login\n" })
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
     const fr001 = r.requirements.find((x) => x.id === "FR-001")
     expect(fr001?.taskItems.some((t) => t.includes("FR-001"))).toBe(true)
@@ -245,24 +245,64 @@ describe("traceRequirements", () => {
 
   it("links a plan section back to its requirement", async () => {
     const specPath = scaffoldSpec({ plan: "## Auth module\nImplements FR-001.\n" })
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
     const fr001 = r.requirements.find((x) => x.id === "FR-001")
     expect(fr001?.planSections.length).toBeGreaterThan(0)
   })
 
-  it("reports a coverage figure and gaps for untraced requirements", async () => {
-    const specPath = scaffoldSpec({ tasks: "- [ ] T-001 [FR-001] build login\n" })
-    const r = await traceRequirements({ specPath })
+  it("reports a NOT IMPLEMENTED gap for every unreferenced requirement", async () => {
+    const specPath = scaffoldSpec({ tasks: "- [ ] T-001 `[FR-001]` build login\n" })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
-    expect(r.coverage).toBeGreaterThanOrEqual(0)
-    expect(r.coverage).toBeLessThanOrEqual(100)
-    expect(Array.isArray(r.gaps)).toBe(true)
+    expect(r.gaps).toHaveLength(3)
+    for (const id of ["FR-001", "FR-002", "NFR-001"]) {
+      expect(r.gaps.join("\n")).toContain(`${id}: [NOT IMPLEMENTED]`)
+    }
+    expect(r.coverage).toBe(0)
+  })
+
+  it("discovers source and test files that reference a requirement", async () => {
+    // This walk was entirely untested: projectRoot was hardcoded to
+    // process.cwd(), so the tool scanned the FORGE repo rather than the
+    // project under test and reported 100% coverage for an empty fixture.
+    const specPath = scaffoldSpec()
+    write("src/auth.ts", "// implements FR-001\nexport const login = () => {}\n")
+    write("tests/auth.test.ts", "// covers FR-001\n")
+
+    const r = await traceRequirements({ specPath, projectRoot: root })
+    const fr001 = r.requirements.find((x) => x.id === "FR-001")!
+
+    expect(fr001.sourceFiles.some((f) => f.endsWith("auth.ts"))).toBe(true)
+    expect(fr001.testFiles.some((f) => f.endsWith("auth.test.ts"))).toBe(true)
+
+    // FR-002 is referenced nowhere.
+    const fr002 = r.requirements.find((x) => x.id === "FR-002")!
+    expect(fr002.sourceFiles).toEqual([])
+    expect(r.gaps.join("\n")).toContain("FR-002: [NOT IMPLEMENTED]")
+  })
+
+  it("reports NO TESTS when source exists but no test references it", async () => {
+    const specPath = scaffoldSpec()
+    write("src/auth.ts", "// implements FR-001\n")
+
+    const r = await traceRequirements({ specPath, projectRoot: root })
+    expect(r.gaps.join("\n")).toContain("FR-001: [NO TESTS]")
+  })
+
+  it("skips node_modules and dotted directories when walking", async () => {
+    const specPath = scaffoldSpec()
+    write("src/node_modules/dep/index.ts", "// FR-001 in a dependency\n")
+    write("src/.hidden/x.ts", "// FR-001 hidden\n")
+
+    const r = await traceRequirements({ specPath, projectRoot: root })
+    const fr001 = r.requirements.find((x) => x.id === "FR-001")!
+    expect(fr001.sourceFiles).toEqual([])
   })
 
   it("tolerates a spec with no plan or tasks file", async () => {
     const specPath = scaffoldSpec()
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
     expect(r.requirements.length).toBeGreaterThan(0)
     for (const req of r.requirements) {
@@ -271,11 +311,12 @@ describe("traceRequirements", () => {
     }
   })
 
-  it("derives the spec id from the directory when only a path is given", async () => {
+  it("derives a spec id when only a path is given", async () => {
     const specPath = scaffoldSpec()
-    const r = await traceRequirements({ specPath })
-    expect(typeof r.specId).toBe("string")
-    expect(r.specId.length).toBeGreaterThan(0)
+    const r = await traceRequirements({ specPath, projectRoot: root })
+    // Derived from the file name, not the spec directory. Asserted exactly so
+    // the test cannot pass on a broken derivation.
+    expect(r.specId).toBe("spec")
   })
 
   it("requires either specId or specPath", async () => {
@@ -288,7 +329,7 @@ describe("traceRequirements", () => {
 
   it("returns an empty requirement list for a spec with no FR/NFR tables", async () => {
     const specPath = write("specs/002-empty/spec.md", "## Overview\nNothing here.\n")
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
 
     expect(r.requirements).toEqual([])
   })
@@ -302,24 +343,40 @@ describe("traceRequirements", () => {
       "- [ ] T-001 `[M]` `[FR-001]` Do the work",
       "- [x] **T-002** `[FR-001]` Bold task id",
     ]
-    for (const shape of shapes) {
+    const expected = [
+      "1.1: Create the component",
+      "Implement the thing",
+      "T-001: Do the work",
+      "T-002: Bold task id",
+    ]
+    for (const [i, shape] of shapes.entries()) {
       const specPath = scaffoldSpec({ tasks: shape + "\n" })
-      const r = await traceRequirements({ specPath })
+      const r = await traceRequirements({ specPath, projectRoot: root })
       const fr001 = r.requirements.find((x) => x.id === "FR-001")
-      expect(fr001?.taskItems, `not matched: ${shape}`).toHaveLength(1)
+      expect(fr001?.taskItems, `not matched: ${shape}`).toEqual([expected[i]])
     }
+  })
+
+  it("preserves a bracketed group in the middle of a task description", async () => {
+    // A global tag strip would delete this too, silently rewriting user text.
+    const specPath = scaffoldSpec({
+      tasks: "- [ ] T-001 `[M]` `[FR-001]` Fix the `[login]` button\n",
+    })
+    const r = await traceRequirements({ specPath, projectRoot: root })
+    const fr001 = r.requirements.find((x) => x.id === "FR-001")
+    expect(fr001?.taskItems[0]).toBe("T-001: Fix the `[login]` button")
   })
 
   it("does not match a requirement id that is a prefix of another", async () => {
     const specPath = scaffoldSpec({ tasks: "- [ ] `[M]` `[FR-0012]` unrelated task\n" })
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
     const fr001 = r.requirements.find((x) => x.id === "FR-001")
     expect(fr001?.taskItems).toEqual([])
   })
 
   it("ignores prose that mentions a requirement outside a checklist item", async () => {
     const specPath = scaffoldSpec({ tasks: "FR-001 is discussed here but is not a task.\n" })
-    const r = await traceRequirements({ specPath })
+    const r = await traceRequirements({ specPath, projectRoot: root })
     const fr001 = r.requirements.find((x) => x.id === "FR-001")
     expect(fr001?.taskItems).toEqual([])
   })

@@ -88,6 +88,36 @@ describe("extractSections", () => {
     expect(isSectionEmpty(sections.get("Edge Cases") ?? "")).toBe(true)
   })
 
+  it("does not treat a shell comment inside a fenced block as a heading", () => {
+    // Specs routinely contain ```bash examples. Reading `# install` as an h1
+    // registered a bogus section and truncated the real one.
+    const sections = extractSections([
+      "## Overview",
+      "Real content.",
+      "",
+      "```bash",
+      "# install the thing",
+      "npm install",
+      "```",
+      "",
+      "More real content.",
+      "",
+      "## Next",
+      "x",
+    ].join("\n"))
+
+    expect([...sections.keys()]).toEqual(["Overview", "Next"])
+    expect(sections.get("Overview")).toContain("More real content.")
+    expect(sections.get("Overview")).toContain("# install the thing")
+  })
+
+  it("handles tilde fences and longer backtick runs", () => {
+    for (const fence of ["~~~", "````"]) {
+      const sections = extractSections(`## A\n${fence}\n# not a heading\n${fence}\n## B\nx\n`)
+      expect([...sections.keys()], `fence ${fence}`).toEqual(["A", "B"])
+    }
+  })
+
   it("handles a deeper heading following a shallower one", () => {
     const sections = extractSections("### Deep\na\n## Shallow\nb\n")
     expect(sections.get("Deep")).toBe("a")

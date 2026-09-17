@@ -17,6 +17,12 @@ import { extractRequirementIds } from "../lib/spec-parse"
 export interface TraceOptions {
   specId?: string
   specPath?: string
+  /**
+   * Project to resolve `src/` and `tests/` against. Defaults to the process
+   * CWD, which is what the MCP server wants; taking it as a parameter is
+   * what makes source/test discovery testable.
+   */
+  projectRoot?: string
 }
 
 export interface RequirementTrace {
@@ -40,7 +46,7 @@ export interface TraceResult {
 // ---------------------------------------------------------------------------
 
 export async function traceRequirements(options: TraceOptions): Promise<TraceResult> {
-  const projectRoot = process.cwd()
+  const projectRoot = options.projectRoot ?? process.cwd()
   let specDir: string | null = null
   let specId = options.specId || ""
 
@@ -202,6 +208,10 @@ function findPlanSections(planContent: string, reqId: string): string[] {
  * requirement, and extracts an identifier when one of the known shapes is
  * present. The underlying format inconsistency is tracked separately.
  */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
 function findTaskItems(tasksContent: string, reqId: string): string[] {
   const items: string[] = []
 
@@ -212,7 +222,7 @@ function findTaskItems(tasksContent: string, reqId: string): string[] {
     // requirement id is matched on a word boundary so FR-001 does not also
     // match FR-0010.
     if (!/^[-*]\s+\[.\]/.test(line)) continue
-    if (!new RegExp(`\\b${reqId}\\b`).test(line)) continue
+    if (!new RegExp(`\\b${escapeRegExp(reqId)}\\b`).test(line)) continue
 
     const body = line.replace(/^[-*]\s+\[.\]\s*/, "")
     const id =
@@ -221,10 +231,12 @@ function findTaskItems(tasksContent: string, reqId: string): string[] {
       body.match(/^\*\*([\d.]+)\*\*/)?.[1] ??      // **1.1**
       null
 
+    // Only strip LEADING tag groups. A global strip would also delete a
+    // legitimate `[...]` in the middle of a description.
     const description = body
       .replace(/^\*\*[^*]+\*\*\s*/, "")
       .replace(/^T-\d+\s*/, "")
-      .replace(/`\[[^\]]*\]`\s*/g, "")
+      .replace(/^(?:`\[[^\]]*\]`\s*)+/, "")
       .trim()
 
     items.push(id ? `${id}: ${description}` : description)

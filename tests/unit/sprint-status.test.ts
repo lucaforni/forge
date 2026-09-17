@@ -114,6 +114,59 @@ sprint:
     expect(s.stories[0].points).toBe(0)
   })
 
+  it("consumes a block scalar instead of storing the marker", () => {
+    // `goal: |` used to yield the literal string "|", and the dashboard
+    // printed "Sprint 1: |" with no warning.
+    const s = parseSprintFile(`sprint:
+  number: 1
+  goal: |
+    Ship the installer contract
+    and enforce it with a test
+  end_date: "2026-09-14"
+`)!
+    expect(s.goal).toBe("Ship the installer contract\nand enforce it with a test")
+    // Parsing must resume for keys that follow the block.
+    expect(s.end_date).toBe("2026-09-14")
+  })
+
+  it("handles the folded and chomped block markers", () => {
+    for (const marker of ["|", ">", "|-", ">+", "|2"]) {
+      const s = parseSprintFile(`sprint:\n  number: 1\n  goal: ${marker}\n    text here\n`)!
+      expect(s.goal, `marker ${marker}`).toBe("text here")
+    }
+  })
+
+  it("rejects tab indentation rather than silently mis-nesting", () => {
+    // Tabs are invalid YAML indentation; counting one as a single column
+    // produced a plausible-looking but wrong document.
+    expect(parseSprintFile("sprint:\n\tnumber: 9\n\tgoal: \"g\"\n")).toBeNull()
+  })
+
+  it("follows YAML comment semantics for an unquoted '#'", () => {
+    // Real YAML also truncates here: a '#' preceded by whitespace starts a
+    // comment. The template tells authors to quote such values.
+    const unquoted = parseSprintFile('sprint:\n  number: 1\n  goal: Fix #42\n')!
+    expect(unquoted.goal).toBe("Fix")
+
+    const quoted = parseSprintFile('sprint:\n  number: 1\n  goal: "Fix #42"\n')!
+    expect(quoted.goal).toBe("Fix #42")
+  })
+
+  it("parses CRLF line endings", () => {
+    const s = parseSprintFile('sprint:\r\n  number: 7\r\n  goal: "g"\r\n')!
+    expect(s.number).toBe(7)
+    expect(s.goal).toBe("g")
+  })
+
+  it("stops at the next top-level key", () => {
+    const s = parseSprintFile(`sprint:
+  number: 1
+  goal: "inside"
+retro: "outside"
+`)!
+    expect(s.goal).toBe("inside")
+  })
+
   it("tolerates a missing velocity block", () => {
     const s = parseSprintFile(`version: 1
 sprint:

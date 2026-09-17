@@ -11,6 +11,10 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js"
+import { pathToFileURL } from "node:url"
+
+import type { ValidationResult } from "./src/tools/validate-spec"
+import type { TraceResult } from "./src/tools/trace-requirements"
 
 // ---------------------------------------------------------------------------
 // Tool Registrations
@@ -180,16 +184,25 @@ async function main() {
   console.error("[forge-mcp-server] Server running on stdio transport")
 }
 
-main().catch((err) => {
-  console.error("[forge-mcp-server] Fatal error:", err)
-  process.exit(1)
-})
+// Only start the transport when this file is the process entry point.
+// Importing it (for tests, or to reuse the formatters) must not spawn a
+// stdio server — and the file cannot be covered by tests otherwise.
+const isEntryPoint =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+
+if (isEntryPoint) {
+  main().catch((err) => {
+    console.error("[forge-mcp-server] Fatal error:", err)
+    process.exit(1)
+  })
+}
 
 // ---------------------------------------------------------------------------
 // Formatting Helpers (used by all tools)
 // ---------------------------------------------------------------------------
 
-function formatValidateSpecResult(result: any): string {
+export function formatValidateSpecResult(result: ValidationResult): string {
   const lines: string[] = []
   lines.push(`Validation Report: ${result.specPath || "unknown"}`)
   lines.push(`Completeness: ${result.completeness ?? "N/A"}%`)
@@ -229,7 +242,7 @@ function formatValidateSpecResult(result: any): string {
   return lines.join("\n")
 }
 
-function formatTraceResult(result: any): string {
+export function formatTraceResult(result: TraceResult): string {
   const lines: string[] = []
   lines.push("Requirements Traceability Matrix")
   lines.push("=".repeat(40))
