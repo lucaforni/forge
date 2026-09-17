@@ -67,10 +67,10 @@ FORGE is a methodology framework for AI-assisted software development that provi
 
 ### 2.3 Distribution Policy
 **NEVER distribute these to user projects:**
-- \`.opencode-meta/\` — Meta-development agent versions
-- \`.forge-meta/\` — FORGE's own constitution and specs
-- \`docs/meta-development/\` — FORGE development documentation
-- \`opencode.json\` from FORGE repo (has meta agent config)
+- `.opencode-meta/` — Meta-development agent versions
+- `.forge-meta/` — FORGE's own constitution and specs
+- `docs/meta-development/` — FORGE development documentation
+- `opencode.json` from FORGE repo (has meta agent config)
 
 ---
 
@@ -78,10 +78,10 @@ FORGE is a methodology framework for AI-assisted software development that provi
 
 ### 3.1 System Architecture
 File-based orchestration framework with platform-projection:
-- Agent definitions in platform agents dir (e.g., \`.opencode/agents/\`, \`.claude/agents/\`)
-- Commands in platform commands dir (e.g., \`.opencode/commands/\`, \`.claude/commands/\`)
-- Skills in platform skills dir (e.g., \`.opencode/skills/\`, \`.claude/skills/\`)
-- User artifacts in \`.forge/\`
+- Agent definitions in platform agents dir (e.g., `.opencode/agents/`, `.claude/agents/`)
+- Commands in platform commands dir (e.g., `.opencode/commands/`, `.claude/commands/`)
+- Skills in platform skills dir (e.g., `.opencode/skills/`, `.claude/skills/`)
+- User artifacts in `.forge/`
 - Shared MCP server in repo root for cross-platform custom tools
 
 ### 3.2 Code Organization
@@ -142,14 +142,19 @@ and MUST be labelled as such.
 | 4.2 | token budget script |
 | — | installer contract test: everything documented as installed is installed |
 
+**Current status: none of these checks exist yet.** Until each one is wired
+into `.github/workflows/ci.yml`, the corresponding article is a statement of
+intent. Tracked in #60 (typecheck), #61 (coverage), #62 (language),
+#73 (token budget), #56 (installer contract).
+
 ---
 
 ## Article 5: Naming & Conventions
 
 ### 5.1 File Naming
-- Agents: \`forge-[role].md\`
-- Commands: \`forge-[action].md\`
-- Skills: \`.opencode/skills/[name]/SKILL.md\` (or platform equivalent)
+- Agents: `forge-[role].md`
+- Commands: `forge-[action].md`
+- Skills: `.opencode/skills/[name]/SKILL.md` (or platform equivalent)
 
 ### 5.2 Language
 - **All distributed and public-facing artifacts MUST be in English** —
@@ -157,6 +162,18 @@ and MUST be labelled as such.
   `SECURITY.md`, GitHub issue/PR templates, and any user-visible string.
 - Internal `.forge/` working artifacts may use any language, but English is
   preferred for consistency.
+
+**Known open violations** (grandfathered, tracked in #62 — no new ones
+are permitted):
+
+| Artifact | Status |
+|---|---|
+| `frontend/patterns/templates/*.tsx` | Italian UI strings and JSDoc remain |
+| `.opencode/docs/automatic-monitoring-setup.md` | Fully Italian; also slated to move out of the distributed docs dir |
+| `.forge/knowledge/decision-log.md`, `.forge/specs/003-harness-tests/` | Internal artifacts — permitted by the rule above |
+
+A CI check for this article is required by Art. 4.4 and is not yet
+implemented.
 
 ---
 

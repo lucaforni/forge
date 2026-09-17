@@ -8,7 +8,7 @@ workflow for developing FORGE using FORGE itself.
 ## Prerequisites
 
 - [OpenCode](https://opencode.ai) installed and configured
-- A GitHub Copilot subscription (provides Claude Sonnet 4.5 and Claude Opus 4.6)
+- A GitHub Copilot subscription (this repo targets Claude Opus 4.7, with Sonnet 4.6 as the default)
 - Familiarity with FORGE methodology (read [FORGE-GUIDE.md](.opencode/docs/FORGE-GUIDE.md))
 - Understanding of the meta-development pattern (see Section 8 of FORGE-GUIDE.md)
 
@@ -16,8 +16,26 @@ workflow for developing FORGE using FORGE itself.
 
 ## Development Workspace
 
-All FORGE development happens in the `dev/` workspace to avoid meta-circular
-conflicts between templates and generated specs.
+> [!WARNING]
+> **This section is out of date and is being rewritten — see
+> [#74](https://github.com/lucaforni/forge/issues/74).**
+>
+> `dev/` was added to `.gitignore` on 2026-09-15. Work done there is
+> **silently untracked**, and the workspace itself has been frozen since
+> 2026-02-14. Real development now happens at the repository root, governed
+> by [`.forge-meta/constitution.md`](.forge-meta/constitution.md), with
+> artifacts in `.forge-meta/specs/` and `.forge/`.
+>
+> Until this guide is rewritten:
+> - run `opencode` from the **repository root**, not `dev/`
+> - read `.forge-meta/constitution.md`, not `dev/.forge/constitution.md`
+> - use repo-root-relative paths (`.opencode/…`), not `../.opencode/…`
+
+<details>
+<summary>Legacy <code>dev/</code> workflow (historical)</summary>
+
+All FORGE development used to happen in the `dev/` workspace to avoid
+meta-circular conflicts between templates and generated specs.
 
 ```bash
 git clone <repo>
@@ -25,14 +43,12 @@ cd forge/dev
 opencode
 ```
 
-**Why `dev/`?** This separates "FORGE source code" from "specs for developing
+**Why `dev/`?** This separated "FORGE source code" from "specs for developing
 FORGE", preventing accidental modification of templates during spec generation.
 
----
+### Legacy path conventions
 
-## Path Conventions
-
-**All paths in specs are relative to `forge/dev/`**:
+**All paths in `dev/` specs were relative to `forge/dev/`**:
 
 | Target | Path from `dev/` |
 |--------|------------------|
@@ -40,7 +56,25 @@ FORGE", preventing accidental modification of templates during spec generation.
 | Dev specs | `./.forge/specs/NNN-slug/` |
 | Dev constitution | `./.forge/constitution.md` |
 
-See [FORGE-GUIDE.md Section 8.5](.opencode/docs/FORGE-GUIDE.md#85-path-conventions) for complete path reference.
+</details>
+
+---
+
+## Path Conventions
+
+All paths are relative to the **repository root**:
+
+| Target | Path |
+|--------|------|
+| Framework source (distributed) | `.opencode/{agents,commands,skills,templates}/` |
+| Meta-development agent overrides | `.opencode-meta/agents/` |
+| FORGE's own governance | `.forge-meta/{constitution.md,specs/,knowledge/}` |
+| FORGE's own dogfooding artifacts | `.forge/{specs,epics,sprints,knowledge}/` |
+| Developer documentation | `docs/meta-development/` |
+
+> `../.opencode/…` is a **`dev/`-era convention**. It must never appear in a
+> distributed file — in an installed project it escapes the project root
+> entirely (constitution Art. 2.3 / 4.3).
 
 ---
 
@@ -246,23 +280,26 @@ This ensures FORGE features are practical and actually useful, not just theoreti
 
 ## Constitution Compliance
 
-All architectural decisions must comply with `dev/.forge/constitution.md`.
-
-Key articles for FORGE development:
+All architectural decisions must comply with
+[`.forge-meta/constitution.md`](.forge-meta/constitution.md) — FORGE's own
+constitution, which has **5 articles**:
 
 | Article | Focus |
 |---------|-------|
-| Article 1 | Core principles (dogfooding, template integrity, path explicitness) |
-| Article 2 | Technology stack (Markdown, YAML, OpenCode only) |
-| Article 3 | Architecture (agent-orchestrated plugin system) |
-| Article 4 | Quality (dogfooding tests, adversarial review) |
-| Article 5 | Security (template injection, prompt security) |
-| Article 7 | Naming conventions (commands, agents, specs) |
-| Article 10 | Meta-development rules (working directory, path explicitness) |
+| Article 1 | Core principles (multi-platform, agent-first, constitution as law) |
+| Article 2 | Technology stack, dependency policy, distribution policy |
+| Article 3 | Architecture patterns (file-based orchestration, platform projection) |
+| Article 4 | Quality standards (coverage, token budgets, enforceability) |
+| Article 5 | Naming conventions and language |
 
-Before finalizing any spec, run constitution compliance check:
+> **Do not map "Article 5" to Security here.** The 9-article layout
+> (Security, Error Handling, Testing, Operations…) belongs to the
+> **user-project template** at `.opencode/templates/constitution.md`, not to
+> this repository.
+
+Before finalizing any spec, run a constitution compliance check:
 ```
-> Load constitution-compliance skill and verify against dev/.forge/constitution.md
+> Load constitution-compliance skill and verify against .forge-meta/constitution.md
 ```
 
 ---
@@ -271,20 +308,28 @@ Before finalizing any spec, run constitution compliance check:
 
 ### Adversarial Review (Required for Feature/Epic)
 
-Before submitting PR, run:
+Before submitting a PR, run:
 ```
-> /forge-review ./.forge/specs/NNN-slug/
+> /forge-review .forge/specs/NNN-slug/
 ```
 
-The adversarial reviewer must find **minimum 3 real issues** across 5 dimensions:
+`/forge-review` runs **`forge-reviewer` and `forge-reviewer-peer` in
+parallel**. Invoking `forge-reviewer` alone bypasses dual-model review and
+violates governance.
+
+The combined review covers **7 dimensions**:
 1. **Correctness**: Logic errors, edge cases, assumptions
 2. **Security**: Template injection, prompt injection, data leakage
 3. **Performance**: Context window usage, agent response time
 4. **Maintainability**: Complexity, documentation, extensibility
 5. **Constitution Compliance**: Adherence to constitution articles
+6. **Test-Spec Coherence**: Do the tests actually verify the spec?
+7. **UX Quality**: Usability, accessibility (WCAG 2.1 AA), design consistency
 
-**Action**: Fix all HIGH severity findings before PR. Document MEDIUM findings
-that are intentionally left (with rationale).
+Severity is **CRITICAL / WARNING / INFO**.
+
+**Action**: Fix all CRITICAL findings before the PR. Document WARNING
+findings that are intentionally left open, with a rationale.
 
 ### Human Review
 

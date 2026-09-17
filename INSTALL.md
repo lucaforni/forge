@@ -201,13 +201,13 @@ Before overwriting any drifted file, a timestamped backup is created inside
 ## Prerequisites
 
 FORGE requires:
-- **Node.js 18+** - Runtime for TypeScript scripts
+- **Node.js 20+** - Runtime for TypeScript scripts (CI matrix: 20 / 22 / 24)
 - **Git** - For cloning the repository
 - **npx** - Included with Node.js
 
 Verify prerequisites:
 ```bash
-node -v   # Should be v18.0.0 or higher
+node -v   # Should be v20.0.0 or higher
 git --version
 npx -v
 ```
@@ -307,14 +307,20 @@ ls -la /path/to/your/project
 
 ### Restore from Backup
 
-If an update went wrong, restore from backups:
+Before overwriting a drifted file, the installer copies it to
+`.forge/.backups/<ISO-timestamp>/<original-path>` (see
+`installer/backup.ts`). To restore:
 
 ```bash
-# Find backups
-find /path/to/your/project -name "*.backup-*"
+# List backup sets, newest last
+ls -1 /path/to/your/project/.forge/.backups/
 
-# Restore a file
-cp file.md.backup-2026-02-14T15-30-45-123Z file.md
+# Inspect one set — paths inside mirror the project layout
+find /path/to/your/project/.forge/.backups/2026-09-17T120000/ -type f
+
+# Restore a single file
+cp /path/to/your/project/.forge/.backups/2026-09-17T120000/.opencode/agents/forge.md \
+   /path/to/your/project/.opencode/agents/forge.md
 ```
 
 ---

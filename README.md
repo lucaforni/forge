@@ -316,6 +316,10 @@ your-project/
 │
 ├── .forge/                     # Your project data (all platforms)
 │   ├── mcp-server/             # Shared MCP server (forge-mcp-server)
+│   ├── frontend/               # Frontend pattern library
+│   │   ├── patterns/           # 17 UI pattern specs + templates
+│   │   ├── design-system.md    # Shared design tokens & components
+│   │   └── stack-decisions.md  # Frontend stack rationale
 │   ├── constitution.md         # 📝 Your project principles
 │   ├── specs/                  # Feature specifications
 │   │   └── 001-feature/
@@ -324,43 +328,20 @@ your-project/
 │   │       ├── user-journey.md # Personas & user journeys
 │   │       ├── plan.md         # Implementation plan
 │   │       └── tasks.md        # Task breakdown
-│   ├── ux/
-│   │   └── design-system.md    # Shared design tokens & components
 │   ├── knowledge/
 │   │   ├── adr/                # Architecture decisions
 │   │   ├── decision-log.md     # Session decisions
 │   │   └── lessons-learned.md  # Retrospective insights
 │   ├── epics/                  # Epic documents
 │   ├── sprints/                # Sprint tracking
-│   │   ├── sprint-001.json     # Active sprint
-│   │   └── archive/            # Completed sprints
+│   │   ├── active/             # sprint-NNN.yaml, one per active sprint
+│   │   ├── completed/          # Archived sprints
+│   │   ├── retrospectives/     # Sprint retrospectives
+│   │   └── sprint-sequence.yaml
 │   └── product/                # Product brief & roadmap
 │
 ├── AGENTS.md                   # 📝 Your project conventions (OpenCode + Codex)
-├── CLAUDE.md                   # 📝 Claude Code instructions (@AGENTS.md import)
-└──
-├── .forge/                     # Your project data
-│   ├── constitution.md         # 📝 Your project principles
-│   ├── specs/                  # Feature specifications
-│   │   └── 001-feature/
-│   │       ├── spec.md         # Requirements
-│   │       ├── design-spec.md  # UX/UI design (wireframes, components, a11y)
-│   │       ├── user-journey.md # Personas & user journeys
-│   │       ├── plan.md         # Implementation plan
-│   │       └── tasks.md        # Task breakdown
-│   ├── ux/
-│   │   └── design-system.md    # Shared design tokens & components
-│   ├── knowledge/
-│   │   ├── adr/                # Architecture decisions
-│   │   ├── decision-log.md     # Session decisions
-│   │   └── lessons-learned.md  # Retrospective insights
-│   ├── epics/                  # Epic documents
-│   ├── sprints/                # Sprint tracking
-│   │   ├── sprint-001.yaml     # Active sprint
-│   │   └── archive/            # Completed sprints
-│   └── product/                # Product brief & roadmap
-│
-└── AGENTS.md                   # 📝 Your project conventions
+└── CLAUDE.md                   # 📝 Claude Code instructions (@AGENTS.md import)
 ```
 
 ---
@@ -505,7 +486,7 @@ Plugins provide automation (adapted per-platform hooks):
 
 FORGE enforces quality through:
 
-- **Test Coverage Thresholds** - Defined in constitution (typically 70%+ line, 60%+ branch)
+- **Test Coverage Thresholds** - Defined in your project constitution (Art. 4.1); FORGE ships no default number
 - **Review Gates** - AI adversarial review before human review
 - **Constitution Compliance** - All decisions validated against principles
 - **Traceability** - Every line of code traces to a spec or story

@@ -45,6 +45,32 @@ updates:
           - minor
           - patch
 
+  # Third manifest: the shared MCP server. It declares RUNTIME dependencies
+  # (@modelcontextprotocol/sdk, tsx) and is installed into every user project
+  # as .forge/mcp-server/, so its vulnerabilities reach end users directly.
+  # Required by constitution Art. 2.2.
+  # NOTE: mcp-server/ has no committed lockfile yet (#74) — Dependabot will
+  # still open manifest-level PRs, but `npm ci` is not yet possible there.
+  - package-ecosystem: npm
+    directory: "/mcp-server"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Rome
+    target-branch: main
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      mcp-server-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

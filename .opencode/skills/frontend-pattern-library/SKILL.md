@@ -12,129 +12,133 @@ metadata:
 
 Bridge the gap between UX specification and frontend implementation by providing
 a shared vocabulary of **17 UI patterns** for React + shadcn/ui + Tailwind.
-forge-ux referenzia pattern per nome nella design-spec. Build carica il pattern
-e lo usa come reference strutturale per generare codice consistente.
+`forge-ux` references patterns by name in the design-spec. Build loads the
+pattern and uses it as a structural reference to generate consistent code.
 
 ## When to Load
 
-Caricare QUESTO skill PRIMA di `/forge-ux` quando:
-- La feature ha **user-facing UI** web
-- Lo stack è React + shadcn/ui + Tailwind (o compatibile)
+Load THIS skill BEFORE `/forge-ux` when:
+- The feature has **user-facing web UI**
+- The stack is React + shadcn/ui + Tailwind (or compatible)
 
-Caricare DOPO `context-chain` e PRIMA di `ux-design`.
+Load AFTER `context-chain` and BEFORE `ux-design`.
 
 ## Workflow
 
 ### 1. Load Foundation Documents
 
-Leggere questi file (esistenza verificata, silent if missing):
+Read these files (existence-checked, silent if missing):
 
 ```
-.forge/frontend/stack-decisions.md    — Stack, framework, convenzioni
-.forge/frontend/design-system.md      — Token, component inventory, regole d'oro
+.forge/frontend/stack-decisions.md    — Stack, framework, conventions
+.forge/frontend/design-system.md      — Tokens, component inventory, golden rules
 ```
 
 ### 2. Load Pattern Index
 
-Leggere `.forge/frontend/patterns/index.md` — contiene:
+Read `.forge/frontend/patterns/index.md` — it contains:
 
-- **Decision Tree**: albero navigabile per selezionare il pattern giusto
-- **Pattern Matrix**: tutti i pattern con severità, dipendenze, stati coperti
-- **Pattern Selection by Use Case**: tabella situazione → pattern primario/secondario
-- **Pattern Selection by Data Volume**: guida per scegliere in base ai volumi
+- **Decision Tree**: navigable tree for selecting the right pattern
+- **Pattern Matrix**: every pattern with severity, dependencies, states covered
+- **Pattern Selection by Use Case**: situation → primary/secondary pattern table
+- **Pattern Selection by Data Volume**: guidance based on data volume
 
-### 3. Select Pattern Using Decision Tree
+### 3. Select Pattern Using the Decision Tree
 
-Dato il requisito UI, navigare l'albero decisionale:
+Given the UI requirement, walk the decision tree:
 
 ```
-L'utente deve VISUALIZZARE dati?
-  ├── Tabellari, 10+ record, filtrabili? → Pattern: DATA TABLE
-  ├── Metriche, trend, KPI?              → Pattern: DASHBOARD + KPI CARD  
-  ├── Lista + dettaglio?                 → Pattern: MASTER-DETAIL
-  ├── Ricerca + risultati?               → Pattern: SEARCH + RESULTS
-  └── Feed continuo?                     → Pattern: INFINITE SCROLL
+Does the user need to VIEW data?
+  ├── Tabular, 10+ records, filterable?  → Pattern: DATA TABLE
+  ├── Metrics, trends, KPIs?             → Pattern: DASHBOARD + KPI CARD
+  ├── List + detail?                     → Pattern: MASTER-DETAIL
+  ├── Search + results?                  → Pattern: SEARCH + RESULTS
+  └── Continuous feed?                   → Pattern: INFINITE SCROLL
 
-L'utente deve INSERIRE dati?
-  ├── Form singolo?                      → Pattern: FORM + VALIDATION
+Does the user need to ENTER data?
+  ├── Single form?                       → Pattern: FORM + VALIDATION
   ├── Multi-step?                        → Pattern: WIZARD
-  └── Impostazioni?                      → Pattern: SETTINGS PANEL
+  └── Settings?                          → Pattern: SETTINGS PANEL
 
-L'utente deve CONFERMARE / INTERAGIRE?
-  ├── Conferma azione?                   → Pattern: MODAL FLOW
-  ├── Azione distruttiva?                → Pattern: CONFIRMATION FLOW
-  ├── Pannello laterale?                 → Pattern: DRAWER / SHEET
-  └── Navigazione rapida?                → Pattern: COMMAND PALETTE
+Does the user need to CONFIRM / INTERACT?
+  ├── Confirm an action?                 → Pattern: MODAL FLOW
+  ├── Destructive action?                → Pattern: CONFIRMATION FLOW
+  ├── Side panel?                        → Pattern: DRAWER / SHEET
+  └── Quick navigation?                  → Pattern: COMMAND PALETTE
 
-L'utente riceve FEEDBACK?
-  ├── Notifica temporanea?               → Pattern: NOTIFICATION
-  ├── Errore con recupero?               → Pattern: ERROR RECOVERY
-  └── Stato transitorio?                 → Pattern: LOADING SKELETON
+Does the user receive FEEDBACK?
+  ├── Transient notification?            → Pattern: NOTIFICATION
+  ├── Error with recovery?               → Pattern: ERROR RECOVERY
+  └── Transitional state?                → Pattern: LOADING SKELETON
 
-Nessun dato?                             → Pattern: EMPTY STATE (sempre)
+No data?                                 → Pattern: EMPTY STATE (always)
 ```
 
-### 4. Load Selected Pattern
+### 4. Load the Selected Pattern
 
-Caricare `.forge/frontend/patterns/pattern-[nome].md`
+Load `.forge/frontend/patterns/pattern-[name].md`
 
-Il pattern contiene 9 sezioni obbligatorie:
-1. **Quando Usare** — condizioni precise di utilizzo
-2. **Componenti shadcn/ui** — quali componenti e varianti
-3. **Composizione JSX** — struttura layout
-4. **State Machine** — loading, empty, error, edge cases in formato YAML
+Every pattern has 9 mandatory sections:
+1. **When to Use** — precise usage conditions
+2. **shadcn/ui Components** — which components and variants
+3. **JSX Composition** — layout structure
+4. **State Machine** — loading, empty, error, edge cases in YAML
 5. **Data Flow** — React Query keys, URL params, cache strategy
-6. **TypeScript Types** — Props, data interfaces
-7. **Accessibilità** — ARIA, keyboard, screen reader flow
-8. **Responsive** — breakpoint behavior
-9. **QA Checklist** — punti verificabili dal reviewer
+6. **TypeScript Types** — props and data interfaces
+7. **Accessibility** — ARIA, keyboard, screen reader flow
+8. **Responsive** — breakpoint behaviour
+9. **QA Checklist** — points the reviewer can verify
 
-### 5. Load Design System (if needed per componenti specifici)
+### 5. Load the Design System (if specific components are needed)
 
-Dal `design-system.md`:
-- Token semantici per colori, spacing, typography
-- Component inventory con varianti e quando usarli
-- Regole di composizione componenti
+From `design-system.md`:
+- Semantic tokens for colour, spacing, typography
+- Component inventory with variants and when to use them
+- Component composition rules
 
-## Output per forge-ux
+## Output for forge-ux
 
-Nella design-spec, INCLUDE:
+In the design-spec, INCLUDE:
 
 ```
 ### Pattern Reference
 Pattern: DATA TABLE
 Source: .forge/frontend/patterns/pattern-data-table.md
 
-Selected by: Elenco ordini con 20+ record, filtri per status, 
-             ordinamento per data, paginazione server-side
+Selected by: Order list with 20+ records, filter by status,
+             sort by date, server-side pagination
 
 Template: .forge/frontend/patterns/templates/data-table.tsx
 
-Stati da implementare:
+States to implement:
   - loading (skeleton table)
-  - populated (ordinato per data desc)
-  - empty (first-visit: "Nessun ordine" + CTA)
-  - filtered-empty (filtri attivi: "Cancella filtri")
+  - populated (sorted by date desc)
+  - empty (first visit: "No orders yet" + CTA)
+  - filtered-empty (filters active: "Clear filters")
   - error (retry button)
-  - refetching (dati precedenti visibili)
+  - refetching (previous data still visible)
 
-QA Checklist (da validare in review):
-  - Sorting: click header cicla asc/desc
-  - Pagination: page in URL
-  - Filtri: URL si aggiorna
+QA Checklist (to validate in review):
+  - Sorting: clicking a header cycles asc/desc
+  - Pagination: page is in the URL
+  - Filters: the URL updates
   - Empty states: first-visit vs filtered
 ```
 
-## Output per Build (implementazione)
+## Output for Build (implementation)
 
-Quando Build riceve una design-spec con Pattern Reference:
+When Build receives a design-spec containing a Pattern Reference:
 
-1. Caricare il file del pattern → capire struttura, stati, data flow
-2. Caricare il template se esiste → usare come base strutturale
-3. Adattare al contesto specifico (colonne, filtri, azioni)
-4. Implementare TUTTI gli stati documentati (loading, empty, error, edge cases)
-5. Seguire design token per colori/spacing
-6. Verificare contro QA checklist del pattern
+1. Load the pattern file → understand structure, states, data flow
+2. Load the template if it exists → use it as a structural base
+3. Adapt it to the specific context (columns, filters, actions)
+4. Implement ALL documented states (loading, empty, error, edge cases)
+5. Follow design tokens for colour and spacing
+6. Verify against the pattern's QA checklist
+
+> **Language:** all generated UI strings must be in English unless the target
+> project states otherwise. Some shipped `.tsx` templates still contain
+> Italian strings — translate them when you adapt them (tracked in #62).
 
 ## Reference Files
 

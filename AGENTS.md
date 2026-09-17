@@ -137,7 +137,7 @@ Coverage scope is `installer/**` + `mcp-server/src/**` (see
 Commands:
 
 ```bash
-npm test                                  # unit tests (74 tests, ~0.5s)
+npm test                                  # unit tests (fast: sub-second)
 npx tsc --noEmit -p tsconfig.json         # typecheck
 ```
 
