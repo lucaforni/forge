@@ -162,8 +162,10 @@ export function mapPermissionBlock(lines: string[]): { tools: string[]; notes: s
   const notes: string[] = []
   const seen = new Set<string>()
 
+  // Indentation-insensitive on purpose: a tab-indented block must map its
+  // keys the same way rather than silently dropping the whole allowlist.
   for (const line of lines) {
-    const m = line.match(/^  ([A-Za-z0-9_-]+):/)
+    const m = line.match(/^\s+([A-Za-z0-9_-]+):/)
     if (!m) continue
     const key = m[1]
     const mapped = TOOL_MAP[key]
@@ -175,7 +177,7 @@ export function mapPermissionBlock(lines: string[]): { tools: string[]; notes: s
     }
   }
 
-  const nested = lines.filter((l) => /^    /.test(l))
+  const nested = lines.filter((l) => /^\s{2,}|^\t/.test(l))
   const restricted = nested.filter((l) => /deny|"[\w*][^"]*"\s*:/.test(l))
   if (nested.length > 0 && restricted.length > 0) {
     const examples = restricted

@@ -9,13 +9,16 @@
  */
 
 import { describe, it, expect } from "vitest"
-import { mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from "node:fs"
+import {
+  mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync,
+  readdirSync,
+} from "node:fs"
 import { createHash } from "node:crypto"
 import { join, resolve, dirname } from "node:path"
 import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 
-import { buildInstallPlan } from "../../installer/projection"
+import { buildInstallPlan, resolveTarget } from "../../installer/projection"
 import { projectClaudeArtifact } from "../../installer/platforms/claude-code"
 import { projectCodexArtifact, generateCodexAgentToml } from "../../installer/platforms/codex"
 import { OPENCODE_DESCRIPTOR } from "../../installer/platforms/opencode"
@@ -166,14 +169,30 @@ describe("Codex command projection", () => {
 })
 
 describe("OpenCode projection stays byte-identical", () => {
-  it("installs agents, commands and skills unchanged", () => {
+  it("installs every platform file unchanged", () => {
+    // A sample would let a partial transform slip through. The projection
+    // for OpenCode must be the identity function over the whole tree.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)],
+      )
     const target = mkdtempSync(join(tmpdir(), "forge-oc-ident-"))
     try {
       mkdirSync(join(target, ".opencode"), { recursive: true })
       installInto(target, ["opencode"])
-      for (const rel of ["agents/forge.md", "commands/forge-review.md", "skills/context-chain/SKILL.md"]) {
-        expect(readFileSync(join(target, ".opencode", rel), "utf-8")).toBe(readSource(rel))
+      const sources = ["agents", "commands", "skills", "plugins"]
+        .flatMap((d) => walk(join(REPO_ROOT, ".opencode", d)))
+        .filter((f) => !f.includes("node_modules"))
+      expect(sources.length).toBeGreaterThan(40)
+      for (const src of sources) {
+        const rel = src.slice(join(REPO_ROOT, ".opencode").length + 1)
+        expect(readFileSync(join(target, ".opencode", rel), "utf-8"), rel).toBe(
+          readFileSync(src, "utf-8"),
+        )
       }
+      expect(readFileSync(join(target, ".opencode/package.json"), "utf-8")).toBe(
+        readFileSync(join(REPO_ROOT, ".opencode/package.json"), "utf-8"),
+      )
     } finally {
       rmSync(target, { recursive: true, force: true })
     }
@@ -257,5 +276,20 @@ describe("installed Codex project", () => {
     } finally {
       rmSync(target, { recursive: true, force: true })
     }
+  })
+})
+
+describe("resolveTarget containment", () => {
+  it("joins platform paths under the platform root", () => {
+    expect(resolveTarget("/t", ".claude", "agents/x.md")).toBe(join("/t", ".claude/agents/x.md"))
+  })
+
+  it("joins leading-slash paths against the project root", () => {
+    expect(resolveTarget("/t", ".codex", "/.agents/skills/y.md")).toBe(join("/t", ".agents/skills/y.md"))
+  })
+
+  it("throws on paths escaping the target root", () => {
+    expect(() => resolveTarget("/t", ".codex", "/../../etc/x")).toThrow(/escaped the target root/)
+    expect(() => resolveTarget("/t", ".codex", "agents/../../../etc/x")).toThrow(/escaped the target root/)
   })
 })

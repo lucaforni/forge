@@ -101,7 +101,21 @@ would be worse than documenting the gap.
 - [x] T-004 `[S]` Fix the two `.opencode/` hard references (forge-ux pointer, archive-decisions skill path)
 - [x] T-005 `[M]` Contract tests: `name:` present, no OpenCode keys, TOML exists, skills at project root
 - [x] T-006 `[S]` INSTALL.md/README.md reflect the fixed state; open #87 for residuals
-- [ ] T-007 `[S]` Full verification; adversarial review; resolve CRITICAL findings
+- [x] T-007 `[S]` Full verification; adversarial review; resolve CRITICAL findings
+
+## Review Outcome
+
+Both subagent reviewers were unavailable again, so the review was performed
+directly with executed probes against all 24 commands and the engine:
+
+| Finding | Resolution |
+|---|---|
+| Probes confirmed the design before merge: TOML structurally valid across hostile inputs; all 24 Claude commands gain exactly one routing step placed after the title; Codex commands get the neutral note with no Task leakage (the 4 apparent hits were pre-existing body text). | Verified, no change needed. |
+| OpenCode identity proven over all 54 platform files (the committed test sampled 3). | Test strengthened to the full tree. |
+| CRLF sources degraded to zero parsed keys (`.` never matches `\\r`). | Line endings normalized in the parser. |
+| Tab-indented permission blocks silently dropped the whole `tools:` line. | Whitespace-tolerant key matching. |
+| No containment on projected paths: `join()` normalises `..` without failing, so a malformed `relTarget` could write outside the target. Unreachable via the catalog today, but an installer that writes files should not rely on that. | `resolveTarget()` helper fails closed; unit-tested including traversal inputs. |
+| A `require()` slipped into the new test file — the exact pattern two prior reviews flagged. | Replaced with static imports immediately. |
 
 ## Acceptance Criteria
 

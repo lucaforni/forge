@@ -33,7 +33,10 @@ export interface ParsedFrontmatter {
  * Returns no entries when the file has no valid `---` block.
  */
 export function parseFrontmatter(content: string): ParsedFrontmatter {
-  const lines = content.split("\n")
+  // Strip CR so CRLF sources parse identically. Installed files are always
+  // LF; without this, every key line silently fails to match (`.` does not
+  // match `\r`) and the block degrades to zero entries.
+  const lines = content.split("\n").map((l) => (l.endsWith("\r") ? l.slice(0, -1) : l))
   if (lines[0]?.trim() !== "---") return { entries: [], bodyStart: null }
 
   let closeIdx = -1

@@ -367,6 +367,23 @@ interface ProjectedFile {
 }
 
 /**
+ * Resolve a projected relative target to an absolute path. A leading `/`
+ * joins against the project root (Codex skills); anything else joins
+ * against the platform root. Paths escaping the target root fail closed —
+ * an installer that writes files must not rely on its inputs being benign.
+ */
+export function resolveTarget(targetRoot: string, rootDir: string, relTarget: string): string {
+  const absTarget =
+    relTarget.startsWith("/") ? join(targetRoot, relTarget.slice(1)) : join(targetRoot, rootDir, relTarget)
+  const resolvedRoot = resolve(targetRoot)
+  const resolved = resolve(absTarget)
+  if (resolved !== resolvedRoot && !resolved.startsWith(`${resolvedRoot}/`)) {
+    throw new Error(`Projection escaped the target root: ${relTarget}`)
+  }
+  return absTarget
+}
+
+/**
  * Project one canonical artifact for a platform.
  *
  * OpenCode is the identity (byte-identical). Claude Code translates
@@ -456,9 +473,8 @@ export function buildInstallPlan(
     for (const artifact of artifactsForPlatform) {
       for (const projected of projectForPlatform(platform, artifact)) {
         const { relTarget } = projected
-        const absTarget = relTarget.startsWith("/")
-          ? join(targetRoot, relTarget.slice(1))
-          : join(targetRoot, descriptor.rootDir, relTarget)
+        const absTarget = resolveTarget(targetRoot, descriptor.rootDir, relTarget)
+
         const targetDir = resolve(join(absTarget, ".."))
 
         requiredDirectories.add(targetDir)
