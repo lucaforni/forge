@@ -21,7 +21,7 @@ import { join, resolve, dirname } from "node:path"
 import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 
-import { buildInstallPlan, catalogCanonicalArtifacts } from "../../installer/projection"
+import { buildInstallPlan, catalogCanonicalArtifacts, catalogForgeArtifacts } from "../../installer/projection"
 import { run } from "../../installer/install"
 import { OPENCODE_DESCRIPTOR } from "../../installer/platforms/opencode"
 import { CLAUDE_CODE_DESCRIPTOR } from "../../installer/platforms/claude-code"
@@ -451,4 +451,42 @@ describe("installer contract — manifest hygiene", () => {
       rmSync(target, { recursive: true, force: true })
     }
   }, 60_000)
+})
+
+describe("installer contract — the catalogue never walks build output", () => {
+  it("excludes node_modules from the MCP server projection", () => {
+    // mcp-server/ has a lockfile, so any local build creates node_modules
+    // there. An unfiltered walk copied ~3,900 dependency files into every
+    // target project — and read them as UTF-8, corrupting native binaries.
+    const forge = catalogForgeArtifacts(REPO_ROOT)
+    const offenders = forge.filter((a) => /(^|\/)node_modules(\/|$)/.test(a.sourcePath))
+    expect(offenders.map((a) => a.sourcePath)).toEqual([])
+  })
+
+  it("keeps the MCP server catalogue to its own source files", () => {
+    const mcp = catalogForgeArtifacts(REPO_ROOT).filter((a) =>
+      a.targetPath.includes(join(".forge", "mcp-server")),
+    )
+    expect(mcp.length).toBeGreaterThan(0)
+    // A handful of TypeScript sources plus two manifests — not thousands.
+    expect(mcp.length).toBeLessThan(50)
+    expect(mcp.some((a) => a.sourcePath.endsWith("index.ts"))).toBe(true)
+  })
+
+  it("excludes dotted and build directories everywhere in the catalogue", () => {
+    const all = [...catalogForgeArtifacts(REPO_ROOT), ...catalogCanonicalArtifacts(REPO_ROOT)]
+    for (const bad of ["node_modules", "/.git/", "/dist/", "/coverage/"]) {
+      const hits = all.filter((a) => a.sourcePath.includes(bad))
+      expect(hits.map((a) => a.sourcePath), `catalogue contains ${bad}`).toEqual([])
+    }
+  })
+
+  it("installs a bounded number of files", () => {
+    // A blunt canary: if this jumps by an order of magnitude, the walk is
+    // picking up something it should not.
+    const plan = buildInstallPlan(["opencode"], DESCRIPTORS, REPO_ROOT, mkdtempSync(join(tmpdir(), "forge-count-")))
+    const writes = plan.operations.filter((o) => o.kind === "create" || o.kind === "update")
+    expect(writes.length).toBeGreaterThan(100)
+    expect(writes.length).toBeLessThan(1000)
+  })
 })

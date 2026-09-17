@@ -31,7 +31,22 @@ function toPosix(p: string): string {
 }
 
 /**
+ * Directory names that are never part of a distributed artifact set.
+ *
+ * `node_modules` matters most: once `mcp-server/` gained a lockfile,
+ * building locally creates `mcp-server/node_modules/`, and an unfiltered
+ * walk copied ~3,900 dependency files into every target project. Worse,
+ * the catalogue reads every entry as UTF-8, so native `.node` binaries
+ * would have been silently corrupted on the way in.
+ */
+const IGNORED_DIRS = new Set(["node_modules", ".git", "dist", "coverage", ".turbo", ".next"])
+
+/**
  * Recursively walk a directory, returning all file paths.
+ *
+ * Skips build output, dependency trees and dotted directories — nothing
+ * FORGE distributes lives in one, and walking them is how a 89-file install
+ * became a 4,028-file install.
  */
 function walkDir(dirPath: string): string[] {
   const results: string[] = []
@@ -39,6 +54,7 @@ function walkDir(dirPath: string): string[] {
   for (const entry of entries) {
     const fullPath = join(dirPath, entry.name)
     if (entry.isDirectory()) {
+      if (IGNORED_DIRS.has(entry.name) || entry.name.startsWith(".")) continue
       results.push(...walkDir(fullPath))
     } else {
       results.push(fullPath)
