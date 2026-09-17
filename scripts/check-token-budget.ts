@@ -12,15 +12,14 @@
  *   - every agent definition file          <= 5000 tokens
  *     (both `.opencode/agents/` and `.opencode-meta/agents/`)
  *
- * What is reported but not gated:
- *   - effective context per agent = agent file + every skill it declares.
- *     A skill counts as declared when its name appears backtick-quoted
- *     (`name`) or bolded (`**name**`) — the two styles every agent file
- *     actually uses (numbered "Load X" steps, `## Skills` bullets, routing
- *     tables). Conditional loads ("load IN ADDITION when...") count toward
- *     the total: the budget guards the worst case, and a conditional that
- *     always fires is just a load. Transitive loads (a skill naming
- *     another skill) are NOT followed.
+ * Mandatory vs conditional: only load directives count — a `- **name**:`
+ *     bullet, a `Load \`name\`` step, or any mention explicitly tagged
+ *     `(conditional)`. Bare cross-references ("see Step 1.1") never load
+ *     anything. A skill is conditional only when EVERY directive is tagged;
+ *     one untagged "Load X" means it always loads. The gate applies to
+ *     mandatory effective context (file + mandatory skills); worst-case
+ *     (mandatory + conditional) is reported alongside.
+ * Transitive loads (a skill naming another skill) are NOT followed.
  *
  * The 5000-token effective target from Art. 4.2 is reported, not enforced:
  * the UX chain legitimately exceeds it today (see the table below), and an
@@ -69,8 +68,10 @@ function agentFiles(): string[] {
 interface AgentReport {
   agent: string
   fileTokens: number
-  skills: Array<{ name: string; tokens: number }>
-  effective: number
+  mandatory: Array<{ name: string; tokens: number }>
+  conditional: Array<{ name: string; tokens: number }>
+  mandatoryEffective: number
+  worstCase: number
 }
 
 function main(): void {
@@ -85,38 +86,71 @@ function main(): void {
     if (t > SKILL_BUDGET) violations.push(`skill ${name}: ${t} > ${SKILL_BUDGET}`)
   }
 
+  const MANDATORY_EFFECTIVE_BUDGET = 5000;
+
   const agents: AgentReport[] = []
-  const mention = (text: string, name: string): boolean =>
-    new RegExp(`(\`${name}\`|\\*\\*${name}\\*\\*)`).test(text);
+  const linesOf = (text: string): string[] => text.split("\n")
+  const mentionOn = (line: string, name: string): boolean =>
+    new RegExp(`(\`${name}\`|\\*\\*${name}\\*\\*)`).test(line);
+  // A load directive: Skills bullet, Load step, or an explicitly tagged mention.
+  const directiveOn = (line: string, name: string): boolean => {
+    if (!mentionOn(line, name)) return false
+    if (line.includes("(conditional)")) return true
+    if (/^\s*-\s*(\*\*`?[^`*]+`?\*\*|`[^`]+`)/.test(line)) return true
+    if (/^\s*(?:\d+[.)]\s*)?Load\s+`/.test(line)) return true
+    return false
+  };
 
   for (const file of agentFiles()) {
     const text = readFileSync(file, "utf-8")
+    const lines = linesOf(text)
     const fileTokens = tokens(text)
     const rel = file.slice(REPO_ROOT.length + 1)
     if (fileTokens > AGENT_BUDGET) violations.push(`agent ${rel}: ${fileTokens} > ${AGENT_BUDGET}`)
 
-    const declared = [...skills.keys()].filter((n) => mention(text, n))
-    const skillTokens = declared.map((name) => ({ name, tokens: skills.get(name) ?? 0 }))
+    const mandatory: Array<{ name: string; tokens: number }> = []
+    const conditional: Array<{ name: string; tokens: number }> = []
+    for (const name of skills.keys()) {
+      const directives = lines.filter((l) => directiveOn(l, name))
+      if (directives.length === 0) continue
+      const entry = { name, tokens: skills.get(name) ?? 0 }
+      // Conditional only when EVERY directive is tagged: one untagged
+      // "Load X" means the skill loads regardless.
+      if (directives.every((l) => l.includes("(conditional)"))) conditional.push(entry)
+      else mandatory.push(entry)
+    }
+    const sum = (xs: Array<{ tokens: number }>): number => xs.reduce((s, x) => s + x.tokens, 0)
+    const mandatoryEffective = fileTokens + sum(mandatory)
+    if (mandatoryEffective > MANDATORY_EFFECTIVE_BUDGET) {
+      violations.push(`agent ${rel}: mandatory effective ${mandatoryEffective} > ${MANDATORY_EFFECTIVE_BUDGET}`)
+    }
     agents.push({
       agent: rel,
       fileTokens,
-      skills: skillTokens,
-      effective: fileTokens + skillTokens.reduce((s, x) => s + x.tokens, 0),
+      mandatory,
+      conditional,
+      mandatoryEffective,
+      worstCase: mandatoryEffective + sum(conditional),
     })
   }
 
   if (asJson) {
-    console.log(JSON.stringify({ skillBudget: SKILL_BUDGET, agentBudget: AGENT_BUDGET, skills: [...skills], agents, violations }, null, 2))
+    console.log(JSON.stringify({ skillBudget: SKILL_BUDGET, agentBudget: AGENT_BUDGET, mandatoryEffectiveBudget: 5000, skills: [...skills], agents, violations }, null, 2))
   } else {
     console.log("Skill files (budget 3000):")
     for (const [name, t] of skills) {
       console.log(`  ${String(t).padStart(5)}  ${name}${t > SKILL_BUDGET ? "  OVER" : ""}`)
     }
-    console.log("\nEffective context per agent (file + declared skills):")
+    console.log("\nEffective context per agent (mandatory gated at 5000, worst-case reported):")
     for (const a of agents) {
-      const skillList = a.skills.map((s) => `${s.name}(${s.tokens})`).join(" + ") || "—"
-      console.log(`  ${String(a.effective).padStart(5)}  ${a.agent}`)
-      console.log(`         = ${a.fileTokens} + ${skillList}`)
+      const fmt = (xs: Array<{ name: string; tokens: number }>): string =>
+        xs.map((s) => `${s.name}(${s.tokens})`).join(" + ") || "—"
+      const flag = a.mandatoryEffective > 5000 ? "  OVER" : ""
+      console.log(`  ${String(a.mandatoryEffective).padStart(5)}  ${a.agent}${flag}`)
+      console.log(`         mandatory: ${a.fileTokens} + ${fmt(a.mandatory)}`)
+      if (a.conditional.length > 0) {
+        console.log(`         worst-case: ${a.worstCase} (conditional: ${fmt(a.conditional)})`)
+      }
     }
   }
 

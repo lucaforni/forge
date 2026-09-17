@@ -41,7 +41,7 @@ and richer journeys focused on information flow.
 
 - **context-chain**: Load first (upstream docs to read).
 - **ux-design**: Full design workflow, wireframe conventions, component specs, tokens.
-- **data-presentation**: Load IN ADDITION to `ux-design` when ANY is true:
+- **data-presentation** (conditional): Load IN ADDITION to `ux-design` when ANY is true:
   - Collections (lists/tables/grids) of > 10 items
   - Aggregated metrics, KPIs, charts
   - Drill-down / master-detail navigation
@@ -51,9 +51,10 @@ and richer journeys focused on information flow.
 
   If unsure, load it. It is additive and never conflicts with `ux-design`.
 - **constitution-compliance**: Verify design decisions before finalizing.
-- **frontend-pattern-library**: Load for Web UI features to select the right
+- **frontend-pattern-library** (conditional): Load for Web UI features to select the right
   UI pattern (Data Table, Form, Search, etc.) and reference it in the
   design-spec. Provides shared vocabulary, states, data flow, and QA checklist.
+  Skip for API-only features.
 
 ## Phase: UX Design (/forge-ux)
 
@@ -173,68 +174,13 @@ Must include:
 4. If a design system exists, reference its components.
 5. Save or append to `.forge/specs/NNN-slug/design-spec.md`.
 
-### Wireframe Format (general)
+### Wireframe Formats
 
-```
-+--------------------------------------------------+
-| SCREEN TITLE                          [nav items] |
-+--------------------------------------------------+
-| [Header / page title]                            |
-|  +------------------------------------------+   |
-|  | [Component: description]                 |   |
-|  | [Label]  [Input field____________]       |   |
-|  |                   [CTA Button]           |   |
-|  +------------------------------------------+   |
-| [Footer]                                         |
-+--------------------------------------------------+
-
-States: Default · Loading · Error · Empty · Success
-Accessibility: aria-label, tab order, focus trap, SR announcement
-```
-
-### Wireframe Format (data views)
-
-Produce one frame per density variant; annotate with the data block:
-
-```
-+--------------------------------------------------+
-| [Breadcrumb]  SCREEN TITLE         [refresh] [⋯] |
-+--------------------------------------------------+
-| [Filter bar: chips · search · time range]        |
-|   Active: [chip] [chip]  [Clear all]             |
-+--------------------------------------------------+
-| [KPI row, if dashboard: KPI1 KPI2 KPI3 KPI4]     |
-+--------------------------------------------------+
-| [Primary view: chart / table / list]             |
-|   Sort: [col ▼]   Columns: [⚙]   1–50 of 1,243   |
-|   +------------------------------------------+   |
-|   | [Row 1]                                  |   |
-|   | [Row 2]                          [⋯]     |   |
-|   +------------------------------------------+   |
-|   [Pagination / load more]                       |
-+--------------------------------------------------+
-| Last updated: 2 min ago · [Export] [Share view]  |
-+--------------------------------------------------+
-
-Data binding:
-  - Row source: [entity] from FR-NNN
-  - Columns: [field: format] (link to Data Inventory)
-  - Default sort: [field asc/desc]   Default filter: [field = value]
-  - Page size / virtualization: [N rows / row height]
-  - Selection model: [none / single / multi]
-  - Drill-down: clicking [target] → [route]
-  - Refresh model: [live / periodic Ns / on-demand]
-
-Density variants (separate frames):
-  - Empty (first-visit) · Empty (filtered) · Sparse (1–5) · Dense (typical)
-
-States:
-  - Loading initial / refresh · Error recoverable / permission · Partial failure
-
-Visualization rationale: choice, encoding, anti-patterns avoided
-Accessibility: aria-label, tab order, tabular alternative for chart,
-               SR announcements on filter/sort/load
-```
+The ASCII formats live in exactly one place — NOT here. When wireframing,
+read `### 2. ASCII Wireframe` (general frame) and `### 2b. Data-View Frame`
+(data frame with data-binding block) from the `forge-wireframe` command file
+(`.opencode/commands/forge-wireframe.md`, shipped in the same install),
+then follow the per-screen rules below.
 
 ## Platform-Specific Guidance
 

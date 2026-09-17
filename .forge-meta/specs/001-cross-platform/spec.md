@@ -6,18 +6,18 @@
 
 | Field   | Value                       |
 | ------- | --------------------------- |
-| Status  | Draft                       |
+| Status  | Shipped 2026-06-21; closed out 2026-09-17 |
 | Author  | forge-pm                    |
 | Date    | 2026-06-21                  |
 | Track   | Epic                        |
 | Spec ID | 001                         |
 | Scope   | Meta-development (FORGE itself) |
 
-> **⚠️ CONSTITUTIONAL BLOCKER**: This spec proposes a change that violates
-> Article 1.2 of the current FORGE constitution ("OpenCode-native: FORGE
-> is built specifically for OpenCode"). A constitutional amendment is a
-> **hard prerequisite** for this work — see Section 13. Until the
-> amendment is ratified, this spec is **provisional**.
+> **⚠️ CONSTITUTIONAL BLOCKER — RESOLVED 2026-06-21**: the cross-platform
+> amendment (replacing "OpenCode-native" with "Multi-platform" across Art.
+> 1.2, 1.3, 2.1, 3.1, 5.1) ratified the same day this spec's work shipped
+> (see Amendments Log, ADR-001). The banner stays as history; the blocker
+> it describes no longer exists.
 
 ---
 
@@ -381,7 +381,7 @@ typically requires one round of clarification.
 
 ## 12. Implementation Scope
 
-> Paths relative to the FORGE repo root (`/Users/luca/dev/opencode/forge/`),
+> Paths relative to the FORGE repo root (`(repo root)/`),
 > *not* the `dev/` sandbox. This is meta-development work on FORGE itself.
 
 ### New Components
@@ -425,8 +425,7 @@ typically requires one round of clarification.
 
 ## 13. Constitution Compliance
 
-> ⚠️ See blocker called out at top of spec. This spec is **provisional**
-> pending ratification of an Article 1.2 amendment.
+> Resolved 2026-06-21 with the cross-platform amendment (see top banner).
 
 The FORGE meta-constitution has **5 articles** (not 9 as in the
 template). Per `constitution-compliance` skill guidance, only relevant

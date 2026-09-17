@@ -7,13 +7,13 @@
 
 | Field   | Value                       |
 | ------- | --------------------------- |
-| Status  | Draft                       |
+| Status  | Shipped 2026-06-21; closed out 2026-09-17 |
 | Author  | forge-architect             |
 | Date    | 2026-06-21                  |
 | Track   | Epic                        |
 | Spec    | [`./spec.md`](./spec.md)    |
 | ADR     | [`ADR-001`](../../knowledge/adr/ADR-001-cross-platform-strategy.md) |
-| Scope   | Meta-development (FORGE itself); paths are relative to repo root `/Users/luca/dev/opencode/forge/`, **not** the `dev/` sandbox. |
+| Scope   | Meta-development (FORGE itself); paths are relative to repo root `(repo root)/`, **not** the `dev/` sandbox. |
 
 ---
 

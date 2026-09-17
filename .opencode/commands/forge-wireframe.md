@@ -77,6 +77,54 @@ Mobile (375px) — separate narrowed layout:
 +------------------+
 ```
 
+### 2b. Data-View Frame (data-heavy screens)
+
+One frame per density variant (Empty / Sparse / Dense). This is the single
+home of the data-view format — the agent and skill files point here rather
+than duplicating it.
+
+Produce one frame per density variant; annotate with the data block:
+
+```
++--------------------------------------------------+
+| [Breadcrumb]  SCREEN TITLE         [refresh] [⋯] |
++--------------------------------------------------+
+| [Filter bar: chips · search · time range]        |
+|   Active: [chip] [chip]  [Clear all]             |
++--------------------------------------------------+
+| [KPI row, if dashboard: KPI1 KPI2 KPI3 KPI4]     |
++--------------------------------------------------+
+| [Primary view: chart / table / list]             |
+|   Sort: [col ▼]   Columns: [⚙]   1–50 of 1,243   |
+|   +------------------------------------------+   |
+|   | [Row 1]                                  |   |
+|   | [Row 2]                          [⋯]     |   |
+|   +------------------------------------------+   |
+|   [Pagination / load more]                       |
++--------------------------------------------------+
+| Last updated: 2 min ago · [Export] [Share view]  |
++--------------------------------------------------+
+
+Data binding:
+  - Row source: [entity] from FR-NNN
+  - Columns: [field: format] (link to Data Inventory)
+  - Default sort: [field asc/desc]   Default filter: [field = value]
+  - Page size / virtualization: [N rows / row height]
+  - Selection model: [none / single / multi]
+  - Drill-down: clicking [target] → [route]
+  - Refresh model: [live / periodic Ns / on-demand]
+
+Density variants (separate frames):
+  - Empty (first-visit) · Empty (filtered) · Sparse (1–5) · Dense (typical)
+
+States:
+  - Loading initial / refresh · Error recoverable / permission · Partial failure
+
+Visualization rationale: choice, encoding, anti-patterns avoided
+Accessibility: aria-label, tab order, tabular alternative for chart,
+               SR announcements on filter/sort/load
+```
+
 ### 3. State Inventory
 
 | State | Trigger | Visual Change | User Feedback |

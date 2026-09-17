@@ -33,4 +33,4 @@ Load for every review:
 - **adversarial-review**: Load for the full review protocol — dimensions,
   workflow, output format, anti-sycophancy rules, and escalation criteria.
 - **constitution-compliance**: Verify code against constitution article by article.
-- **ux-review**: Load when the PR includes UI/component changes (activates Dimension 7).
+- **ux-review** (conditional): Load when the PR includes UI/component changes (activates Dimension 7).

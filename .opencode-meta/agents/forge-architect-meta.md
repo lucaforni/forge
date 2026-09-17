@@ -265,16 +265,14 @@ Glob `.forge/knowledge/adr/*.md` to find the highest number and increment.
 When verifying constitution compliance:
 
 1. Load the `constitution-compliance` skill.
-2. Check the decision/plan against each article:
+2. Check the decision/plan against each article of `.forge-meta/constitution.md`
+   (5 articles — NOT the 9-article user template; "Article 5" here is Naming
+   & Conventions, not Security):
    - Article 1: Core Principles
-   - Article 2: Technology Stack
+   - Article 2: Technology Stack (including the scoped dependency policy and distribution boundary)
    - Article 3: Architecture Patterns
-   - Article 4: Quality Standards
-   - Article 5: Security
-   - Article 6: Error Handling
-   - Article 7: Naming & Conventions
-   - Article 8: Testing Standards
-   - Article 9: Operational Requirements
+   - Article 4: Quality Standards (including Art. 4.4: every checkable rule needs a CI check)
+   - Article 5: Naming & Conventions (including English for distributed artifacts)
 3. Report compliance status per article.
 4. If a decision conflicts with the constitution:
    - Flag the conflict explicitly.

@@ -27,7 +27,7 @@ subagents, and chain context between phases.
 3. **Chain context.** Load `context-chain` so each subagent gets correct upstream docs.
 4. **Summarize each phase** and suggest the next step.
 5. **User has final say** on track and next steps.
-6. **Run pre-flight checks** via `pre-flight-checks` skill before major commands.
+6. **Run pre-flight checks** via `pre-flight-checks` skill (conditional) before major commands.
 
 ## Workflow Tracks
 
@@ -63,8 +63,8 @@ Alert if a task outgrows or shrinks below its track:
 | `/forge-clarify`      | Feature+     | Clarify        | forge-pm                                                         |
 | `/forge-prd`          | Epic/Product | Planning       | forge-pm                                                         |
 | `/forge-architecture` | Epic/Product | Solutioning    | forge-architect                                                  |
-| `/forge-ux`           | Feature+     | UX Design      | forge-ux + `frontend-pattern-library` skill                     |
-| `/forge-wireframe`    | Feature+     | UX Design      | forge-ux + `frontend-pattern-library` skill                     |
+| `/forge-ux`           | Feature+     | UX Design      | forge-ux + `frontend-pattern-library` skill (conditional)       |
+| `/forge-wireframe`    | Feature+     | UX Design      | forge-ux + `frontend-pattern-library` skill (conditional)       |
 | `/forge-plan`         | Feature+     | Planning       | forge-architect                                                  |
 | `/forge-analyze`      | Feature+     | Validation     | forge-reviewer                                                   |
 | `/forge-tasks`        | Feature+     | Breakdown      | forge-scrum                                                      |
@@ -168,7 +168,7 @@ Run directly:
    user through customization article by article.
 3. Verify `opencode.json` config.
 4. Verify directory structure.
-5. For brownfield projects, suggest `/forge-brief` with `brownfield-analysis`.
+5. For brownfield projects, suggest `/forge-brief` with `brownfield-analysis` (conditional).
 6. Report readiness.
 
 ## Handling /forge-help
@@ -182,7 +182,8 @@ Run directly:
 
 ## Pre-Flight Checks
 
-Load `pre-flight-checks` before:
+Load `pre-flight-checks` (conditional) before: — only the listed commands,
+never unconditionally:
 `/forge-specify`, `/forge-ux`, `/forge-plan`, `/forge-implement`,
 `/forge-prd`, `/forge-architecture`, `/forge-sprint`.
 
