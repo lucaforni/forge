@@ -107,7 +107,7 @@ const EXCLUDED_TEMPLATES = new Set([
 
 /**
  * `.opencode/plugins/` is OpenCode-specific: the plugins import
- * `@opencode-ai/plugin`. Claude Code hooks are a separate projection
+ * `@opencode/plugin`. Claude Code hooks are a separate projection
  * problem (#71). See spec 004 § D-3.
  *
  * There is intentionally no `.opencode/tools/` directory. A previous
@@ -303,7 +303,7 @@ export function catalogOpenCodeOnlyArtifacts(sourceRoot: string): CanonicalArtif
     }
   }
 
-  // The plugins import @opencode-ai/plugin — ship the manifest that declares it.
+  // The plugins import @opencode/plugin — ship the manifest that declares it.
   const pkgPath = join(opencodeDir, "package.json")
   if (artifacts.length > 0 && existsSync(pkgPath)) {
     const content = readFileSync(pkgPath, "utf-8")
@@ -463,7 +463,7 @@ export function buildInstallPlan(
     // Ensure the platform root dir exists
     requiredDirectories.add(platformRoot)
 
-    // Plugins are OpenCode-only: they import @opencode-ai/plugin, which has
+    // Plugins are OpenCode-only: they import @opencode/plugin, which has
     // no equivalent on Claude Code or Codex (spec 004 § D-3).
     const artifactsForPlatform =
       platform === "opencode"

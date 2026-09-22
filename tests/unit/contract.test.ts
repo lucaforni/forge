@@ -141,15 +141,25 @@ describe("installer contract — fresh OpenCode install", () => {
     expect(existsSync(join(target, ".forge/frontend/design-system.md"))).toBe(true)
   })
 
-  it("installs OpenCode plugins with their package manifest", () => {
-    expect(existsSync(join(target, ".opencode/plugins/session-knowledge.ts"))).toBe(true)
-    expect(existsSync(join(target, ".opencode/plugins/spec-watcher.ts"))).toBe(true)
-    expect(existsSync(join(target, ".opencode/plugins/pre-commit-gate.ts"))).toBe(true)
+  it("installs OpenCode v2 plugins with their package manifests", () => {
+    // Directory-form plugins (spec 010): server entry + pure helpers
+    // everywhere, CLI toast entry on the watchers only.
+    for (const name of ["session-knowledge", "spec-watcher", "pre-commit-gate"]) {
+      expect(existsSync(join(target, `.opencode/plugins/${name}/index.ts`))).toBe(true)
+      expect(existsSync(join(target, `.opencode/plugins/${name}/shared.ts`))).toBe(true)
+      expect(existsSync(join(target, `.opencode/plugins/${name}/package.json`))).toBe(true)
+    }
+    for (const name of ["spec-watcher", "pre-commit-gate"]) {
+      expect(existsSync(join(target, `.opencode/plugins/${name}/tui.ts`))).toBe(true)
+    }
+    // session-knowledge is server-only: no UI surface, no tui entry.
+    expect(existsSync(join(target, ".opencode/plugins/session-knowledge/tui.ts"))).toBe(false)
 
     const pkgPath = join(target, ".opencode/package.json")
     expect(existsSync(pkgPath)).toBe(true)
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"))
-    expect(pkg.dependencies?.["@opencode-ai/plugin"]).toBeDefined()
+    expect(pkg.dependencies?.["@opencode/plugin"]).toBeDefined()
+    expect(pkg.dependencies?.["@opencode-ai/plugin"]).toBeUndefined()
   })
 
   it("does not distribute internal frontend documentation", () => {

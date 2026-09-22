@@ -1,21 +1,21 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  // FORGE - Customized for My Project
-  
+  // FORGE - Customized for My Project (native OpenCode v2 shape)
+
   // User changed default model to Opus
   "model": "github-copilot/claude-opus-4.6",
 
   // User added custom thinking budgets
-  "provider": {
+  "providers": {
     "github-copilot": {
       "models": {
         "claude-opus-4.6": {
-          "options": {
+          "settings": {
             "thinking": { "budgetTokens": 20000 }  // User increased
           }
         },
         "claude-sonnet-4.5": {
-          "options": {
+          "settings": {
             "thinking": { "budgetTokens": 10000 }  // User increased
           }
         }
@@ -24,51 +24,48 @@
   },
 
   // User removed some agent overrides
-  "agent": {
+  "agents": {
     "forge-reviewer": {
       "model": "github-copilot/claude-opus-4.6"
     }
   },
 
-  // User added custom bash permissions
-  "permission": {
-    "bash": {
-      "git *": "allow",
-      "npm *": "allow",
-      "npx *": "allow",
-      "node *": "allow",
-      "yarn *": "allow",
-      "ls *": "allow",
-      "pwd": "allow",
-      "cat *": "allow",
-      "head *": "allow",
-      "tail *": "allow",
-      "grep *": "allow",
-      "find *": "allow",
-      "wc *": "allow",
-      "tree *": "allow",
-      "make *": "allow",
-      "mkdir *": "allow",
-      "touch *": "allow",
-      "cp *": "allow",
-      "mv *": "allow",
-      "rm -f *": "allow",
-      "echo *": "allow",
-      
-      // User added custom docker permissions
-      "docker ps": "allow",
-      "docker logs *": "allow",
-      "docker exec *": "allow",
-      
-      "*": "ask"
-    },
-    
-    "edit": "allow",
-    "write": "allow",
-    "read": "allow",
-    "glob": "allow",
-    "grep": "allow"
-  },
+  // User added custom shell permissions (ordered: specific first)
+  "permissions": [
+    { "action": "shell", "resource": "git *", "effect": "allow" },
+    { "action": "shell", "resource": "npm *", "effect": "allow" },
+    { "action": "shell", "resource": "npx *", "effect": "allow" },
+    { "action": "shell", "resource": "node *", "effect": "allow" },
+    { "action": "shell", "resource": "yarn *", "effect": "allow" },
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
+    { "action": "shell", "resource": "pwd", "effect": "allow" },
+    { "action": "shell", "resource": "cat *", "effect": "allow" },
+    { "action": "shell", "resource": "head *", "effect": "allow" },
+    { "action": "shell", "resource": "tail *", "effect": "allow" },
+    { "action": "shell", "resource": "grep *", "effect": "allow" },
+    { "action": "shell", "resource": "find *", "effect": "allow" },
+    { "action": "shell", "resource": "wc *", "effect": "allow" },
+    { "action": "shell", "resource": "tree *", "effect": "allow" },
+    { "action": "shell", "resource": "make *", "effect": "allow" },
+    { "action": "shell", "resource": "mkdir *", "effect": "allow" },
+    { "action": "shell", "resource": "touch *", "effect": "allow" },
+    { "action": "shell", "resource": "cp *", "effect": "allow" },
+    { "action": "shell", "resource": "mv *", "effect": "allow" },
+    { "action": "shell", "resource": "rm -f *", "effect": "allow" },
+    { "action": "shell", "resource": "echo *", "effect": "allow" },
+
+    // User added custom docker permissions
+    { "action": "shell", "resource": "docker ps", "effect": "allow" },
+    { "action": "shell", "resource": "docker logs *", "effect": "allow" },
+    { "action": "shell", "resource": "docker exec *", "effect": "allow" },
+
+    { "action": "shell", "resource": "*", "effect": "ask" },
+
+    { "action": "edit", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "glob", "resource": "*", "effect": "allow" },
+    { "action": "grep", "resource": "*", "effect": "allow" }
+  ],
 
   // User customized instructions
   "instructions": [
@@ -79,11 +76,13 @@
 
   // User kept MCP config as-is
   "mcp": {
-    "github": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
-      "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+    "servers": {
+      "github": {
+        "type": "local",
+        "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+        "environment": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+        }
       }
     }
   }

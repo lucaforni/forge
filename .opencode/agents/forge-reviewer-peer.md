@@ -1,22 +1,49 @@
 ---
 description: "FORGE adversarial reviewer (peer): independent code review across 7 dimensions including Test-Spec Coherence and UX quality"
 mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  skill: allow
-  bash:
-    "git diff *": allow
-    "git log *": allow
-    "git show *": allow
-    "git status": allow
-    "git blame *": allow
-    "npm test *": allow
-    "npm run test*": allow
-    "npm run lint*": allow
-    "npx tsc --noEmit*": allow
-    "*": deny
+permissions:
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: skill
+    resource: "*"
+    effect: allow
+  - action: shell
+    resource: "git diff *"
+    effect: allow
+  - action: shell
+    resource: "git log *"
+    effect: allow
+  - action: shell
+    resource: "git show *"
+    effect: allow
+  - action: shell
+    resource: "git status"
+    effect: allow
+  - action: shell
+    resource: "git blame *"
+    effect: allow
+  - action: shell
+    resource: "npm test *"
+    effect: allow
+  - action: shell
+    resource: "npm run test*"
+    effect: allow
+  - action: shell
+    resource: "npm run lint*"
+    effect: allow
+  - action: shell
+    resource: "npx tsc --noEmit*"
+    effect: allow
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 <!-- Model configured via opencode.json -->
 

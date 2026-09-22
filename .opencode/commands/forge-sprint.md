@@ -1,7 +1,7 @@
 ---
 description: "Initialize or manage sprints with multi-sprint support, story selection, and velocity tracking"
 agent: forge-scrum
-subtask: true
+subagent: true
 ---
 
 # Sprint Management

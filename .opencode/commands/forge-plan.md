@@ -1,7 +1,7 @@
 ---
 description: 'Create a technical implementation plan for a feature spec'
 agent: forge-architect
-subtask: true
+subagent: true
 ---
 
 # Technical Plan

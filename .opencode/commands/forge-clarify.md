@@ -1,7 +1,7 @@
 ---
 description: "Review and resolve ambiguities in a feature specification"
 agent: forge-pm
-subtask: true
+subagent: true
 ---
 
 # Specification Clarification

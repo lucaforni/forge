@@ -11,6 +11,18 @@
 | Version | 1.0.0      |
 | Updated | 2026-02-12 |
 
+> [!IMPORTANT]
+> **OpenCode v2 (spec 010).** FORGE ships native v2 shapes: `agents`
+> (plural), `permissions[]` (`shell` was `bash`, `subagent` was `task`,
+> `edit` covers `write`/`patch`), `providers` (`options` → `settings` on
+> models), `mcp.servers`, and `subagent: true` on commands (was `subtask`).
+> Existing V1 `opencode.json` files keep working — v2 normalizes them at
+> load — and the installer merges them into native shape on update.
+> Plugins are the one hard break: V1 implementations do not run on v2.
+> FORGE plugins are directory plugins (`.opencode/plugins/<name>/` with
+> `index.ts` + `tui.ts`, see §9). Staying on OpenCode v1? Pin tag
+> `v2.0.0-opencode-v1-last`.
+
 ---
 
 ## Table of Contents
@@ -1079,12 +1091,14 @@ never clobbers.
 
 ### 9.1 Modifying Existing Plugins
 
-Plugins are TypeScript files in `.opencode/plugins/`. Edit them to change
-behavior.
+Plugins are directories in `.opencode/plugins/<name>/` (`index.ts`
+server entry, `tui.ts` CLI entry, `shared.ts` pure helpers). Edit them to
+change behavior.
 
 **Example**: Make the pre-commit gate blocking instead of advisory:
 
-File: `.opencode/plugins/pre-commit-gate.ts`
+Directory: `.opencode/plugins/pre-commit-gate/` (the toast is shown from
+`tui.ts`; the checks live in `shared.ts`)
 
 Change the notification behavior from a toast (advisory) to throwing an
 error (blocking):
@@ -1106,68 +1120,90 @@ valid reason.
 
 ### 9.2 Writing a New Plugin
 
-**Example**: Plugin that auto-formats files after edit:
+Plugins are directories under `.opencode/plugins/<name>/` with an
+`index.ts` server entry (`@opencode/plugin`). Anything that touches the
+terminal UI (toasts, dialogs) lives in a `tui.ts` CLI entry
+(`@opencode/plugin/tui`) — the server API has no UI surface. Pure logic
+goes in `shared.ts` so it stays testable without OpenCode.
 
-File: `.opencode/plugins/auto-format.ts`
+**Example**: Plugin that formats TypeScript files after edit and toasts:
+
+File: `.opencode/plugins/auto-format/index.ts`
 
 ```typescript
-import type { Plugin } from "@opencode-ai/plugin";
+import { Plugin } from "@opencode/plugin";
 
-export default async function ({ project, $ }): Promise<Plugin> {
-  return {
-    "file.edited": async ({ path }) => {
-      // Format TypeScript files with prettier after edit
-      if (path.endsWith(".ts") || path.endsWith(".tsx")) {
-        await $`npx prettier --write ${path}`;
-      }
-      // Format Python files with black
-      if (path.endsWith(".py")) {
-        await $`black ${path}`;
-      }
-    },
-  };
-};
+export default Plugin.define({
+  id: "acme.auto-format",
+  setup() {},
+});
 ```
 
-**Example**: Plugin that notifies a Slack channel when a spec is completed:
-
-File: `.opencode/plugins/slack-notify.ts`
+File: `.opencode/plugins/auto-format/tui.ts`
 
 ```typescript
-import type { Plugin } from "@opencode-ai/plugin";
+import { Plugin } from "@opencode/plugin/tui";
+import { execFile } from "node:child_process";
 
-export default async function ({ project }): Promise<Plugin> {
-  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
-
-  return {
-    "file.edited": async ({ path, content }) => {
-      // Notify when a spec status changes to "Approved"
-      if (
-        path.includes(".forge/specs/") &&
-        path.endsWith("spec.md") &&
-        content?.includes("## Status: Approved")
-      ) {
-        if (webhookUrl) {
-          await fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              text: `Spec approved: ${path}`,
-            }),
-          });
-        }
+export default Plugin.define({
+  id: "acme.auto-format.tui",
+  setup(context) {
+    const stop = context.data.listen((wrapper) => {
+      const details = (wrapper as { details?: unknown }).details as
+        | { type?: unknown; properties?: unknown }
+        | undefined;
+      if (details?.type !== "file.edited") return;
+      const path = (details.properties as { file?: unknown } | undefined)
+        ?.file;
+      if (typeof path !== "string") return;
+      if (path.endsWith(".ts") || path.endsWith(".tsx")) {
+        execFile("npx", ["prettier", "--write", path]);
+        context.ui.toast.show({ message: `Formatted ${path}` });
       }
-    },
-  };
-};
+    });
+    return () => stop();
+  },
+});
+```
+
+File: `.opencode/plugins/auto-format/package.json`
+
+```json
+{
+  "name": "acme-auto-format",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.ts", "./tui": "./tui.ts" }
+}
+```
+
+**Example**: Plugin that notifies a Slack channel when a spec is approved
+follows the same shape — `data.listen` for the edit, `fetch` to the
+webhook, all inside `tui.ts`:
+
+```typescript
+// Inside setup(context), replacing the prettier branch above:
+if (
+  path.includes(".forge/specs/") &&
+  path.endsWith("spec.md")
+) {
+  const content = await readFile(path, "utf-8");
+  if (content.includes("## Status: Approved") && webhookUrl) {
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: `Spec approved: ${path}` }),
+    });
+  }
+}
 ```
 
 ### 9.3 Disabling a Plugin
 
-Rename the plugin file to add a `.disabled` extension:
+Rename the plugin directory to add a `.disabled` extension:
 
 ```bash
-mv .opencode/plugins/pre-commit-gate.ts .opencode/plugins/pre-commit-gate.ts.disabled
+mv .opencode/plugins/pre-commit-gate .opencode/plugins/pre-commit-gate.disabled
 ```
 
 Or move it out of the plugins directory.
@@ -1198,11 +1234,13 @@ OpenCode installs these automatically at startup via Bun.
 ```json
 {
   "mcp": {
-    "linear": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-linear"],
-      "environment": {
-        "LINEAR_API_KEY": "{env:LINEAR_API_KEY}"
+    "servers": {
+      "linear": {
+        "type": "local",
+        "command": ["npx", "-y", "@modelcontextprotocol/server-linear"],
+        "environment": {
+          "LINEAR_API_KEY": "{env:LINEAR_API_KEY}"
+        }
       }
     }
   }

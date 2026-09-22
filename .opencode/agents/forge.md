@@ -1,17 +1,33 @@
 ---
 description: "FORGE orchestrator: assesses complexity, selects workflow track, routes to specialized subagents, and chains context between phases"
-variant: high
-permission:
-  task: allow
-  skill: allow
-  read: allow
-  glob: allow
-  grep: allow
-  question: allow
-  write: allow
-  edit: allow
-  todowrite: allow
-  todoread: allow
+permissions:
+  - action: subagent
+    resource: "*"
+    effect: allow
+  - action: skill
+    resource: "*"
+    effect: allow
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: question
+    resource: "*"
+    effect: allow
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: todowrite
+    resource: "*"
+    effect: allow
+  - action: todoread
+    resource: "*"
+    effect: allow
 ---
 <!-- Model configured via opencode.json -->
 

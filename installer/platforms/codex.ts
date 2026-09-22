@@ -49,8 +49,9 @@ export const CODEX_DESCRIPTOR: PlatformDescriptor = {
  *   system prompt, so the companion ships body-only.
  * - Commands stay `.codex/commands/*.md` per normative spec 001 FR-006
  *   (the `prompts/` alternative was unverified speculation). `agent:` /
- *   `subtask:` are dropped with a neutral note: Codex has no verified
- *   subtask mechanism, and inventing one would be worse than running inline.
+ *   `subtask:` / `subagent:` are dropped with a neutral note: Codex has no
+ *   verified subtask mechanism, and inventing one would be worse than
+ *   running inline.
  *   `$ARGUMENTS` is kept as-is for the same reason — rewriting it to
  *   unverified Codex syntax would trade a maybe for a certainly.
  */
@@ -83,7 +84,7 @@ export function projectCodexArtifact(artifact: CanonicalArtifact): Array<{
 
   if (artifact.category === "command") {
     const agentName = frontmatterValue(entries, "agent")
-    const kept = entries.filter((e) => e.key !== "agent" && e.key !== "subtask")
+    const kept = entries.filter((e) => e.key !== "agent" && e.key !== "subtask" && e.key !== "subagent")
     let out = renderProjected(content, kept)
     if (agentName) {
       const note =

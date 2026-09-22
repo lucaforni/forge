@@ -105,26 +105,30 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     expect(cfg.instructions).toContain(".forge/knowledge/decision-log.md")
   })
 
-  it("emits default_agent, model, permission, agent and mcp", () => {
+  it("emits default_agent, model, permissions, agents and mcp.servers (native v2)", () => {
     const cfg = parse(generateOpenCodeConfig(model))
     expect(cfg.default_agent).toBe("forge")
     expect(cfg.model).toBeDefined()
-    expect(cfg.permission).toBeDefined()
-    expect(Object.keys(cfg.agent)).toHaveLength(9)
-    expect(cfg.mcp["forge-mcp-server"]).toBeDefined()
+    expect(Array.isArray(cfg.permissions)).toBe(true)
+    expect(cfg.agent).toBeUndefined()
+    expect(Object.keys(cfg.agents)).toHaveLength(9)
+    expect(cfg.mcp.servers["forge-mcp-server"]).toBeDefined()
   })
 
   it("does not pre-approve destructive shell commands", () => {
-    const bash = parse(generateOpenCodeConfig(model)).permission.bash
-    expect(bash["*"]).toBe("ask")
-    for (const key of Object.keys(bash)) {
-      expect(key.startsWith("rm "), `"${key}" must not be pre-approved`).toBe(false)
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    const shellRules = permissions.filter((p: any) => p.action === "shell")
+    expect(shellRules[shellRules.length - 1]).toMatchObject({ resource: "*", effect: "ask" })
+    for (const rule of permissions) {
+      if (rule.effect === "allow" && typeof rule.resource === "string") {
+        expect(rule.resource.startsWith("rm "), `"${rule.resource}" must not be pre-approved`).toBe(false)
+      }
     }
   })
 
   it("assigns the peer reviewer a different model from the reviewer", () => {
-    const agent = parse(generateOpenCodeConfig(model)).agent
-    expect(agent["forge-reviewer-peer"].model).not.toBe(agent["forge-reviewer"].model)
+    const agents = parse(generateOpenCodeConfig(model)).agents
+    expect(agents["forge-reviewer-peer"].model).not.toBe(agents["forge-reviewer"].model)
   })
 
   it("preserves unknown user keys", () => {
@@ -141,29 +145,45 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     expect(cfg.model).toBe("my-provider/my-model")
   })
 
-  it("does not rewrite an existing permission block", () => {
+  it("does not rewrite an existing permission block of either shape", () => {
     // Silently narrowing or widening a user's permissions would be a
     // security regression in both directions.
-    const userPerm = { bash: { "*": "deny" } }
-    const cfg = parse(generateOpenCodeConfig(model, { permission: userPerm }))
-    expect(cfg.permission).toEqual(userPerm)
+    const legacyPerm = { bash: { "*": "deny" } }
+    const legacy = parse(generateOpenCodeConfig(model, { permission: legacyPerm }))
+    expect(legacy.permission).toEqual(legacyPerm)
+    expect(legacy.permissions).toBeUndefined()
+
+    const nativePerm = [{ action: "edit", resource: "*", effect: "deny" }]
+    const native = parse(generateOpenCodeConfig(model, { permissions: nativePerm }))
+    expect(native.permissions).toEqual(nativePerm)
   })
 
-  it("keeps a user's per-agent override while still registering FORGE agents", () => {
+  it("migrates a legacy agent map into native agents", () => {
     const cfg = parse(generateOpenCodeConfig(model, {
       agent: { "forge-pm": { model: "user/pinned" }, "my-agent": { model: "x/y" } },
     }))
-    expect(cfg.agent["forge-pm"].model).toBe("user/pinned")
-    expect(cfg.agent["my-agent"]).toEqual({ model: "x/y" })
-    expect(cfg.agent["forge-reviewer"]).toBeDefined()
+    expect(cfg.agents["forge-pm"].model).toBe("user/pinned")
+    expect(cfg.agents["my-agent"]).toEqual({ model: "x/y" })
+    expect(cfg.agents["forge-reviewer"]).toBeDefined()
+    // Folded into `agents` — the legacy key must not linger.
+    expect(cfg.agent).toBeUndefined()
   })
 
-  it("preserves a user's other MCP servers", () => {
+  it("merges native and legacy agent maps with native winning", () => {
+    const cfg = parse(generateOpenCodeConfig(model, {
+      agent: { "forge-pm": { model: "legacy/pinned", extra: "kept" } },
+      agents: { "forge-pm": { model: "native/pinned" } },
+    }))
+    expect(cfg.agents["forge-pm"].model).toBe("native/pinned")
+    expect(cfg.agents["forge-pm"].extra).toBe("kept")
+  })
+
+  it("preserves a user's other MCP servers and writes FORGE servers natively", () => {
     const cfg = parse(generateOpenCodeConfig(model, {
       mcp: { github: { type: "local", command: ["npx", "server-github"] } },
     }))
     expect(cfg.mcp.github).toBeDefined()
-    expect(cfg.mcp["forge-mcp-server"]).toBeDefined()
+    expect(cfg.mcp.servers["forge-mcp-server"]).toBeDefined()
   })
 
   it("always refreshes FORGE-managed keys even when a config exists", () => {
@@ -213,10 +233,10 @@ describe("generateOpenCodeConfig — user instruction files (FR-009)", () => {
     ])
   })
 
-  it("warns instead of silently discarding a non-object agent block", () => {
+  it("warns instead of silently discarding a non-object agents block", () => {
     const warnings: string[] = []
-    generateOpenCodeConfig(model, { agent: "not-an-object" }, warnings)
-    expect(warnings.some((w) => w.includes('"agent"'))).toBe(true)
+    generateOpenCodeConfig(model, { agents: "not-an-object" }, warnings)
+    expect(warnings.some((w) => w.includes('"agents"'))).toBe(true)
   })
 
   it("warns instead of silently discarding a non-object mcp block", () => {

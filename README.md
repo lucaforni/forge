@@ -150,6 +150,10 @@ npx tsx forge/install-forge.ts /path/to/your/project --dry-run
 ```
 
 > [!NOTE]
+> **OpenCode v2.** FORGE targets OpenCode v2; existing v1 `opencode.json`
+> files keep working and are merged into native shape on install.
+> Last v1-compatible tag: `v2.0.0-opencode-v1-last`.
+>
 > **Known gaps.** Platform artifacts are projected to native form, but hooks,
 > model tiers and live runs on Claude Code / Codex are still open — see
 > [#87](https://github.com/lucaforni/forge/issues/87).

@@ -1,7 +1,7 @@
 ---
 description: "Generate dependency-ordered task breakdown from a spec and plan"
 agent: forge-scrum
-subtask: true
+subagent: true
 ---
 
 # Task Breakdown

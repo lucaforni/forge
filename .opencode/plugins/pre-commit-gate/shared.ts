@@ -1,25 +1,20 @@
-import type { Plugin } from "@opencode-ai/plugin"
-import { readFile, readdir, access } from "node:fs/promises"
-import { join, relative, dirname } from "node:path"
-
 /**
- * pre-commit-gate — Advisory validation of spec-code consistency.
+ * pre-commit-gate/shared — Pure advisory-check helpers.
  *
- * Listens for file edits and session diffs. When source files are modified,
- * identifies the related spec/tasks and checks:
- *   1. Related tasks in tasks.md are marked complete
- *   2. Tests exist for modified source files
- *   3. No [NEEDS CLARIFICATION] markers in related specs
- *   4. Constitution compliance section is verified
- *
- * Advisory only — shows toast notifications but does NOT block commits.
+ * Zero plugin-SDK imports: this module runs in both the server entry
+ * (`index.ts`) and the CLI entry (`tui.ts`), and is unit-testable without
+ * OpenCode. All checks are advisory — they shape messages, never block.
  */
 
+import { readFile, readdir, access } from "node:fs/promises"
+import type { Dirent } from "node:fs"
+import { join, relative } from "node:path"
+
 // ---------------------------------------------------------------------------
-// Helpers
+// File helpers
 // ---------------------------------------------------------------------------
 
-async function fileExists(path: string): Promise<boolean> {
+export async function fileExists(path: string): Promise<boolean> {
   try {
     await access(path)
     return true
@@ -28,14 +23,18 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-async function findRelatedSpec(
+// ---------------------------------------------------------------------------
+// Spec linkage
+// ---------------------------------------------------------------------------
+
+export async function findRelatedSpec(
   rootDir: string,
   filePath: string,
 ): Promise<{ specDir: string; specId: string } | null> {
   const specsDir = join(rootDir, ".forge", "specs")
   if (!(await fileExists(specsDir))) return null
 
-  let entries: Awaited<ReturnType<typeof readdir>>
+  let entries: Dirent[]
   try {
     entries = await readdir(specsDir, { withFileTypes: true })
   } catch {
@@ -81,12 +80,16 @@ async function findRelatedSpec(
   return null
 }
 
-interface GateIssue {
+// ---------------------------------------------------------------------------
+// Checks
+// ---------------------------------------------------------------------------
+
+export interface GateIssue {
   severity: "error" | "warning" | "info"
   message: string
 }
 
-async function checkTaskCompletion(
+export async function checkTaskCompletion(
   specDir: string,
   filePath: string,
   rootDir: string,
@@ -127,7 +130,7 @@ async function checkTaskCompletion(
   return issues
 }
 
-async function checkTestExists(
+export async function checkTestExists(
   rootDir: string,
   filePath: string,
 ): Promise<GateIssue[]> {
@@ -171,7 +174,7 @@ async function checkTestExists(
   return issues
 }
 
-async function checkClarificationMarkers(
+export async function checkClarificationMarkers(
   specDir: string,
 ): Promise<GateIssue[]> {
   const issues: GateIssue[] = []
@@ -198,7 +201,7 @@ async function checkClarificationMarkers(
   return issues
 }
 
-async function checkConstitutionCompliance(
+export async function checkConstitutionCompliance(
   specDir: string,
 ): Promise<GateIssue[]> {
   const issues: GateIssue[] = []
@@ -241,99 +244,38 @@ async function checkConstitutionCompliance(
 }
 
 // ---------------------------------------------------------------------------
-// Track recently checked files to avoid repeated checks in the same session
+// Message shaping
 // ---------------------------------------------------------------------------
-const recentlyChecked = new Set<string>()
-const DEBOUNCE_MS = 30_000 // 30 seconds
 
-function debounceFile(filePath: string): boolean {
-  if (recentlyChecked.has(filePath)) return true
-  recentlyChecked.add(filePath)
-  setTimeout(() => recentlyChecked.delete(filePath), DEBOUNCE_MS)
-  return false
+/** Render the advisory toast body. Max 5 findings; returns null when quiet. */
+export function formatGateMessage(specId: string, allIssues: GateIssue[]): string | null {
+  const warnings = allIssues.filter((i) => i.severity === "warning")
+  const errors = allIssues.filter((i) => i.severity === "error")
+  if (errors.length === 0 && warnings.length === 0) return null
+
+  const lines: string[] = [`FORGE Gate (Spec ${specId}):`]
+  for (const issue of [...errors, ...warnings].slice(0, 5)) {
+    lines.push(`  - ${issue.message}`)
+  }
+  const remaining = errors.length + warnings.length - 5
+  if (remaining > 0) {
+    lines.push(`  ... and ${remaining} more`)
+  }
+  lines.push("Run /forge-analyze for full validation.")
+  return lines.join("\n")
 }
 
-// ---------------------------------------------------------------------------
-// Plugin export
-// ---------------------------------------------------------------------------
+/** Toast variant for a set of issues. */
+export function gateVariant(allIssues: GateIssue[]): "error" | "info" {
+  return allIssues.some((i) => i.severity === "error") ? "error" : "info"
+}
 
-export const PreCommitGate: Plugin = async ({ client, directory, worktree }) => {
-  const rootDir = worktree || directory
-
-  return {
-    event: async ({ event }) => {
-      // Handle file.edited events
-      if (event.type === "file.edited") {
-        const filePath = (event.properties as { file?: string })?.file
-        if (!filePath) return
-
-        // Debounce — skip if we just checked this file
-        if (debounceFile(filePath)) return
-
-        // Only check source files, not FORGE docs or configs
-        const relPath = relative(rootDir, filePath)
-        if (
-          relPath.startsWith(".forge/") ||
-          relPath.startsWith(".opencode/") ||
-          relPath.startsWith("node_modules/")
-        ) {
-          return
-        }
-
-        // Find related spec
-        const spec = await findRelatedSpec(rootDir, filePath)
-        if (!spec) return // No spec tracking this file, skip
-
-        // Run all checks
-        const allIssues: GateIssue[] = []
-        const [taskIssues, testIssues, clarifyIssues, complianceIssues] =
-          await Promise.all([
-            checkTaskCompletion(spec.specDir, filePath, rootDir),
-            checkTestExists(rootDir, filePath),
-            checkClarificationMarkers(spec.specDir),
-            checkConstitutionCompliance(spec.specDir),
-          ])
-
-        allIssues.push(
-          ...taskIssues,
-          ...testIssues,
-          ...clarifyIssues,
-          ...complianceIssues,
-        )
-
-        // Show toast if there are issues
-        const warnings = allIssues.filter((i) => i.severity === "warning")
-        const errors = allIssues.filter((i) => i.severity === "error")
-
-        if (errors.length > 0 || warnings.length > 0) {
-          const lines: string[] = [
-            `FORGE Gate (Spec ${spec.specId}):`,
-          ]
-
-          for (const issue of [...errors, ...warnings].slice(0, 5)) {
-            lines.push(`  - ${issue.message}`)
-          }
-
-          const remaining =
-            errors.length + warnings.length - 5
-          if (remaining > 0) {
-            lines.push(`  ... and ${remaining} more`)
-          }
-
-          lines.push("Run /forge-analyze for full validation.")
-
-          try {
-            await client.tui.showToast({
-              body: {
-                message: lines.join("\n"),
-                variant: errors.length > 0 ? "error" : "info",
-              },
-            })
-          } catch {
-            // Toast display failed — non-critical
-          }
-        }
-      }
-    },
-  }
+/** True when an edited path is worth checking (not FORGE internals). */
+export function isCheckablePath(rootDir: string, filePath: string): boolean {
+  const relPath = relative(rootDir, filePath)
+  return !(
+    relPath.startsWith(".forge/") ||
+    relPath.startsWith(".opencode/") ||
+    relPath.startsWith("node_modules/")
+  )
 }

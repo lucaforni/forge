@@ -1,7 +1,7 @@
 ---
 description: "Conduct a sprint retrospective and extract lessons learned"
 agent: forge-scrum
-subtask: true
+subagent: true
 ---
 
 # Sprint Retrospective

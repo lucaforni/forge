@@ -1,7 +1,7 @@
 ---
 description: "Design system architecture with components, data model, and ADRs"
 agent: forge-architect
-subtask: true
+subagent: true
 ---
 
 # Architecture Design

@@ -1,7 +1,7 @@
 ---
 description: "Create a feature specification with requirements, user stories, and acceptance criteria"
 agent: forge-pm
-subtask: true
+subagent: true
 ---
 
 # Feature Specification
