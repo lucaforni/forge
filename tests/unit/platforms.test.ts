@@ -15,6 +15,16 @@ import {
   generateClaudeMd,
 } from "../../installer/platforms/claude-code"
 import { CODEX_DESCRIPTOR } from "../../installer/platforms/codex"
+import { resolveEffect, type PermissionRule } from "./permission-effect"
+
+/** Project rules through the resolver (base policy prepended, last-match-wins). */
+function effectiveEffect(
+  permissions: Array<{ action: string; resource: string; effect: string }>,
+  action: string,
+  resource: string,
+): string {
+  return resolveEffect(permissions as PermissionRule[], action, resource)
+}
 
 describe("platform descriptors", () => {
   it("opencode points at .opencode/ with AGENTS.md", () => {
@@ -97,9 +107,10 @@ describe("generateOpenCodeConfig (spec 004)", () => {
   const model = buildDefaultConfig("/test")
   const parse = (s: string) => JSON.parse(s) as Record<string, any>
 
-  it("loads the constitution via instructions", () => {
-    // This is the mechanism by which governance reaches the model. Omitting
-    // it made every compliance check vacuous in user projects (#57).
+  it("keeps the V1-compat instructions key for the constitution", () => {
+    // OpenCode v2 accepts but does not resolve `instructions`; governance is
+    // actually loaded by the session-knowledge plugin's context hook. The key
+    // is retained only for V1 compatibility (#57, spec 004 FR-008, spec 010).
     const cfg = parse(generateOpenCodeConfig(model))
     expect(cfg.instructions).toContain(".forge/constitution.md")
     expect(cfg.instructions).toContain(".forge/knowledge/decision-log.md")
@@ -115,10 +126,74 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     expect(cfg.mcp.servers["forge-mcp-server"]).toBeDefined()
   })
 
-  it("does not pre-approve destructive shell commands", () => {
+  it("orders shell rules broadest-first so exceptions win (v2 last-match-wins)", () => {
     const permissions = parse(generateOpenCodeConfig(model)).permissions
     const shellRules = permissions.filter((p: any) => p.action === "shell")
-    expect(shellRules[shellRules.length - 1]).toMatchObject({ resource: "*", effect: "ask" })
+    // The catch-all `ask` must precede the specific allows. Reversed, the
+    // catch-all would shadow every allow and the allowlist would be inert.
+    expect(shellRules[0]).toMatchObject({ resource: "*", effect: "ask" })
+    const lastShellAllow = [...shellRules].reverse().find((p: any) => p.effect === "allow")
+    expect(lastShellAllow?.resource).not.toBe("*")
+  })
+
+  it("resolves the intended allowlist using last-match-wins semantics", () => {
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "shell", "git status")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "git status --short")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "git branch")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "git branch --list")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "pwd")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "npm test")).toBe("allow")
+    expect(effectiveEffect(permissions, "edit", "src/a.ts")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", "src/a.ts")).toBe("allow")
+  })
+
+  it("keeps the .env guard despite the broad read allow", () => {
+    // OpenCode's base policy asks before .env reads, but project rules load
+    // after it — a bare `read * allow` would silently swallow that guard.
+    // The seed re-asserts it, so secrets still prompt (spec 010 review).
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "read", ".env")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", ".env.local")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", "config/.env")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", ".env.example")).toBe("allow")
+  })
+
+  it("does not pre-approve ref-mutating git branch forms", () => {
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "shell", "git branch -D feature")).toBe("ask")
+    expect(effectiveEffect(permissions, "shell", "git branch -M main")).toBe("ask")
+  })
+
+  it("migrates an untouched pre-fix FORGE default to the fixed order", () => {
+    // Historical record of the seed emitted before the T-020 reorder fix.
+    // A byte-identical block means the user never customized it, so
+    // regenerating it is a migration, not a rewrite of user content.
+    const legacySeed = [
+      { action: "shell", resource: "git status", effect: "allow" },
+      { action: "shell", resource: "git branch", effect: "allow" },
+      { action: "shell", resource: "pwd", effect: "allow" },
+      { action: "shell", resource: "npm test", effect: "allow" },
+      { action: "shell", resource: "*", effect: "ask" },
+      { action: "read", resource: "*", effect: "allow" },
+      { action: "glob", resource: "*", effect: "allow" },
+      { action: "grep", resource: "*", effect: "allow" },
+      { action: "skill", resource: "*", effect: "allow" },
+      { action: "question", resource: "*", effect: "allow" },
+      { action: "edit", resource: "*", effect: "ask" },
+    ]
+    const warnings: string[] = []
+    const cfg = parse(generateOpenCodeConfig(model, { permissions: legacySeed }, warnings))
+    const shellRules = cfg.permissions.filter((p: any) => p.action === "shell")
+    expect(shellRules[0]).toMatchObject({ resource: "*", effect: "ask" })
+    expect(effectiveEffect(cfg.permissions, "shell", "git status")).toBe("allow")
+    expect(effectiveEffect(cfg.permissions, "read", ".env")).toBe("ask")
+    expect(warnings.some((w) => w.includes('"permissions"'))).toBe(true)
+  })
+
+  it("does not pre-approve destructive shell commands", () => {
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "shell", "rm -rf /")).toBe("ask")
     for (const rule of permissions) {
       if (rule.effect === "allow" && typeof rule.resource === "string") {
         expect(rule.resource.startsWith("rm "), `"${rule.resource}" must not be pre-approved`).toBe(false)

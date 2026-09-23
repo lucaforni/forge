@@ -1402,16 +1402,37 @@ settings.
 For organizations with multiple repositories that share the same governance:
 
 1. Create a central repo with the shared constitution
-2. Reference it in each project's `opencode.json`:
+2. Get the shared text into each project's `.forge/constitution.md`
+
+On **OpenCode v2**, governance is loaded from the local
+`.forge/constitution.md` file by the `session-knowledge` plugin; the
+`instructions` array is accepted but not resolved, so a remote URL listed
+there is never fetched. Sync the shared text into the file instead, for
+example:
+
+```bash
+# Fetch once, review, then commit the materialized file
+curl -fsSL https://raw.githubusercontent.com/your-org/standards/main/constitution.md \
+  > .forge/constitution.md
+```
+
+Project-specific articles can be appended to the same file. A
+`constitution-project-specific.md` split is not auto-loaded on v2 —
+concatenate it into the local constitution or extend the plugin.
+
+<details>
+<summary>Legacy OpenCode v1 approach (not resolved by v2)</summary>
 
 ```json
 {
   "instructions": [
     "https://raw.githubusercontent.com/your-org/standards/main/constitution.md",
-    ".forge/constitution-project-specific.md"
+    "constitution-project-specific.md"
   ]
 }
 ```
+
+</details>
 
 The shared constitution provides organization-wide articles (security,
 compliance, tech stack). The project-specific constitution adds

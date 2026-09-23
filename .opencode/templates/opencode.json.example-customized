@@ -30,8 +30,11 @@
     }
   },
 
-  // User added custom shell permissions (ordered: specific first)
+  // User added custom shell permissions. V2 evaluates in order and the LAST
+  // matching rule wins, so the broad `ask` comes first, exceptions after it.
   "permissions": [
+    { "action": "shell", "resource": "*", "effect": "ask" },
+
     { "action": "shell", "resource": "git *", "effect": "allow" },
     { "action": "shell", "resource": "npm *", "effect": "allow" },
     { "action": "shell", "resource": "npx *", "effect": "allow" },
@@ -51,7 +54,6 @@
     { "action": "shell", "resource": "touch *", "effect": "allow" },
     { "action": "shell", "resource": "cp *", "effect": "allow" },
     { "action": "shell", "resource": "mv *", "effect": "allow" },
-    { "action": "shell", "resource": "rm -f *", "effect": "allow" },
     { "action": "shell", "resource": "echo *", "effect": "allow" },
 
     // User added custom docker permissions
@@ -59,10 +61,12 @@
     { "action": "shell", "resource": "docker logs *", "effect": "allow" },
     { "action": "shell", "resource": "docker exec *", "effect": "allow" },
 
-    { "action": "shell", "resource": "*", "effect": "ask" },
-
     { "action": "edit", "resource": "*", "effect": "allow" },
     { "action": "read", "resource": "*", "effect": "allow" },
+    // ...except secrets (see templates/opencode.json for why).
+    { "action": "read", "resource": "*.env", "effect": "ask" },
+    { "action": "read", "resource": "*.env.*", "effect": "ask" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
     { "action": "glob", "resource": "*", "effect": "allow" },
     { "action": "grep", "resource": "*", "effect": "allow" }
   ],

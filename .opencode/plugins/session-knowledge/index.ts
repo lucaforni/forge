@@ -4,12 +4,17 @@
  * OpenCode v2 native plugin (`@opencode/plugin`). Server-side only: it needs
  * no UI surface, so there is no `tui.ts` entry.
  *
+ * On every model request (`context` via `ctx.session.hook`):
+ *   - Injects `.forge/constitution.md` and the recent decision log as system
+ *     context. This is FORGE's governance path on v2: the `instructions`
+ *     config key is accepted by v2 but never resolved.
+ *
  * On `session.idle` (via `ctx.event.subscribe`):
  *   - Scans conversation for decisions and lessons
  *   - Appends structured entries to decision-log.md and lessons-learned.md
  *
  * On `compaction` (via `ctx.session.hook`):
- *   - Injects last 10 decisions and last 5 lessons as system context
+ *   - Re-injects last 10 decisions and last 5 lessons as system context
  *   - Ensures persistent knowledge survives context compaction
  */
 
@@ -24,10 +29,32 @@ import {
   extractDecisionsFromMessages,
   extractLessonsFromMessages,
   flattenMessages,
+  hashString,
+  loadGovernanceText,
+  pushGovernance,
 } from "./shared"
 
 // Track sessions already processed to avoid duplicates.
 const processedSessions = new Set<string>()
+
+/**
+ * Governance text already injected per session. The `context` hook fires on
+ * every agent-loop request including tool-driven continuations, and the
+ * model retains earlier system parts in history — so re-sending the full
+ * constitution on each call would burn tokens for no new information.
+ * Re-inject only when the text actually changed (constitution or decision
+ * log edited mid-session). Compaction summaries are covered separately by
+ * the `compaction` hook below, which always injects.
+ */
+const injectedGovernanceHash = new Map<string, string>()
+
+async function readUtf8(path: string): Promise<string> {
+  try {
+    return await readFile(path, "utf-8")
+  } catch {
+    return ""
+  }
+}
 
 export default Plugin.define({
   id: "forge.session-knowledge",
@@ -37,6 +64,26 @@ export default Plugin.define({
     const rootDir = ctx.location.directory
     const decisionLogPath = join(rootDir, ".forge", "knowledge", "decision-log.md")
     const lessonsPath = join(rootDir, ".forge", "knowledge", "lessons-learned.md")
+
+    // ----- Context: load FORGE governance into every model request -----
+    // OpenCode v2 ignores the `instructions` config key, so this hook is what
+    // actually keeps the constitution and decision log in front of the model.
+    // The files are small (~8KB total) and read through the page cache, so
+    // they are re-read on each call; the per-session hash gate below is what
+    // avoids re-sending unchanged text on every tool continuation.
+    await ctx.session.hook("context", async (event) => {
+      const text = await loadGovernanceText(rootDir, readUtf8)
+      if (text === null) return
+
+      const sessionID = (event as { sessionID?: unknown }).sessionID
+      if (typeof sessionID === "string" && sessionID.length > 0) {
+        const hash = hashString(text)
+        if (injectedGovernanceHash.get(sessionID) === hash) return
+        injectedGovernanceHash.set(sessionID, hash)
+      }
+
+      pushGovernance(event, text)
+    })
 
     // ----- Compaction: inject knowledge into the continuation context -----
     await ctx.session.hook("compaction", async (event) => {

@@ -54,6 +54,18 @@ jobs:
         run: npx tsc -p tsconfig.json --noEmit
         working-directory: mcp-server
 
+      # The OpenCode plugins declare the v2 SDK in .opencode/package.json.
+      # session-knowledge is the governance delivery path on v2, so it is
+      # typechecked here against the real SDK instead of shipping
+      # untypechecked (spec 010 review). Mirrors the mcp-server pattern.
+      - name: Install OpenCode plugin dependencies
+        run: npm ci
+        working-directory: .opencode
+
+      - name: Typecheck OpenCode plugins with their own toolchain
+        run: npx tsc -p tsconfig.json --noEmit
+        working-directory: .opencode
+
       - name: Test
         run: npm test
 

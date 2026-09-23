@@ -59,9 +59,10 @@
     }
   },
 
-  // Global tool permissions (ordered array — specific rules first,
-  // catch-all last). NOTE: permissive dogfooding config (`*` allow);
-  // user projects get the conservative seed from the installer instead.
+  // Global tool permissions. V2 evaluates in order and the LAST matching
+  // rule wins. This dogfooding config allows every shell command (`*`
+  // catch-all below); user projects get the conservative seed from the
+  // installer instead.
   "permissions": [
     // Git operations
     { "action": "shell", "resource": "git *", "effect": "allow" },
@@ -104,6 +105,11 @@
     // File operation tool permissions (`edit` covers the old `write`)
     { "action": "edit", "resource": "*", "effect": "allow" },
     { "action": "read", "resource": "*", "effect": "allow" },
+    // ...except secrets: re-assert the `.env` guard the broad allow above
+    // would otherwise swallow (last-match-wins over the base policy).
+    { "action": "read", "resource": "*.env", "effect": "ask" },
+    { "action": "read", "resource": "*.env.*", "effect": "ask" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
     { "action": "glob", "resource": "*", "effect": "allow" },
     { "action": "grep", "resource": "*", "effect": "allow" },
     { "action": "skill", "resource": "*", "effect": "allow" },

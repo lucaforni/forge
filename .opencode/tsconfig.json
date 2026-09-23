@@ -1,0 +1,21 @@
+{
+  // Typechecks the OpenCode v2 plugins against the real `@opencode/plugin`
+  // SDK (installed in this directory). Deliberately separate from the root
+  // tsconfig: the plugins are an OpenCode-only projection with their own
+  // manifest, and CI installs this directory on its own step — mirroring
+  // how mcp-server/ is handled. The session-knowledge plugin is FORGE's
+  // governance delivery path on v2, so it must not ship untypechecked
+  // (spec 010 review).
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
+  },
+  "include": ["plugins/**/*.ts"],
+  "exclude": ["node_modules"]
+}

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Spec** | [`spec.md`](spec.md) |
-| **Status** | In Progress (T-001–T-015 done; T-016–T-019 open) |
+| **Status** | In Progress (T-001–T-015, T-020–T-028 done; T-016–T-019 open) |
 | **Track** | Feature |
 
 Sizing: `[S]` <30min · `[M]` 30min–2h · `[L]` 2–4h · `[P]` parallelizable
@@ -64,14 +64,47 @@ Freeze tag `v2.0.0-opencode-v1-last` already placed on `3476f55` (do not move it
 - [ ] T-018 `[S]` Run `/forge-review` (dual-model) on the diff; resolve CRITICAL findings
 - [ ] T-019 `[S]` Tick off completed tasks above (no abandoned tracking artifact); flip spec Status → Implemented
 
+## Phase 7 — Review fixes (`[FR-005]`, `[FR-006]`, spec 004 `[FR-008]`)
+
+Verification pass against the V2 docs surfaced two defects in the generated config. Both fixed.
+
+- [x] T-020 `[M]` `[FR-005]` Fix permission-array ordering. V2 evaluates the array with **last-match-wins**, so the broad `shell * → ask` must precede the specific allows. The previous `specific → general` order made the catch-all shadow every allow, leaving the allowlist inert. `defaultPermissions()` and both fallback templates reordered; `shell` exceptions use the documented `"cmd *"` idiom. Regression tests resolve the effective effect with last-match-wins semantics (`resolveEffect` in `tests/unit/permission-effect.ts`)
+      → `installer/platforms/opencode.ts`, `.opencode/templates/opencode.json`, `.opencode/templates/opencode.json.example-customized`
+      - Scope: fresh installs get the fixed seed; updates migrate a block **byte-identical** to the pre-fix FORGE default (fingerprint in `installer/platforms/opencode.ts`, backup preserved, warning emitted). Customized blocks are never rewritten by design — those users keep their order and should re-run with a clean config or hand-apply the order.
+- [x] T-021 `[M]` `[FR-006]` `[FR-008]` Fix governance loading. V2 accepts but **does not resolve** the `instructions` key, so the constitution and decision log never reached the model. `session-knowledge` now registers a `context` hook that injects `.forge/constitution.md` + recent decision-log entries (per-session hash gate: re-inject only when the text changed; compaction hook always re-injects). `instructions` stays as a V1-compat key with an accurate comment
+      → `.opencode/plugins/session-knowledge/{index,shared}.ts`, `tests/unit/plugins.test.ts`
+- [x] T-022 `[S]` Remediate Dependabot alert #19 (GHSA-8988-4f7v-96qf): `@opentelemetry/core < 2.8.0` reached transitively through `@opencode/plugin` → `@opencode/util@2.0.12`. Upstream still pins core `2.6.1`, so an npm `overrides` entry floors `@opentelemetry/core` at `^2.8.0` (first patched release; caret range so future 2.x patches flow through the normal lock-update path — an exact pin would silently block them). `npm audit` clean; installer contract test still green
+      → `.opencode/package.json`, `.opencode/package-lock.json`
+      - Mixed tree (accepted): core resolves 2.8.0 while `resources`/`sdk-trace-base` stay at upstream-pinned 2.6.1 and `otlp-*` at 0.214.0. Upstream never tests this combination; OTel 2.x minors are backward-compatible and the contract test (real `npm install` in the target) passes, so the residual telemetry-breakage risk is low.
+      - **Removal condition:** drop the `overrides` entry when `@opencode/util` no longer pins a vulnerable core (check `npm view @opencode/util dependencies`, then `npm install --package-lock-only` in `.opencode/` and confirm `npm audit` stays clean without the override).
+      - **Existing installs:** the manifests are canonical installer artifacts rewritten on checksum change, so re-running the installer upgrades already-installed projects; projects that never re-run keep the vulnerable 2.6.1.
+      - Regression tests: `tests/unit/contract.test.ts` asserts the override ships in the installed `package.json` and that the template + lockfile resolve core ≥ 2.8.0.
+
+## Phase 8 — Adversarial review follow-ups (spec 010 review, 1 CRITICAL + 7 WARNING)
+
+Dual-pass review of the Phase 7 diff (single reviewer, two passes — nested subagents were blocked, so no true cross-model consensus; human re-run of `/forge-review` still required before merge). All findings addressed.
+
+- [x] T-023 `[M]` CRITICAL security: the broad `read * allow` swallowed OpenCode's base-policy `.env` guard (project rules load after it, last-match-wins). Re-asserted explicitly after the broad allow — `*.env`/`*.env.*` → ask, `*.env.example` → allow — in the installer seed, both fallback templates, and the repo dogfood config. The shared `resolveEffect` test helper now prepends the documented V2 base policy so the suite evaluates effective effects, and asserts `.env` → ask / `.env.example` → allow
+      → `installer/platforms/opencode.ts`, `.opencode/templates/opencode.json*`, `opencode.json`, `tests/unit/permission-effect.ts`, `tests/unit/platforms.test.ts`, `tests/unit/contract.test.ts`
+- [x] T-024 `[S]` WARNING security: removed the leftover `rm -f *` allow from `opencode.json.example-customized` (the base template was already clean) and pinned both fallback templates with hygiene tests — no allow rule matches a destructive command, shell catch-all leads, `.env` guard present
+      → `.opencode/templates/opencode.json.example-customized`, `tests/unit/contract.test.ts`
+- [x] T-025 `[S]` WARNING correctness: T-020 reached fresh installs only. Updates now migrate a permissions block byte-identical to the pre-fix FORGE default (value fingerprint, backup + warning); customized and legacy v1 blocks stay untouched by design, documented in T-020
+      → `installer/platforms/opencode.ts`, `tests/unit/platforms.test.ts`
+- [x] T-026 `[M]` WARNING maintainability + test-spec: the governance hook was untypechecked in CI and its wiring untested. Added `.opencode/tsconfig.json` (strict, real SDK) + CI install/typecheck steps mirroring mcp-server; split the hook body into tested seams (`loadGovernanceText`, `pushGovernance`, `hashString` in `shared.ts`) with the SDK import kept out of the test path, since CI does not install the OpenCode runtime for unit tests. Coverage scope intentionally unchanged (constitution scope is installer + mcp-server)
+      → `.opencode/tsconfig.json`, `.github/workflows/ci.yml`, `.opencode/plugins/session-knowledge/{index,shared}.ts`, `tests/unit/plugins.test.ts`
+- [x] T-027 `[S]` WARNING performance + INFO cache staleness: replaced the mtime/size file cache (same-size edits within mtime resolution served stale governance) with always-re-read (files are ~8KB, page-cache hot) plus a per-session content-hash gate, so unchanged governance is not re-sent on every tool continuation; narrowed `git branch *` to bare + `--list` (ref-mutating `-D/-M/-d` now prompt) and softened the `"cmd *` is safe" docstring to the documented best-effort scanner caveat
+      → `.opencode/plugins/session-knowledge/index.ts`, `installer/platforms/opencode.ts`, `tests/unit/platforms.test.ts`
+- [x] T-028 `[S]` Tracking hygiene: header Status and Summary counts updated to 28 tasks / 8 phases; stray blank line removed
+      → `.forge/specs/010-opencode-v2-support/tasks.md` (this file)
+
 ---
 
 ## Summary
 
 | Metric | Value |
 |---|---|
-| Total tasks | 19 (T-001–T-019) |
-| Total phases | 6 |
+| Total tasks | 28 (T-001–T-028) |
+| Total phases | 8 |
 | Parallelizable tasks | T-008, T-009, T-010, T-015 (`[P]`) |
 | Requirements covered | FR-001–FR-010, NFR-001–NFR-004 |
 
