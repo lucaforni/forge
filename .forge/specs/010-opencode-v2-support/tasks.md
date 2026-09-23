@@ -72,6 +72,8 @@ Verification pass against the V2 docs surfaced two defects in the generated conf
       → `installer/platforms/opencode.ts`, `.opencode/templates/opencode.json`, `.opencode/templates/opencode.json.example-customized`
 - [x] T-021 `[M]` `[FR-006]` `[FR-008]` Fix governance loading. V2 accepts but **does not resolve** the `instructions` key, so the constitution and decision log never reached the model. `session-knowledge` now registers a `context` hook that injects `.forge/constitution.md` + recent decision-log entries into every model request (mtime/size-cached). `instructions` stays as a V1-compat key with an accurate comment
       → `.opencode/plugins/session-knowledge/{index,shared}.ts`, `tests/unit/plugins.test.ts`
+- [x] T-022 `[S]` Remediate Dependabot alert #19 (GHSA-8988-4f7v-96qf): `@opentelemetry/core < 2.8.0` reached transitively through `@opencode/plugin` → `@opencode/util`. Upstream still pins core `2.6.1` at `@opencode/util@2.0.15`, so an npm `overrides` entry pins `@opentelemetry/core` to `2.8.0` (the first patched release). `npm audit` clean; installer contract test still green
+      → `.opencode/package.json`, `.opencode/package-lock.json`
 
 ---
 
