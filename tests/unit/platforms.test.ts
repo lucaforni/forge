@@ -15,32 +15,15 @@ import {
   generateClaudeMd,
 } from "../../installer/platforms/claude-code"
 import { CODEX_DESCRIPTOR } from "../../installer/platforms/codex"
+import { resolveEffect, type PermissionRule } from "./permission-effect"
 
-/**
- * Resolve the effective OpenCode v2 permission effect for an action/resource
- * pair: rules are evaluated in order and the **last matching rule wins**.
- * Shell resources ending in ` *` also match the command without arguments.
- */
+/** Project rules through the resolver (base policy prepended, last-match-wins). */
 function effectiveEffect(
   permissions: Array<{ action: string; resource: string; effect: string }>,
   action: string,
   resource: string,
 ): string {
-  const toRegExp = (pattern: string) => {
-    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&")
-    const body = escaped.endsWith(" *")
-      ? escaped.slice(0, -2) + "( .*)?"
-      : escaped.replace(/\*/g, ".*").replace(/\?/g, ".")
-    return new RegExp("^" + body + "$")
-  }
-
-  let effect = "ask"
-  for (const rule of permissions) {
-    if (!toRegExp(rule.action).test(action)) continue
-    if (!toRegExp(rule.resource).test(resource)) continue
-    effect = rule.effect
-  }
-  return effect
+  return resolveEffect(permissions as PermissionRule[], action, resource)
 }
 
 describe("platform descriptors", () => {
@@ -157,10 +140,55 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     const permissions = parse(generateOpenCodeConfig(model)).permissions
     expect(effectiveEffect(permissions, "shell", "git status")).toBe("allow")
     expect(effectiveEffect(permissions, "shell", "git status --short")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "git branch")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "git branch --list")).toBe("allow")
     expect(effectiveEffect(permissions, "shell", "pwd")).toBe("allow")
     expect(effectiveEffect(permissions, "shell", "npm test")).toBe("allow")
     expect(effectiveEffect(permissions, "edit", "src/a.ts")).toBe("ask")
     expect(effectiveEffect(permissions, "read", "src/a.ts")).toBe("allow")
+  })
+
+  it("keeps the .env guard despite the broad read allow", () => {
+    // OpenCode's base policy asks before .env reads, but project rules load
+    // after it — a bare `read * allow` would silently swallow that guard.
+    // The seed re-asserts it, so secrets still prompt (spec 010 review).
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "read", ".env")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", ".env.local")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", "config/.env")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", ".env.example")).toBe("allow")
+  })
+
+  it("does not pre-approve ref-mutating git branch forms", () => {
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "shell", "git branch -D feature")).toBe("ask")
+    expect(effectiveEffect(permissions, "shell", "git branch -M main")).toBe("ask")
+  })
+
+  it("migrates an untouched pre-fix FORGE default to the fixed order", () => {
+    // Historical record of the seed emitted before the T-020 reorder fix.
+    // A byte-identical block means the user never customized it, so
+    // regenerating it is a migration, not a rewrite of user content.
+    const legacySeed = [
+      { action: "shell", resource: "git status", effect: "allow" },
+      { action: "shell", resource: "git branch", effect: "allow" },
+      { action: "shell", resource: "pwd", effect: "allow" },
+      { action: "shell", resource: "npm test", effect: "allow" },
+      { action: "shell", resource: "*", effect: "ask" },
+      { action: "read", resource: "*", effect: "allow" },
+      { action: "glob", resource: "*", effect: "allow" },
+      { action: "grep", resource: "*", effect: "allow" },
+      { action: "skill", resource: "*", effect: "allow" },
+      { action: "question", resource: "*", effect: "allow" },
+      { action: "edit", resource: "*", effect: "ask" },
+    ]
+    const warnings: string[] = []
+    const cfg = parse(generateOpenCodeConfig(model, { permissions: legacySeed }, warnings))
+    const shellRules = cfg.permissions.filter((p: any) => p.action === "shell")
+    expect(shellRules[0]).toMatchObject({ resource: "*", effect: "ask" })
+    expect(effectiveEffect(cfg.permissions, "shell", "git status")).toBe("allow")
+    expect(effectiveEffect(cfg.permissions, "read", ".env")).toBe("ask")
+    expect(warnings.some((w) => w.includes('"permissions"'))).toBe(true)
   })
 
   it("does not pre-approve destructive shell commands", () => {

@@ -54,7 +54,6 @@
     { "action": "shell", "resource": "touch *", "effect": "allow" },
     { "action": "shell", "resource": "cp *", "effect": "allow" },
     { "action": "shell", "resource": "mv *", "effect": "allow" },
-    { "action": "shell", "resource": "rm -f *", "effect": "allow" },
     { "action": "shell", "resource": "echo *", "effect": "allow" },
 
     // User added custom docker permissions
@@ -64,6 +63,10 @@
 
     { "action": "edit", "resource": "*", "effect": "allow" },
     { "action": "read", "resource": "*", "effect": "allow" },
+    // ...except secrets (see templates/opencode.json for why).
+    { "action": "read", "resource": "*.env", "effect": "ask" },
+    { "action": "read", "resource": "*.env.*", "effect": "ask" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
     { "action": "glob", "resource": "*", "effect": "allow" },
     { "action": "grep", "resource": "*", "effect": "allow" }
   ],

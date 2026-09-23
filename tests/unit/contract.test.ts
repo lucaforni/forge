@@ -22,6 +22,8 @@ import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 
 import { buildInstallPlan, catalogCanonicalArtifacts, catalogForgeArtifacts } from "../../installer/projection"
+import { stripJsonComments } from "../../installer/config"
+import { resolveEffect, type PermissionRule } from "./permission-effect"
 import { run } from "../../installer/install"
 import { OPENCODE_DESCRIPTOR } from "../../installer/platforms/opencode"
 import { CLAUDE_CODE_DESCRIPTOR } from "../../installer/platforms/claude-code"
@@ -167,6 +169,53 @@ describe("installer contract — fresh OpenCode install", () => {
 
   it("does not distribute internal frontend documentation", () => {
     expect(existsSync(join(target, ".forge/frontend/DISTRIBUTE.md"))).toBe(false)
+  })
+})
+
+describe("installer contract — fallback template permission hygiene (spec 010 review)", () => {
+  const TEMPLATES = ["opencode.json", "opencode.json.example-customized"]
+
+  function templatePermissions(name: string): PermissionRule[] {
+    const raw = readFileSync(join(REPO_ROOT, ".opencode/templates", name), "utf-8")
+    return JSON.parse(stripJsonComments(raw)).permissions
+  }
+
+  it("no fallback template pre-approves a destructive shell command", () => {
+    // `rm -f *` lived in the example until the spec 010 review; nothing
+    // pins the templates, so a future edit could reintroduce one.
+    const destructive = /(^|[\s;|&$()`])(rm|rmdir|mkfs|dd)\b/
+    for (const name of TEMPLATES) {
+      for (const rule of templatePermissions(name)) {
+        if (rule.action === "shell" && rule.effect === "allow") {
+          expect(
+            destructive.test(rule.resource),
+            `${name} pre-approves destructive command "${rule.resource}"`,
+          ).toBe(false)
+        }
+      }
+    }
+  })
+
+  it("fallback templates re-assert the .env guard", () => {
+    // A bare `read * allow` would swallow OpenCode's base-policy .env guard
+    // under last-match-wins; the templates must narrow it back explicitly.
+    for (const name of TEMPLATES) {
+      const permissions = templatePermissions(name)
+      expect(resolveEffect(permissions, "read", ".env"), `${name}: .env`).toBe("ask")
+      expect(resolveEffect(permissions, "read", ".env.local"), `${name}: .env.local`).toBe("ask")
+      expect(resolveEffect(permissions, "read", ".env.example"), `${name}: .env.example`).toBe("allow")
+    }
+  })
+
+  it("fallback templates order shell rules broadest-first", () => {
+    for (const name of TEMPLATES) {
+      const shellRules = templatePermissions(name).filter((r) => r.action === "shell")
+      expect(shellRules.length).toBeGreaterThan(0)
+      expect(shellRules[0], `${name}: catch-all ask must lead`).toMatchObject({
+        resource: "*",
+        effect: "ask",
+      })
+    }
   })
 })
 

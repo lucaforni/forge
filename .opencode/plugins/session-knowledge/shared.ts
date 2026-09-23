@@ -4,9 +4,15 @@
  * Zero plugin-SDK imports: this module is unit-testable without OpenCode
  * and is shared by the server entry (`index.ts`). Kept dependency-free
  * (constitution Art. 2.2 applies by analogy — helpers must run anywhere).
+ *
+ * The `context`-hook delivery path is deliberately split into these seams
+ * so the suite can prove the injection logic without the OpenCode runtime:
+ * `loadGovernanceText` (file reads) + `pushGovernance` (event mutation) +
+ * `hashString` (per-session dedup key). `index.ts` stays thin wiring.
  */
 
 import { access } from "node:fs/promises"
+import { join } from "node:path"
 
 // ---------------------------------------------------------------------------
 // File helpers
@@ -91,6 +97,62 @@ export function buildGovernanceContext(input: GovernanceContextInput): string | 
     `Treat the constitution as binding and keep decisions consistent with it.\n\n` +
     chunks.join("\n\n---\n\n")
   )
+}
+
+// ---------------------------------------------------------------------------
+// Context-hook delivery seams (kept here so tests can drive them)
+// ---------------------------------------------------------------------------
+
+/** Minimal shape the delivery seams need — a subset of SessionContext. */
+export interface SystemEvent {
+  system?: unknown
+}
+
+/**
+ * 32-bit FNV-1a hash, hex-encoded. Dependency-free content key for the
+ * per-session injection gate in `index.ts`: re-inject only when the
+ * governance text actually changed (e.g. constitution edited mid-session).
+ */
+export function hashString(input: string): string {
+  let hash = 0x811c9dc5
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0")
+}
+
+/**
+ * Read the governance sources and build the injectable block.
+ *
+ * `readFile` is injected so tests can stub the filesystem. A missing file
+ * reads as empty; when both sources are empty the result is `null` (caller
+ * skips the push rather than sending an empty block).
+ */
+export async function loadGovernanceText(
+  rootDir: string,
+  readFile: (path: string) => Promise<string>,
+): Promise<string | null> {
+  const [constitution, decisionLog] = await Promise.all([
+    readFile(join(rootDir, ".forge", "constitution.md")).catch(() => ""),
+    readFile(join(rootDir, ".forge", "knowledge", "decision-log.md")).catch(() => ""),
+  ])
+  return buildGovernanceContext({ constitution, decisionLog })
+}
+
+/**
+ * Append the governance block to the hook event's system draft.
+ *
+ * Returns `true` when a part was pushed. Returns `false` (no-op, no throw)
+ * when there is nothing to inject or the event lacks a system array — the
+ * latter guards against SDK shape drift the same way `index.ts` does.
+ */
+export function pushGovernance(event: SystemEvent, text: string | null): boolean {
+  if (text === null) return false
+  const system = event.system
+  if (!Array.isArray(system)) return false
+  system.push({ type: "text", text })
+  return true
 }
 
 // ---------------------------------------------------------------------------

@@ -34,6 +34,9 @@ import {
   extractDecisionsFromMessages,
   extractLessonsFromMessages,
   buildGovernanceContext,
+  hashString,
+  loadGovernanceText,
+  pushGovernance,
 } from "../../.opencode/plugins/session-knowledge/shared"
 
 import { mapPermissionsArray } from "../../installer/platforms/claude-code"
@@ -231,6 +234,54 @@ describe("session-knowledge helpers", () => {
     it("returns null when there is nothing to inject", () => {
       expect(buildGovernanceContext({ constitution: "", decisionLog: "" })).toBeNull()
       expect(buildGovernanceContext({ constitution: "   \n", decisionLog: "no entries" })).toBeNull()
+    })
+  })
+
+  describe("context-hook delivery seams", () => {
+    // The `context` hook itself needs the OpenCode runtime, which CI does
+    // not install — so the hook body is split into these seams and the
+    // wiring in `index.ts` stays trivially thin. These tests drive the
+    // seams with stub readers and fake events.
+
+    it("hashString is deterministic and content-sensitive", () => {
+      expect(hashString("abc")).toBe(hashString("abc"))
+      expect(hashString("abc")).toMatch(/^[0-9a-f]{8}$/)
+      expect(hashString("abc")).not.toBe(hashString("abd"))
+    })
+
+    it("loadGovernanceText reads both sources through the injected reader", async () => {
+      const files: Record<string, string> = {
+        ["/proj/.forge/constitution.md"]: "# Rules\n\nBind them.\n",
+        ["/proj/.forge/knowledge/decision-log.md"]: "### 2026-01-02 — b\nbody b\n",
+      }
+      const text = await loadGovernanceText("/proj", async (p) => {
+        if (!(p in files)) throw new Error(`missing: ${p}`)
+        return files[p]
+      })
+      expect(text).toContain("Bind them.")
+      expect(text).toContain("2026-01-02")
+    })
+
+    it("loadGovernanceText returns null when both sources are missing", async () => {
+      await expect(
+        loadGovernanceText("/proj", async () => {
+          throw new Error("ENOENT")
+        }),
+      ).resolves.toBeNull()
+    })
+
+    it("pushGovernance appends a text part and reports success", () => {
+      const event = { system: [] as Array<unknown> }
+      expect(pushGovernance(event, "hello governance")).toBe(true)
+      expect(event.system).toEqual([{ type: "text", text: "hello governance" }])
+    })
+
+    it("pushGovernance is a no-op for empty input or a drifted event shape", () => {
+      const event = { system: [] as Array<unknown> }
+      expect(pushGovernance(event, null)).toBe(false)
+      expect(event.system).toEqual([])
+      expect(pushGovernance({}, "hello")).toBe(false)
+      expect(pushGovernance({ system: "not-an-array" }, "hello")).toBe(false)
     })
   })
 })

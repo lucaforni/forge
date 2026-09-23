@@ -136,13 +136,27 @@ export function generateOpenCodeConfig(
     delete config.agent
   }
 
-  // Permissions — only seeded on a fresh install; never rewritten, because
-  // narrowing a user's permissions silently would be a security regression.
+  // Permissions — seeded on a fresh install, and migrated when the existing
+  // block is byte-identical to the pre-fix FORGE default (see
+  // LEGACY_FORGE_DEFAULT_PERMISSIONS). Anything else is never rewritten,
+  // because narrowing or widening a user's customized permissions silently
+  // would be a security regression in either direction.
   // Native v2 is an ordered `permissions` array (`shell` was `bash`,
   // `subagent` was `task`, `edit` covers `write`+`patch`). A legacy v1
   // `permission` block is left untouched — v2 normalizes it at load.
   if (existing?.permissions === undefined && existing?.permission === undefined) {
     config.permissions = defaultPermissions()
+  } else if (isLegacyForgeDefaultPermissions(existing?.permissions)) {
+    // The user never customized the seed, so this block is FORGE-authored:
+    // reorder it to the fixed shape instead of leaving the inert
+    // specific-first order behind on update. The pre-write backup preserves
+    // the original (spec 010 T-020).
+    config.permissions = defaultPermissions()
+    warnings?.push(
+      'opencode.json: "permissions" matched the pre-fix FORGE default and ' +
+        "was reordered to the fixed last-match-wins shape — " +
+        "the previous value is preserved in the backup.",
+    )
   }
 
   // MCP servers — native v2 groups them under `mcp.servers`. Flat legacy
@@ -197,10 +211,20 @@ export function generateOpenCodeConfig(
  * Patterns like `npm run test*` or `find *` are NOT used: a trailing `*`
  * can absorb shell metacharacters, so `npm run test; rm -rf ~` would match
  * `npm run test*`, and `find . -exec rm {} \;` matches `find *`. A pattern
- * ending in ` *` (with a space) is safe and is the documented idiom for
- * "this command with optional arguments". Anything not listed here prompts
- * the user, which is the correct default for a tool installing into someone
- * else's repository.
+ * ending in ` *` (with a space) is the documented idiom for "this command
+ * with optional arguments" — but note it leans on the shell scanner, whose
+ * command/directory inference is explicitly best-effort upstream. A compound
+ * command the scanner does not split could match a `cmd *` rule on its
+ * first segment, so these allows are deliberately limited to read-only
+ * commands where a misfire stays non-destructive. Anything not listed here
+ * prompts the user, which is the correct default for a tool installing into
+ * someone else's repository.
+ *
+ * The trailing `read` rules mirror OpenCode's own base policy. The base
+ * policy asks before `.env` reads, but project rules are appended after it
+ * and last-match-wins applies — so a bare `read * allow` would silently
+ * swallow the `.env` guard in every installed project. The narrowing rules
+ * below re-assert it explicitly (spec 010 review).
  */
 function defaultPermissions(): Array<Record<string, unknown>> {
   return [
@@ -208,12 +232,20 @@ function defaultPermissions(): Array<Record<string, unknown>> {
     // The broad rule is first because the LAST matching rule wins.
     { action: "shell", resource: "*", effect: "ask" },
     { action: "shell", resource: "git status *", effect: "allow" },
-    { action: "shell", resource: "git branch *", effect: "allow" },
+    // `git branch` lists refs, but `git branch -D/-M/-d` deletes them — so
+    // only the bare command and `--list` are pre-approved, never `branch *`.
+    { action: "shell", resource: "git branch", effect: "allow" },
+    { action: "shell", resource: "git branch --list *", effect: "allow" },
     { action: "shell", resource: "pwd", effect: "allow" },
     { action: "shell", resource: "npm test *", effect: "allow" },
 
     // Local discovery and skill tools cannot mutate the working tree.
     { action: "read", resource: "*", effect: "allow" },
+    // ...except secrets: re-assert the .env guard the broad allow above
+    // would otherwise override (last-match-wins over the base policy).
+    { action: "read", resource: "*.env", effect: "ask" },
+    { action: "read", resource: "*.env.*", effect: "ask" },
+    { action: "read", resource: "*.env.example", effect: "allow" },
     { action: "glob", resource: "*", effect: "allow" },
     { action: "grep", resource: "*", effect: "allow" },
     { action: "skill", resource: "*", effect: "allow" },
@@ -222,6 +254,33 @@ function defaultPermissions(): Array<Record<string, unknown>> {
     // `edit` covers the old `edit` + `write` + `patch` actions.
     { action: "edit", resource: "*", effect: "ask" },
   ]
+}
+
+/**
+ * The exact permission seed emitted before the T-020 reorder fix
+ * (specific-first, catch-all `ask` last — inert under v2 last-match-wins).
+ *
+ * Compared by value: when an existing config carries this block verbatim the
+ * user never customized it, so regenerating it to the fixed shape is a
+ * migration, not a rewrite of user content. Any deviation means the user
+ * touched the block and it is left alone.
+ */
+const LEGACY_FORGE_DEFAULT_PERMISSIONS: ReadonlyArray<Record<string, unknown>> = [
+  { action: "shell", resource: "git status", effect: "allow" },
+  { action: "shell", resource: "git branch", effect: "allow" },
+  { action: "shell", resource: "pwd", effect: "allow" },
+  { action: "shell", resource: "npm test", effect: "allow" },
+  { action: "shell", resource: "*", effect: "ask" },
+  { action: "read", resource: "*", effect: "allow" },
+  { action: "glob", resource: "*", effect: "allow" },
+  { action: "grep", resource: "*", effect: "allow" },
+  { action: "skill", resource: "*", effect: "allow" },
+  { action: "question", resource: "*", effect: "allow" },
+  { action: "edit", resource: "*", effect: "ask" },
+]
+
+function isLegacyForgeDefaultPermissions(value: unknown): boolean {
+  return Array.isArray(value) && JSON.stringify(value) === JSON.stringify(LEGACY_FORGE_DEFAULT_PERMISSIONS)
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

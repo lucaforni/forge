@@ -75,6 +75,9 @@
   // Global tool permissions. V2 evaluates the array in order and the LAST
   // matching rule wins, so the broad `ask` comes first and the specific
   // `allow` exceptions follow it.
+  // NOTE: this shell allowlist is a broader starting-point example than the
+  // installer's conservative seed (which pre-approves only specific read-only
+  // commands). Tune it to your risk appetite — see FORGE-CUSTOMIZATION.md.
   "permissions": [
     // Everything else asks
     { "action": "shell", "resource": "*", "effect": "ask" },
@@ -112,6 +115,12 @@
     // File operation tool permissions (`edit` covers the old `write`)
     { "action": "edit", "resource": "*", "effect": "allow" },
     { "action": "read", "resource": "*", "effect": "allow" },
+    // ...except secrets: a bare `read *` allow would swallow OpenCode's own
+    // `.env` guard (project rules load after the base policy and the last
+    // matching rule wins), so re-assert it explicitly.
+    { "action": "read", "resource": "*.env", "effect": "ask" },
+    { "action": "read", "resource": "*.env.*", "effect": "ask" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
     { "action": "glob", "resource": "*", "effect": "allow" },
     { "action": "grep", "resource": "*", "effect": "allow" }
   ],

@@ -19,7 +19,7 @@
  */
 
 import { Plugin } from "@opencode/plugin"
-import { readFile, appendFile, stat } from "node:fs/promises"
+import { readFile, appendFile } from "node:fs/promises"
 import { join } from "node:path"
 
 import {
@@ -29,32 +29,29 @@ import {
   extractDecisionsFromMessages,
   extractLessonsFromMessages,
   flattenMessages,
-  buildGovernanceContext,
+  hashString,
+  loadGovernanceText,
+  pushGovernance,
 } from "./shared"
 
 // Track sessions already processed to avoid duplicates.
 const processedSessions = new Set<string>()
 
 /**
- * Small mtime/size cache so the governance files are not re-read on every
- * model call of a session. Invalidated automatically when a file changes
- * (or disappears), so editing the constitution mid-session takes effect on
- * the next request.
+ * Governance text already injected per session. The `context` hook fires on
+ * every agent-loop request including tool-driven continuations, and the
+ * model retains earlier system parts in history — so re-sending the full
+ * constitution on each call would burn tokens for no new information.
+ * Re-inject only when the text actually changed (constitution or decision
+ * log edited mid-session). Compaction summaries are covered separately by
+ * the `compaction` hook below, which always injects.
  */
-const fileCache = new Map<string, { mtimeMs: number; size: number; content: string }>()
+const injectedGovernanceHash = new Map<string, string>()
 
-async function readWithCache(path: string): Promise<string> {
+async function readUtf8(path: string): Promise<string> {
   try {
-    const info = await stat(path)
-    const cached = fileCache.get(path)
-    if (cached && cached.mtimeMs === info.mtimeMs && cached.size === info.size) {
-      return cached.content
-    }
-    const content = await readFile(path, "utf-8")
-    fileCache.set(path, { mtimeMs: info.mtimeMs, size: info.size, content })
-    return content
+    return await readFile(path, "utf-8")
   } catch {
-    fileCache.delete(path)
     return ""
   }
 }
@@ -67,25 +64,25 @@ export default Plugin.define({
     const rootDir = ctx.location.directory
     const decisionLogPath = join(rootDir, ".forge", "knowledge", "decision-log.md")
     const lessonsPath = join(rootDir, ".forge", "knowledge", "lessons-learned.md")
-    const constitutionPath = join(rootDir, ".forge", "constitution.md")
 
     // ----- Context: load FORGE governance into every model request -----
     // OpenCode v2 ignores the `instructions` config key, so this hook is what
     // actually keeps the constitution and decision log in front of the model.
+    // The files are small (~8KB total) and read through the page cache, so
+    // they are re-read on each call; the per-session hash gate below is what
+    // avoids re-sending unchanged text on every tool continuation.
     await ctx.session.hook("context", async (event) => {
-      const [constitution, decisionLog] = await Promise.all([
-        readWithCache(constitutionPath),
-        readWithCache(decisionLogPath),
-      ])
-      const text = buildGovernanceContext({ constitution, decisionLog })
+      const text = await loadGovernanceText(rootDir, readUtf8)
       if (text === null) return
 
-      // `system` is the documented mutable draft on context hooks; guard the
-      // shape so SDK drift degrades to a no-op, not a crash.
-      const system = (event as { system?: unknown }).system
-      if (Array.isArray(system)) {
-        system.push({ type: "text", text })
+      const sessionID = (event as { sessionID?: unknown }).sessionID
+      if (typeof sessionID === "string" && sessionID.length > 0) {
+        const hash = hashString(text)
+        if (injectedGovernanceHash.get(sessionID) === hash) return
+        injectedGovernanceHash.set(sessionID, hash)
       }
+
+      pushGovernance(event, text)
     })
 
     // ----- Compaction: inject knowledge into the continuation context -----

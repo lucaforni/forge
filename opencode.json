@@ -105,6 +105,11 @@
     // File operation tool permissions (`edit` covers the old `write`)
     { "action": "edit", "resource": "*", "effect": "allow" },
     { "action": "read", "resource": "*", "effect": "allow" },
+    // ...except secrets: re-assert the `.env` guard the broad allow above
+    // would otherwise swallow (last-match-wins over the base policy).
+    { "action": "read", "resource": "*.env", "effect": "ask" },
+    { "action": "read", "resource": "*.env.*", "effect": "ask" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
     { "action": "glob", "resource": "*", "effect": "allow" },
     { "action": "grep", "resource": "*", "effect": "allow" },
     { "action": "skill", "resource": "*", "effect": "allow" },
