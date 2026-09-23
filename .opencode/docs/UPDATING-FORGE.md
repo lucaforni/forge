@@ -98,6 +98,14 @@ The merge preserves your customizations while adding new keys from the template:
 | **Nested objects** | Recursively merged | Agent configs merged per-agent |
 | **Arrays** | Your array kept | Your `instructions` list unchanged |
 
+> **OpenCode v2 note (spec 010).** FORGE-managed keys regenerate in native
+> v2 shape: a legacy `agent` map is folded into `agents` once (native wins
+> per entry) and the old key is dropped; `permissions[]` is seeded on fresh
+> installs only — an existing block of either shape is never rewritten;
+> flat `mcp` entries are preserved and FORGE servers land under
+> `mcp.servers`. Your values always win; the pre-write backup preserves
+> the original.
+
 ### 3. Output
 
 The installer shows what was added:
@@ -105,8 +113,8 @@ The installer shows what was added:
 ```
 ℹ Merging configuration files...
   → opencode.json (merging with existing)
-    + Added: agent.forge-qa
-    + Added: permission.bash.pytest *
+    + Added: agents.forge-qa
+    + Added: mcp.servers.forge-mcp-server
     ✓ Merged successfully. Review changes and restore comments if needed.
 ```
 

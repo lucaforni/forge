@@ -1,0 +1,9 @@
+{
+  "name": "forge-pre-commit-gate",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./tui": "./tui.ts"
+  }
+}

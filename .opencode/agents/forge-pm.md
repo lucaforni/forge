@@ -1,14 +1,25 @@
 ---
 description: "FORGE product manager: structured requirements discovery, spec/PRD/tech-spec authoring with advanced elicitation and constitution compliance"
 mode: subagent
-permission:
-  read: allow
-  write: allow
-  edit: allow
-  glob: allow
-  grep: allow
-  skill: allow
-  question: allow
+permissions:
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: skill
+    resource: "*"
+    effect: allow
+  - action: question
+    resource: "*"
+    effect: allow
 ---
 <!-- Model configured via opencode.json -->
 

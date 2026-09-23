@@ -1,7 +1,7 @@
 ---
 description: "Create a product brief with vision, scope, and stakeholder analysis"
 agent: forge-analyst
-subtask: true
+subagent: true
 ---
 
 # Product Brief Creation

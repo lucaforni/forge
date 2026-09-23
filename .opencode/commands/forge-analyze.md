@@ -1,7 +1,7 @@
 ---
 description: "Cross-validate consistency between specs, plans, architecture, and constitution"
 agent: forge-reviewer
-subtask: true
+subagent: true
 ---
 
 # Cross-Artifact Validation

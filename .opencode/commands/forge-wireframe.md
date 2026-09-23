@@ -1,7 +1,7 @@
 ---
 description: "Generate ASCII wireframes and interaction specs for specific screens or components"
 agent: forge-ux
-subtask: true
+subagent: true
 ---
 
 # Wireframe Generation

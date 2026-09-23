@@ -56,7 +56,7 @@ FORGE is a methodology framework for AI-assisted software development that provi
   |---|---|---|
   | `mcp-server/` | `@modelcontextprotocol/sdk` | Protocol implementation; no viable builtin |
   | `mcp-server/` | `tsx` | Sources ship untranspiled; removable by adding a build step |
-  | `.opencode/` | `@opencode-ai/plugin` | Platform SDK for tools and plugins |
+  | `.opencode/` | `@opencode/plugin` | Platform SDK for tools and plugins |
 
 - Anything not in the table above goes in `devDependencies`.
 - Every component that declares runtime dependencies MUST commit a lockfile

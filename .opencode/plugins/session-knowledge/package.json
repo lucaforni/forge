@@ -1,0 +1,8 @@
+{
+  "name": "forge-session-knowledge",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  }
+}

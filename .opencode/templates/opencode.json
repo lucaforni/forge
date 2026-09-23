@@ -9,10 +9,14 @@
   //
   // Supported providers: github-copilot, opencode-anthropic, opencode-deepseek, opencode-free, openai, google
   //
+  // Native OpenCode v2 shape: `agents` (plural), `permissions[]`,
+  // `providers` (plural), `mcp.servers`. V1 files still load via
+  // normalization, but new files should use this shape.
+  //
   // To reconfigure models after install:
   //   npx tsx install-forge.ts . --reconfigure
   //
-  // For manual customization, edit the "model", "provider", and "agent"
+  // For manual customization, edit the "model", "providers", and "agents"
   // sections below. See: .opencode/docs/FORGE-CUSTOMIZATION.md
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -27,14 +31,14 @@
   // claude-opus-4.6 remains available on GitHub Copilot Business/Enterprise accounts
   // NOTE: Model IDs (e.g., claude-opus-4.7) are provider identifiers — replace
   // with your preferred models when customizing.
-  "provider": {
+  "providers": {
     "github-copilot": {
       "models": {
         // claude-opus-4.7 is a reasoning-native model (temperature: false).
         // It does NOT accept external thinking parameters — reasoning is built-in.
         "claude-opus-4.7": {},
         "claude-opus-4.6": {
-          "options": {
+          "settings": {
             "thinking": { "budgetTokens": 16000 }
           }
         },
@@ -56,10 +60,7 @@
   // "forge-architect": { "model": "github-copilot/claude-opus-4.6" },
   // "forge-reviewer":  { "model": "github-copilot/claude-opus-4.6" },
   // "forge-ux":        { "model": "github-copilot/claude-opus-4.6" }
-  "agent": {
-    "forge": {
-      "variant": "high"
-    },
+  "agents": {
     "forge-pm": {
       "model": "github-copilot/claude-opus-4.7"
     },
@@ -71,53 +72,49 @@
     }
   },
 
-  // Global tool permissions
-  "permission": {
-    "bash": {
-      // Git operations
-      "git *": "allow",
-      
-      // NPM/Node operations
-      "npm *": "allow",
-      "npx *": "allow",
-      "node *": "allow",
-      "yarn *": "allow",
-      
-      // Safe read operations
-      "ls *": "allow",
-      "pwd": "allow",
-      "cat *": "allow",
-      "head *": "allow",
-      "tail *": "allow",
-      "grep *": "allow",
-      "find *": "allow",
-      "wc *": "allow",
-      "tree *": "allow",
-      
-      // Build and test operations
-      "make *": "allow",
-      
-      // Directory and file operations
-      "mkdir *": "allow",
-      "touch *": "allow",
-      "cp *": "allow",
-      "mv *": "allow",
-      "rm -f *": "allow",
-      
-      // Echo and output
-      "echo *": "allow",
-      
-      // Everything else asks
-      "*": "ask"
-    },
-    
-    // File operation tool permissions
-    "edit": "allow",
-    "write": "allow",
-    "read": "allow",
-    "glob": "allow",
-    "grep": "allow"
-  },
+  // Global tool permissions (ordered array — specific rules first,
+  // catch-all last)
+  "permissions": [
+    // Shell operations
+    { "action": "shell", "resource": "git *", "effect": "allow" },
+    { "action": "shell", "resource": "npm *", "effect": "allow" },
+    { "action": "shell", "resource": "npx *", "effect": "allow" },
+    { "action": "shell", "resource": "node *", "effect": "allow" },
+    { "action": "shell", "resource": "yarn *", "effect": "allow" },
+
+    // Safe read operations
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
+    { "action": "shell", "resource": "pwd", "effect": "allow" },
+    { "action": "shell", "resource": "cat *", "effect": "allow" },
+    { "action": "shell", "resource": "head *", "effect": "allow" },
+    { "action": "shell", "resource": "tail *", "effect": "allow" },
+    { "action": "shell", "resource": "grep *", "effect": "allow" },
+    { "action": "shell", "resource": "find *", "effect": "allow" },
+    { "action": "shell", "resource": "wc *", "effect": "allow" },
+    { "action": "shell", "resource": "tree *", "effect": "allow" },
+
+    // Build and test operations
+    { "action": "shell", "resource": "make *", "effect": "allow" },
+
+    // Directory and file operations
+    { "action": "shell", "resource": "mkdir *", "effect": "allow" },
+    { "action": "shell", "resource": "touch *", "effect": "allow" },
+    { "action": "shell", "resource": "cp *", "effect": "allow" },
+    { "action": "shell", "resource": "mv *", "effect": "allow" },
+    { "action": "shell", "resource": "rm -f *", "effect": "allow" },
+
+    // Echo and output
+    { "action": "shell", "resource": "echo *", "effect": "allow" },
+
+    // Everything else asks
+    { "action": "shell", "resource": "*", "effect": "ask" },
+
+    // File operation tool permissions (`edit` covers the old `write`)
+    { "action": "edit", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "glob", "resource": "*", "effect": "allow" },
+    { "action": "grep", "resource": "*", "effect": "allow" }
+  ],
 
   // Constitution and knowledge base always loaded as context
   "instructions": [
@@ -127,11 +124,13 @@
 
   // MCP server integrations
   "mcp": {
-    "github": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
-      "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+    "servers": {
+      "github": {
+        "type": "local",
+        "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+        "environment": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+        }
       }
     }
   }

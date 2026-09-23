@@ -1,7 +1,7 @@
 ---
 description: "Prepare a user story with implementation guidance for development"
 agent: forge-scrum
-subtask: true
+subagent: true
 ---
 
 # Story Preparation

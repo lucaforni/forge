@@ -1,7 +1,7 @@
 ---
 description: "Create a Product Requirements Document for Epic or Product track"
 agent: forge-pm
-subtask: true
+subagent: true
 ---
 
 # Product Requirements Document (PRD)

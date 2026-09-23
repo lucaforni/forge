@@ -107,7 +107,7 @@ const EXCLUDED_TEMPLATES = new Set([
 
 /**
  * `.opencode/plugins/` is OpenCode-specific: the plugins import
- * `@opencode-ai/plugin`. Claude Code hooks are a separate projection
+ * `@opencode/plugin`. Claude Code hooks are a separate projection
  * problem (#71). See spec 004 § D-3.
  *
  * There is intentionally no `.opencode/tools/` directory. A previous
@@ -303,7 +303,10 @@ export function catalogOpenCodeOnlyArtifacts(sourceRoot: string): CanonicalArtif
     }
   }
 
-  // The plugins import @opencode-ai/plugin — ship the manifest that declares it.
+  // The plugins import @opencode/plugin — ship the manifests that declare it.
+  // Both package.json and package-lock.json are needed for a deterministic,
+  // network-efficient install; without the lockfile every target generates its
+  // own (and the first install after the v2 cut had no node_modules at all).
   const pkgPath = join(opencodeDir, "package.json")
   if (artifacts.length > 0 && existsSync(pkgPath)) {
     const content = readFileSync(pkgPath, "utf-8")
@@ -313,6 +316,17 @@ export function catalogOpenCodeOnlyArtifacts(sourceRoot: string): CanonicalArtif
       targetPath: "package.json",
       content,
       checksum: sha256(content),
+    })
+  }
+  const lockPath = join(opencodeDir, "package-lock.json")
+  if (artifacts.length > 0 && existsSync(lockPath)) {
+    const lockContent = readFileSync(lockPath, "utf-8")
+    artifacts.push({
+      category: "plugin",
+      sourcePath: "package-lock.json",
+      targetPath: "package-lock.json",
+      content: lockContent,
+      checksum: sha256(lockContent),
     })
   }
 
@@ -463,7 +477,7 @@ export function buildInstallPlan(
     // Ensure the platform root dir exists
     requiredDirectories.add(platformRoot)
 
-    // Plugins are OpenCode-only: they import @opencode-ai/plugin, which has
+    // Plugins are OpenCode-only: they import @opencode/plugin, which has
     // no equivalent on Claude Code or Codex (spec 004 § D-3).
     const artifactsForPlatform =
       platform === "opencode"

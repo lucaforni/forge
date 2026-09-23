@@ -1,7 +1,7 @@
 ---
 description: "Generate tests, analyze coverage, and validate test quality for a spec or story"
 agent: forge-qa
-subtask: true
+subagent: true
 ---
 
 # Test Generation & Coverage Analysis

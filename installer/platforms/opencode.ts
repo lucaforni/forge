@@ -32,6 +32,8 @@ export const OPENCODE_DESCRIPTOR: PlatformDescriptor = {
  * Top-level keys the installer owns. On update these are regenerated; every
  * other key in an existing `opencode.json` is preserved verbatim.
  *
+ * Native OpenCode v2 shapes (spec 010): `agents` (was `agent`),
+ * `permissions[]` (was `permission`), `mcp.servers` (was flat `mcp`).
  * `instructions` is the mechanism by which the constitution and decision log
  * reach the model. Omitting it — as the pre-004 installer did — silently
  * disables FORGE's governance pillar in every user project (spec 004 FR-008).
@@ -40,7 +42,7 @@ export const FORGE_MANAGED_KEYS = [
   "$schema",
   "default_agent",
   "instructions",
-  "agent",
+  "agents",
   "mcp",
 ] as const
 
@@ -84,8 +86,11 @@ export function generateOpenCodeConfig(
     config.model = model.defaultModel
   }
 
-  // Agent definitions. Merge per agent so a user override of one agent does
-  // not get wiped by regenerating the block.
+  // Agent definitions. Native v2 key is `agents` (plural). A legacy v1
+  // `agent` map is merged in — per entry, with native winning on conflict —
+  // and then dropped, so regenerated files come out native while existing
+  // user entries survive the move. Merge per agent so a user override of
+  // one agent does not get wiped by regenerating the block.
   if (model.agents.length > 0) {
     if (existing?.agent !== undefined && !isRecord(existing.agent)) {
       warnings?.push(
@@ -93,12 +98,25 @@ export function generateOpenCodeConfig(
           "the previous value is preserved in the backup.",
       )
     }
-    const existingAgents = isRecord(existing?.agent) ? existing.agent : {}
+    if (existing?.agents !== undefined && !isRecord(existing.agents)) {
+      warnings?.push(
+        'opencode.json: "agents" was not an object and could not be merged — ' +
+          "the previous value is preserved in the backup.",
+      )
+    }
+    const legacyAgents = isRecord(existing?.agent) ? existing.agent : {}
+    const nativeAgents = isRecord(existing?.agents) ? existing.agents : {}
     const agentConfig: Record<string, Record<string, unknown>> = {}
 
+    // Union of names; per entry the native shape wins key-by-key.
+    for (const name of new Set([...Object.keys(legacyAgents), ...Object.keys(nativeAgents)])) {
+      const legacyEntry = isRecord(legacyAgents[name]) ? legacyAgents[name] : {}
+      const nativeEntry = isRecord(nativeAgents[name]) ? nativeAgents[name] : {}
+      agentConfig[name] = { ...legacyEntry, ...nativeEntry }
+    }
+
     for (const agent of model.agents) {
-      const priorEntry = existingAgents[agent.name]
-      const prior: Record<string, unknown> = isRecord(priorEntry) ? priorEntry : {}
+      const prior = agentConfig[agent.name] ?? {}
       const entry: Record<string, unknown> = { ...prior }
       // FORGE supplies a default model; an explicit user value wins.
       if (agent.model && prior.model === undefined) entry.model = agent.model
@@ -106,21 +124,24 @@ export function generateOpenCodeConfig(
       agentConfig[agent.name] = entry
     }
 
-    // Preserve any user-defined agents FORGE does not manage.
-    for (const [name, entry] of Object.entries(existingAgents)) {
-      if (!(name in agentConfig)) agentConfig[name] = entry as Record<string, unknown>
-    }
-
-    config.agent = agentConfig
+    config.agents = agentConfig
+    // The legacy key has been folded into `agents` above — drop it so the
+    // file is native v2. The pre-write backup preserves the original.
+    delete config.agent
   }
 
   // Permissions — only seeded on a fresh install; never rewritten, because
   // narrowing a user's permissions silently would be a security regression.
-  if (existing?.permission === undefined) {
-    config.permission = defaultPermissions()
+  // Native v2 is an ordered `permissions` array (`shell` was `bash`,
+  // `subagent` was `task`, `edit` covers `write`+`patch`). A legacy v1
+  // `permission` block is left untouched — v2 normalizes it at load.
+  if (existing?.permissions === undefined && existing?.permission === undefined) {
+    config.permissions = defaultPermissions()
   }
 
-  // MCP servers
+  // MCP servers — native v2 groups them under `mcp.servers`. Flat legacy
+  // entries are preserved verbatim (bounded V1/V2 mixing inside `mcp` is
+  // explicitly supported by v2); FORGE servers are written natively.
   if (model.mcpServers.length > 0) {
     if (existing?.mcp !== undefined && !isRecord(existing.mcp)) {
       warnings?.push(
@@ -128,27 +149,39 @@ export function generateOpenCodeConfig(
           "the previous value is preserved in the backup.",
       )
     }
-    const existingMcp = isRecord(existing?.mcp) ? existing.mcp : {}
-    const mcpConfig: Record<string, unknown> = { ...existingMcp }
+    const existingMcp: Record<string, unknown> = isRecord(existing?.mcp)
+      ? { ...existing.mcp }
+      : {}
+    if (existingMcp.servers !== undefined && !isRecord(existingMcp.servers)) {
+      warnings?.push(
+        'opencode.json: "mcp.servers" was not an object and could not be merged — ' +
+          "the previous value is preserved in the backup.",
+      )
+    }
+    const servers: Record<string, unknown> = isRecord(existingMcp.servers)
+      ? { ...existingMcp.servers }
+      : {}
     for (const server of model.mcpServers) {
-      mcpConfig[server.name] = {
+      servers[server.name] = {
         type: "local",
         command: server.command,
         ...(server.env ? { environment: server.env } : {}),
       }
     }
-    config.mcp = mcpConfig
+    existingMcp.servers = servers
+    config.mcp = existingMcp
   }
 
   return JSON.stringify(config, null, 2) + "\n"
 }
 
 /**
- * Default permission block for a fresh install.
+ * Default permission rules for a fresh install, native v2 shape.
  *
  * Deliberately conservative. Only commands that cannot mutate the working
- * tree are pre-approved, and each pattern is anchored to a specific
- * subcommand.
+ * tree are pre-approved, and each rule is anchored to a specific
+ * subcommand. Order is specific → general; v2 evaluates the ordered
+ * array, so the catch-all `ask` rules stay last.
  *
  * Patterns like `npm run test*` or `find *` are NOT used: a trailing `*`
  * can absorb shell metacharacters, so `npm run test; rm -rf ~` would match
@@ -156,23 +189,21 @@ export function generateOpenCodeConfig(
  * not listed here prompts the user, which is the correct default for a tool
  * installing into someone else's repository.
  */
-function defaultPermissions(): Record<string, unknown> {
-  return {
-    bash: {
-      "git status": "allow",
-      "git branch": "allow",
-      "pwd": "allow",
-      "npm test": "allow",
-      "*": "ask",
-    },
-    read: "allow",
-    glob: "allow",
-    grep: "allow",
-    skill: "allow",
-    question: "allow",
-    edit: "ask",
-    write: "ask",
-  }
+function defaultPermissions(): Array<Record<string, unknown>> {
+  return [
+    { action: "shell", resource: "git status", effect: "allow" },
+    { action: "shell", resource: "git branch", effect: "allow" },
+    { action: "shell", resource: "pwd", effect: "allow" },
+    { action: "shell", resource: "npm test", effect: "allow" },
+    { action: "shell", resource: "*", effect: "ask" },
+    { action: "read", resource: "*", effect: "allow" },
+    { action: "glob", resource: "*", effect: "allow" },
+    { action: "grep", resource: "*", effect: "allow" },
+    { action: "skill", resource: "*", effect: "allow" },
+    { action: "question", resource: "*", effect: "allow" },
+    // `edit` covers the old `edit` + `write` actions.
+    { action: "edit", resource: "*", effect: "ask" },
+  ]
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

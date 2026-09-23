@@ -1,7 +1,7 @@
 ---
 description: "Create or update an Architecture Decision Record"
 agent: forge-architect
-subtask: true
+subagent: true
 ---
 
 # Architecture Decision Record

@@ -1,27 +1,58 @@
 ---
 description: "FORGE QA engineer: test strategy definition, test generation, coverage analysis, and adaptive testing based on workflow track"
 mode: subagent
-variant: high
-permission:
-  read: allow
-  write: allow
-  edit: allow
-  glob: allow
-  grep: allow
-  skill: allow
-  question: allow
-  bash:
-    "npm test*": allow
-    "npm run test*": allow
-    "npx vitest*": allow
-    "npx jest*": allow
-    "npx tsc --noEmit*": allow
-    "npx c8*": allow
-    "npx nyc*": allow
-    "pytest*": allow
-    "python -m pytest*": allow
-    "coverage*": allow
-    "*": deny
+permissions:
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: skill
+    resource: "*"
+    effect: allow
+  - action: question
+    resource: "*"
+    effect: allow
+  - action: shell
+    resource: "npm test*"
+    effect: allow
+  - action: shell
+    resource: "npm run test*"
+    effect: allow
+  - action: shell
+    resource: "npx vitest*"
+    effect: allow
+  - action: shell
+    resource: "npx jest*"
+    effect: allow
+  - action: shell
+    resource: "npx tsc --noEmit*"
+    effect: allow
+  - action: shell
+    resource: "npx c8*"
+    effect: allow
+  - action: shell
+    resource: "npx nyc*"
+    effect: allow
+  - action: shell
+    resource: "pytest*"
+    effect: allow
+  - action: shell
+    resource: "python -m pytest*"
+    effect: allow
+  - action: shell
+    resource: "coverage*"
+    effect: allow
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 <!-- Model configured via opencode.json -->
 

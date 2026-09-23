@@ -1,6 +1,6 @@
 ---
 description: "Dual-model adversarial code review: forge-reviewer + forge-reviewer-peer, synthesized"
-subtask: true
+subagent: true
 ---
 
 # Dual-Model Adversarial Code Review

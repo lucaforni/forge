@@ -1,7 +1,7 @@
 ---
 description: "Produce a UX/UI design spec (personas, user journeys, wireframes, components, a11y) for an existing feature spec"
 agent: forge-ux
-subtask: true
+subagent: true
 ---
 
 # UX/UI Design Phase

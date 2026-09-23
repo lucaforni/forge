@@ -416,6 +416,13 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   // Step 9: Install MCP server npm dependencies (idempotent)
   installMcpServerDeps(projectRoot)
 
+  // Step 9b: Install OpenCode plugin dependencies (idempotent) — fixes v2 failed state
+  // Plugins import @opencode/plugin from .opencode/node_modules; the installer
+  // must populate it just like .forge/mcp-server/node_modules (spec 010 FR-004).
+  if (platforms.includes("opencode")) {
+    installOpencodePluginDeps(projectRoot)
+  }
+
   return { success: true, installed: platforms, warnings, backupPaths, manifestPath, exitCode: 0 }
 }
 
@@ -475,5 +482,64 @@ export function installMcpServerDeps(projectRoot: string): void {
     }
   } else {
     log("warn", "npm install in .forge/mcp-server/ failed. Run it manually if the MCP server doesn't start.")
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Post-Install: OpenCode plugin npm install (spec 010 FR-004)
+// ---------------------------------------------------------------------------
+
+/**
+ * Run `npm install` in `.opencode/` if needed.
+ * Plugins import `@opencode/plugin` (and `@opencode/plugin/tui`) from
+ * `.opencode/node_modules`. Without it the server logs
+ * `Cannot find package '@opencode/plugin'` and marks all 3 plugins as failed
+ * (seen after the v2 cut when source bumped to @opencode/plugin@2.0.12 but
+ * no install step populated the target).
+ *
+ * Mirrors `installMcpServerDeps`: idempotent via .forge-install-stamp so a
+ * second run with unchanged package.json/lock does no work and needs no network.
+ */
+export function installOpencodePluginDeps(projectRoot: string): void {
+  const opencodeDir = join(projectRoot, ".opencode")
+  const pkgPath = join(opencodeDir, "package.json")
+  if (!existsSync(pkgPath)) return
+  const lockPath = join(opencodeDir, "package-lock.json")
+  const markerPath = join(opencodeDir, "node_modules", ".forge-install-stamp")
+  let combined = ""
+  try {
+    combined = readFileSync(pkgPath, "utf-8")
+  } catch {
+    return
+  }
+  try {
+    if (existsSync(lockPath)) combined += readFileSync(lockPath, "utf-8")
+  } catch {
+    // lock unreadable — checksum package.json alone
+  }
+  const pkgChecksum = createHash("sha256").update(combined, "utf-8").digest("hex")
+  try {
+    if (readFileSync(markerPath, "utf-8").trim() === pkgChecksum) {
+      log("skip", "OpenCode plugin dependencies already up to date.")
+      return
+    }
+  } catch {
+    // Missing stamp — install
+  }
+  log("info", "Installing OpenCode plugin dependencies (npm install)...")
+  const result = spawnSync("npm", ["install", "--silent"], {
+    cwd: opencodeDir,
+    stdio: "inherit",
+    encoding: "utf-8",
+  })
+  if (result.status === 0) {
+    log("ok", "OpenCode plugin dependencies installed.")
+    try {
+      writeFileSync(markerPath, pkgChecksum, "utf-8")
+    } catch {
+      // stamp is optimisation only
+    }
+  } else {
+    log("warn", "npm install in .opencode/ failed. Run `npm install` inside .opencode/ manually if plugins stay in failed state.")
   }
 }

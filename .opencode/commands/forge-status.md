@@ -1,7 +1,7 @@
 ---
 description: "Show sprint progress dashboard and project status"
 agent: forge-scrum
-subtask: true
+subagent: true
 ---
 
 # Sprint Status Dashboard

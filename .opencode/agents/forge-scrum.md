@@ -1,15 +1,25 @@
 ---
 description: "FORGE scrum master: sprint planning, story management, task breakdown, velocity tracking, and retrospectives"
 mode: subagent
-variant: high
-permission:
-  read: allow
-  write: allow
-  edit: allow
-  glob: allow
-  grep: allow
-  skill: allow
-  question: allow
+permissions:
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: skill
+    resource: "*"
+    effect: allow
+  - action: question
+    resource: "*"
+    effect: allow
 ---
 <!-- Model configured via opencode.json -->
 

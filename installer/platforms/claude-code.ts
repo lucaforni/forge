@@ -70,6 +70,11 @@ export function generateClaudeCodeConfig(model: ForgeConfigModel): string {
  * the shipped agents is mapped; an unmapped key drops the whole `tools:`
  * line (fail open, documented in-file) rather than emitting a tool Claude
  * does not have.
+ *
+ * Both V1 (`bash`, `task`, `write`) and native V2 (`shell`, `subagent`,
+ * `edit`) action names are mapped: canonical files are V2, but the
+ * denylist engine passes unknown future keys through, so the mapper must
+ * not choke on either generation.
  */
 const TOOL_MAP: Record<string, string> = {
   read: "Read",
@@ -78,8 +83,10 @@ const TOOL_MAP: Record<string, string> = {
   edit: "Edit",
   write: "Write",
   bash: "Bash",
+  shell: "Bash",
   webfetch: "WebFetch",
   task: "Task",
+  subagent: "Task",
   skill: "Skill",
   todowrite: "TodoWrite",
   todoread: "TodoWrite",
@@ -87,8 +94,8 @@ const TOOL_MAP: Record<string, string> = {
 }
 
 /** Frontmatter keys that are meaningless on Claude Code. */
-const DROPPED_AGENT_KEYS = ["mode", "variant", "permission"]
-const DROPPED_COMMAND_KEYS = ["agent", "subtask"]
+const DROPPED_AGENT_KEYS = ["mode", "variant", "permission", "permissions"]
+const DROPPED_COMMAND_KEYS = ["agent", "subtask", "subagent"]
 
 /**
  * Project one canonical artifact to its Claude Code form.
@@ -135,8 +142,18 @@ function projectClaudeAgent(
   }
 
   const permEntry = entries.find((e) => e.key === "permission")
-  if (permEntry) {
-    const { tools, notes } = mapPermissionBlock(permEntry.lines.slice(1))
+  const permsEntry = entries.find((e) => e.key === "permissions")
+  const mapped = [
+    ...(permEntry ? [mapPermissionBlock(permEntry.lines.slice(1))] : []),
+    ...(permsEntry ? [mapPermissionsArray(permsEntry.lines.slice(1))] : []),
+  ]
+  if (mapped.length > 0) {
+    const tools: string[] = []
+    const notes: string[] = []
+    for (const m of mapped) {
+      for (const t of m.tools) if (!tools.includes(t)) tools.push(t)
+      notes.push(...m.notes)
+    }
     if (tools.length > 0) {
       out.push({ key: "tools", lines: [`tools: ${tools.join(", ")}`] })
     }
@@ -189,6 +206,56 @@ export function mapPermissionBlock(lines: string[]): { tools: string[]; notes: s
         `${restricted.length > 4 ? ", …" : ""}); re-apply narrowly in settings.json if needed`,
     )
   }
+
+  return { tools, notes }
+}
+
+/**
+ * Map a native v2 `permissions:` array block (lines after `permissions:`)
+ * to Claude tools. Each item contributes its `action:`; rules scoped to a
+ * non-`*` resource and any `deny` effect cannot be expressed in frontmatter
+ * and are recorded as notes, mirroring `mapPermissionBlock`.
+ */
+export function mapPermissionsArray(lines: string[]): { tools: string[]; notes: string[] } {
+  const tools: string[] = []
+  const notes: string[] = []
+  const seen = new Set<string>()
+
+  let current: { action?: string; resource?: string; effect?: string } | null = null
+  const flush = () => {
+    if (!current?.action) {
+      current = null
+      return
+    }
+    const { action, resource, effect } = current
+    const mapped = TOOL_MAP[action]
+    if (mapped && !seen.has(mapped)) {
+      seen.add(mapped)
+      tools.push(mapped)
+    } else if (!mapped) {
+      notes.push(`unmapped OpenCode permission '${action}' — verify '${action}' coverage manually`)
+    }
+    if (resource !== undefined && resource !== "*" && resource !== '"*"' && resource !== "'*'") {
+      notes.push(`resource-scoped rule '${action} ${resource}' not expressible here; re-apply narrowly in settings.json if needed`)
+    }
+    if (effect === "deny" || effect === '"deny"' || effect === "'deny'") {
+      notes.push(`deny rule on '${action}' not expressible here; re-apply narrowly in settings.json if needed`)
+    }
+    current = null
+  }
+
+  for (const line of lines) {
+    const itemStart = line.match(/^\s*-\s+action:\s*(\S+)/)
+    if (itemStart) {
+      flush()
+      current = { action: itemStart[1] }
+      continue
+    }
+    if (!current) continue
+    const kv = line.match(/^\s+(resource|effect|action):\s*(.+?)\s*$/)
+    if (kv) current[kv[1] as "resource" | "effect" | "action"] = kv[2]
+  }
+  flush()
 
   return { tools, notes }
 }

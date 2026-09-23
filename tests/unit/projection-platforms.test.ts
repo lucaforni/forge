@@ -64,9 +64,10 @@ describe("Claude agent projection", () => {
     expect(out.content).not.toContain("mode:")
     expect(out.content).not.toContain("variant:")
     expect(out.content).not.toContain("permission:")
+    expect(out.content).not.toContain("permissions:")
   })
 
-  it("maps the permission allowlist to Claude tools", () => {
+  it("maps the native v2 permissions array to Claude tools", () => {
     const out = projectClaudeArtifact(artifact("agent", "agents/forge-reviewer.md"))
     expect(out.content).toMatch(/^tools: Read, Glob, Grep, Skill, Bash$/m)
   })
@@ -88,10 +89,11 @@ describe("Claude agent projection", () => {
 })
 
 describe("Claude command projection", () => {
-  it("drops agent:/subtask: and injects an explicit Task routing step", () => {
+  it("drops agent:/subagent: and injects an explicit Task routing step", () => {
     const out = projectClaudeArtifact(artifact("command", "commands/forge-specify.md"))
     expect(out.content).not.toMatch(/^agent:/m)
     expect(out.content).not.toContain("subtask:")
+    expect(out.content).not.toContain("subagent:")
     expect(out.content).toContain("Task tool")
     expect(out.content).toContain("`forge-pm`")
     expect(out.content).toContain(".claude/agents/")
@@ -108,6 +110,7 @@ describe("Claude command projection", () => {
     // forge-review.md has no agent: key — nothing to inject.
     const out = projectClaudeArtifact(artifact("command", "commands/forge-review.md"))
     expect(out.content).not.toContain("subtask:")
+    expect(out.content).not.toContain("subagent:")
     expect(out.content).not.toContain("**Execution:**")
   })
 })
@@ -157,6 +160,8 @@ describe("Codex command projection", () => {
     const out = projectCodexArtifact(artifact("command", "commands/forge-specify.md"))
     expect(out).toHaveLength(1)
     expect(out[0].content).not.toMatch(/^agent:/m)
+    expect(out[0].content).not.toContain("subtask:")
+    expect(out[0].content).not.toContain("subagent:")
     expect(out[0].content).toContain("runs inline")
     expect(out[0].content).not.toContain("Task tool")
   })
@@ -210,6 +215,7 @@ describe("installed Claude project", () => {
       expect(agent).toMatch(/^name: forge-pm$/m)
       expect(agent).not.toContain("mode:")
       expect(agent).not.toContain("permission:")
+      expect(agent).not.toContain("permissions:")
 
       const cmd = readFileSync(join(target, ".claude/commands/forge-specify.md"), "utf-8")
       expect(cmd).toContain("Task tool")

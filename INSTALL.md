@@ -11,6 +11,12 @@ auto-detects your platform.
 > but hooks, model tiers and live runs are still open — see
 > [#87](https://github.com/lucaforni/forge/issues/87) before relying on them
 > for production work.
+>
+> **OpenCode v2.** FORGE targets OpenCode v2 (`@opencode/plugin`). The v2
+> binary replaces v1 — remove a package-managed v1 install first. Existing
+> v1 `opencode.json` files keep working (v2 normalizes them at load); the
+> installer merges them into native shape on update. Staying on v1? Pin tag
+> `v2.0.0-opencode-v1-last`, the last v1-compatible FORGE.
 
 ---
 
@@ -93,7 +99,7 @@ with a message asking you to create one of the platform directories.
 | `.opencode/commands/` | 24 slash commands (`/forge-*`) | ✅ |
 | `.opencode/skills/` | 13 reusable skills | ✅ |
 | `.opencode/plugins/` | 3 event-driven plugins | ✅ |
-| `.opencode/package.json` | Declares `@opencode-ai/plugin` for the plugins | ✅ |
+| `.opencode/package.json` | Declares `@opencode/plugin` (v2 SDK) for the plugins | ✅ |
 | `.opencode/tools/` | 3 custom tools (OpenCode SDK) | ❌ superseded by the MCP server; the two implementations diverged — [#68](https://github.com/lucaforni/forge/issues/68) |
 | `.forge/templates/` | Document templates (18) | ✅ platform-neutral |
 | `.forge/docs/` | Methodology documentation | ✅ platform-neutral |
