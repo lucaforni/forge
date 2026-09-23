@@ -16,6 +16,33 @@ import {
 } from "../../installer/platforms/claude-code"
 import { CODEX_DESCRIPTOR } from "../../installer/platforms/codex"
 
+/**
+ * Resolve the effective OpenCode v2 permission effect for an action/resource
+ * pair: rules are evaluated in order and the **last matching rule wins**.
+ * Shell resources ending in ` *` also match the command without arguments.
+ */
+function effectiveEffect(
+  permissions: Array<{ action: string; resource: string; effect: string }>,
+  action: string,
+  resource: string,
+): string {
+  const toRegExp = (pattern: string) => {
+    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    const body = escaped.endsWith(" *")
+      ? escaped.slice(0, -2) + "( .*)?"
+      : escaped.replace(/\*/g, ".*").replace(/\?/g, ".")
+    return new RegExp("^" + body + "$")
+  }
+
+  let effect = "ask"
+  for (const rule of permissions) {
+    if (!toRegExp(rule.action).test(action)) continue
+    if (!toRegExp(rule.resource).test(resource)) continue
+    effect = rule.effect
+  }
+  return effect
+}
+
 describe("platform descriptors", () => {
   it("opencode points at .opencode/ with AGENTS.md", () => {
     expect(OPENCODE_DESCRIPTOR.id).toBe("opencode")
@@ -97,9 +124,10 @@ describe("generateOpenCodeConfig (spec 004)", () => {
   const model = buildDefaultConfig("/test")
   const parse = (s: string) => JSON.parse(s) as Record<string, any>
 
-  it("loads the constitution via instructions", () => {
-    // This is the mechanism by which governance reaches the model. Omitting
-    // it made every compliance check vacuous in user projects (#57).
+  it("keeps the V1-compat instructions key for the constitution", () => {
+    // OpenCode v2 accepts but does not resolve `instructions`; governance is
+    // actually loaded by the session-knowledge plugin's context hook. The key
+    // is retained only for V1 compatibility (#57, spec 004 FR-008, spec 010).
     const cfg = parse(generateOpenCodeConfig(model))
     expect(cfg.instructions).toContain(".forge/constitution.md")
     expect(cfg.instructions).toContain(".forge/knowledge/decision-log.md")
@@ -115,10 +143,29 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     expect(cfg.mcp.servers["forge-mcp-server"]).toBeDefined()
   })
 
-  it("does not pre-approve destructive shell commands", () => {
+  it("orders shell rules broadest-first so exceptions win (v2 last-match-wins)", () => {
     const permissions = parse(generateOpenCodeConfig(model)).permissions
     const shellRules = permissions.filter((p: any) => p.action === "shell")
-    expect(shellRules[shellRules.length - 1]).toMatchObject({ resource: "*", effect: "ask" })
+    // The catch-all `ask` must precede the specific allows. Reversed, the
+    // catch-all would shadow every allow and the allowlist would be inert.
+    expect(shellRules[0]).toMatchObject({ resource: "*", effect: "ask" })
+    const lastShellAllow = [...shellRules].reverse().find((p: any) => p.effect === "allow")
+    expect(lastShellAllow?.resource).not.toBe("*")
+  })
+
+  it("resolves the intended allowlist using last-match-wins semantics", () => {
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "shell", "git status")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "git status --short")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "pwd")).toBe("allow")
+    expect(effectiveEffect(permissions, "shell", "npm test")).toBe("allow")
+    expect(effectiveEffect(permissions, "edit", "src/a.ts")).toBe("ask")
+    expect(effectiveEffect(permissions, "read", "src/a.ts")).toBe("allow")
+  })
+
+  it("does not pre-approve destructive shell commands", () => {
+    const permissions = parse(generateOpenCodeConfig(model)).permissions
+    expect(effectiveEffect(permissions, "shell", "rm -rf /")).toBe("ask")
     for (const rule of permissions) {
       if (rule.effect === "allow" && typeof rule.resource === "string") {
         expect(rule.resource.startsWith("rm "), `"${rule.resource}" must not be pre-approved`).toBe(false)

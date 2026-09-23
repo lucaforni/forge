@@ -64,7 +64,17 @@ Freeze tag `v2.0.0-opencode-v1-last` already placed on `3476f55` (do not move it
 - [ ] T-018 `[S]` Run `/forge-review` (dual-model) on the diff; resolve CRITICAL findings
 - [ ] T-019 `[S]` Tick off completed tasks above (no abandoned tracking artifact); flip spec Status → Implemented
 
+## Phase 7 — Review fixes (`[FR-005]`, `[FR-006]`, spec 004 `[FR-008]`)
+
+Verification pass against the V2 docs surfaced two defects in the generated config. Both fixed.
+
+- [x] T-020 `[M]` `[FR-005]` Fix permission-array ordering. V2 evaluates the array with **last-match-wins**, so the broad `shell * → ask` must precede the specific allows. The previous `specific → general` order made the catch-all shadow every allow, leaving the allowlist inert. `defaultPermissions()` and both fallback templates reordered; `shell` exceptions use the documented `"cmd *"` idiom. Regression tests resolve the effective effect with last-match-wins semantics (`effectiveEffect` in `tests/unit/platforms.test.ts`)
+      → `installer/platforms/opencode.ts`, `.opencode/templates/opencode.json`, `.opencode/templates/opencode.json.example-customized`
+- [x] T-021 `[M]` `[FR-006]` `[FR-008]` Fix governance loading. V2 accepts but **does not resolve** the `instructions` key, so the constitution and decision log never reached the model. `session-knowledge` now registers a `context` hook that injects `.forge/constitution.md` + recent decision-log entries into every model request (mtime/size-cached). `instructions` stays as a V1-compat key with an accurate comment
+      → `.opencode/plugins/session-knowledge/{index,shared}.ts`, `tests/unit/plugins.test.ts`
+
 ---
+
 
 ## Summary
 

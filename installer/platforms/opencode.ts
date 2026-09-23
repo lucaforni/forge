@@ -34,9 +34,13 @@ export const OPENCODE_DESCRIPTOR: PlatformDescriptor = {
  *
  * Native OpenCode v2 shapes (spec 010): `agents` (was `agent`),
  * `permissions[]` (was `permission`), `mcp.servers` (was flat `mcp`).
- * `instructions` is the mechanism by which the constitution and decision log
- * reach the model. Omitting it — as the pre-004 installer did — silently
- * disables FORGE's governance pillar in every user project (spec 004 FR-008).
+ *
+ * `instructions` is still emitted, but only as a **V1 compatibility**
+ * affordance: OpenCode v2 accepts the key and does not resolve its entries
+ * (see the v2 Instructions guide). FORGE's governance therefore reaches the
+ * model through the `session-knowledge` plugin's `context` hook, which
+ * injects the constitution and decision log on every request. Do not remove
+ * the plugin assuming `instructions` covers it.
  */
 export const FORGE_MANAGED_KEYS = [
   "$schema",
@@ -69,7 +73,9 @@ export function generateOpenCodeConfig(
   config.$schema = "https://opencode.ai/config.json"
   config.default_agent = "forge"
 
-  // Governance: load the constitution and decision log into every session.
+  // Governance: kept for V1 compatibility only. OpenCode v2 accepts this key
+  // but does not resolve its entries, so governance is actually loaded by the
+  // session-knowledge plugin's `context` hook (see FORGE_MANAGED_KEYS above).
   // Merged, not replaced — a project may list its own instruction files and
   // FORGE has no business deleting them (spec 004 FR-009).
   const managedInstructions = [
@@ -180,28 +186,40 @@ export function generateOpenCodeConfig(
  *
  * Deliberately conservative. Only commands that cannot mutate the working
  * tree are pre-approved, and each rule is anchored to a specific
- * subcommand. Order is specific → general; v2 evaluates the ordered
- * array, so the catch-all `ask` rules stay last.
+ * subcommand.
+ *
+ * **Ordering is load-bearing.** V2 evaluates the array and the *last*
+ * matching rule wins, so the broadest rule for an action must come FIRST and
+ * the specific exceptions AFTER it. A previous revision had this backwards
+ * (specific first, catch-all `ask` last), which made the catch-all shadow
+ * every allow and left the allowlist inert — every command still prompted.
  *
  * Patterns like `npm run test*` or `find *` are NOT used: a trailing `*`
  * can absorb shell metacharacters, so `npm run test; rm -rf ~` would match
- * `npm run test*`, and `find . -exec rm {} \;` matches `find *`. Anything
- * not listed here prompts the user, which is the correct default for a tool
- * installing into someone else's repository.
+ * `npm run test*`, and `find . -exec rm {} \;` matches `find *`. A pattern
+ * ending in ` *` (with a space) is safe and is the documented idiom for
+ * "this command with optional arguments". Anything not listed here prompts
+ * the user, which is the correct default for a tool installing into someone
+ * else's repository.
  */
 function defaultPermissions(): Array<Record<string, unknown>> {
   return [
-    { action: "shell", resource: "git status", effect: "allow" },
-    { action: "shell", resource: "git branch", effect: "allow" },
-    { action: "shell", resource: "pwd", effect: "allow" },
-    { action: "shell", resource: "npm test", effect: "allow" },
+    // Shell: ask by default, then narrowly pre-approve read-only commands.
+    // The broad rule is first because the LAST matching rule wins.
     { action: "shell", resource: "*", effect: "ask" },
+    { action: "shell", resource: "git status *", effect: "allow" },
+    { action: "shell", resource: "git branch *", effect: "allow" },
+    { action: "shell", resource: "pwd", effect: "allow" },
+    { action: "shell", resource: "npm test *", effect: "allow" },
+
+    // Local discovery and skill tools cannot mutate the working tree.
     { action: "read", resource: "*", effect: "allow" },
     { action: "glob", resource: "*", effect: "allow" },
     { action: "grep", resource: "*", effect: "allow" },
     { action: "skill", resource: "*", effect: "allow" },
     { action: "question", resource: "*", effect: "allow" },
-    // `edit` covers the old `edit` + `write` actions.
+
+    // `edit` covers the old `edit` + `write` + `patch` actions.
     { action: "edit", resource: "*", effect: "ask" },
   ]
 }

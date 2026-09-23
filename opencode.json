@@ -59,9 +59,10 @@
     }
   },
 
-  // Global tool permissions (ordered array — specific rules first,
-  // catch-all last). NOTE: permissive dogfooding config (`*` allow);
-  // user projects get the conservative seed from the installer instead.
+  // Global tool permissions. V2 evaluates in order and the LAST matching
+  // rule wins. This dogfooding config allows every shell command (`*`
+  // catch-all below); user projects get the conservative seed from the
+  // installer instead.
   "permissions": [
     // Git operations
     { "action": "shell", "resource": "git *", "effect": "allow" },

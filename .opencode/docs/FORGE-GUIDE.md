@@ -1642,8 +1642,9 @@ Quick overview:
 - **Use @file references in prompts** to point agents at specific files
   when they need additional context beyond what the context-chain provides.
 
-- **Keep constitution and ADRs concise**. These are loaded as instructions
-  and consume context window in every session.
+- **Keep constitution and ADRs concise**. The constitution is injected into
+  the model context on every request by the `session-knowledge` plugin, so it
+  consumes context window continuously.
 
 ### 8.2 Spec Quality
 
@@ -1896,14 +1897,19 @@ servers.
 
 ### 10.1 "The agent is not following the constitution"
 
-**Cause**: The constitution may not be loaded as an instruction.
+**Cause**: The constitution file is missing, or the `session-knowledge` plugin
+is not loaded.
 
-**Fix**: Verify that `opencode.json` includes:
-```json
-{
-  "instructions": [".forge/constitution.md"]
-}
-```
+**Fix (OpenCode v2)**: Governance is loaded by the `session-knowledge` plugin's
+`context` hook, not by `opencode.json`. Verify that:
+1. `.forge/constitution.md` exists and is non-empty.
+2. `.opencode/plugins/session-knowledge/index.ts` was installed.
+3. `.opencode/package.json` lists `@opencode/plugin` and the plugin
+   dependencies were installed (`npm install` inside `.opencode/`).
+
+**Note**: `opencode.json` still contains an `instructions` array, but OpenCode
+v2 accepts that key without resolving its entries. It is kept only for v1
+compatibility; adding files there will not load them on v2.
 
 ### 10.2 "Scope detection recommends the wrong track"
 

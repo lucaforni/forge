@@ -33,6 +33,7 @@ import {
   extractLastEntries,
   extractDecisionsFromMessages,
   extractLessonsFromMessages,
+  buildGovernanceContext,
 } from "../../.opencode/plugins/session-knowledge/shared"
 
 import { mapPermissionsArray } from "../../installer/platforms/claude-code"
@@ -205,6 +206,32 @@ describe("session-knowledge helpers", () => {
       { role: "assistant", content: "Third error mention with a fix attached." },
     ]
     expect(extractLessonsFromMessages(noisy).length).toBeGreaterThan(0)
+  })
+
+  describe("buildGovernanceContext", () => {
+    it("injects the constitution and the recent decisions", () => {
+      const text = buildGovernanceContext({
+        constitution: "# Rules\n\nArticle 1: quality.\n",
+        decisionLog: "### 2026-01-01 — a\nbody a\n### 2026-01-02 — b\nbody b\n",
+      })!
+      expect(text).toContain("# FORGE Governance")
+      expect(text).toContain("Article 1: quality.")
+      expect(text).toContain("2026-01-02")
+      expect(text).toContain(".forge/constitution.md")
+    })
+
+    it("bounds the decision log to the most recent entries", () => {
+      let log = ""
+      for (let i = 1; i <= 12; i++) log += `### 2026-01-${i} — entry\nbody\n`
+      const text = buildGovernanceContext({ constitution: "", decisionLog: log })!
+      expect(text).toContain("2026-01-12")
+      expect(text).not.toContain("2026-01-01 — entry")
+    })
+
+    it("returns null when there is nothing to inject", () => {
+      expect(buildGovernanceContext({ constitution: "", decisionLog: "" })).toBeNull()
+      expect(buildGovernanceContext({ constitution: "   \n", decisionLog: "no entries" })).toBeNull()
+    })
   })
 })
 

@@ -48,6 +48,52 @@ export function extractLastEntries(content: string, count: number): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Governance context
+// ---------------------------------------------------------------------------
+
+export interface GovernanceContextInput {
+  /** Contents of `.forge/constitution.md` (empty string when absent). */
+  constitution: string
+  /** Contents of `.forge/knowledge/decision-log.md` (empty string when absent). */
+  decisionLog: string
+  /** How many trailing decision entries to include. Defaults to 10. */
+  maxDecisions?: number
+}
+
+/**
+ * Build the FORGE governance block injected into every model request.
+ *
+ * OpenCode v2 does **not** resolve the `instructions` config key, so the
+ * constitution and decision log have to reach the model through a session
+ * `context` hook instead. Returns `null` when there is nothing to inject, so
+ * the caller can skip the push entirely rather than send an empty block.
+ */
+export function buildGovernanceContext(input: GovernanceContextInput): string | null {
+  const chunks: string[] = []
+
+  const constitution = input.constitution.trim()
+  if (constitution.length > 0) {
+    chunks.push(`## Project Constitution (.forge/constitution.md)\n\n${constitution}`)
+  }
+
+  const decisions = extractLastEntries(input.decisionLog, input.maxDecisions ?? 10)
+  if (decisions.length > 0) {
+    chunks.push(
+      `## Recent Decisions (.forge/knowledge/decision-log.md)\n\n${decisions.join("\n\n")}`,
+    )
+  }
+
+  if (chunks.length === 0) return null
+
+  return (
+    `# FORGE Governance\n\n` +
+    `The following project governance is loaded automatically. ` +
+    `Treat the constitution as binding and keep decisions consistent with it.\n\n` +
+    chunks.join("\n\n---\n\n")
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Message flattening
 // ---------------------------------------------------------------------------
 
