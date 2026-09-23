@@ -15,9 +15,9 @@
     "budgets": "npx tsx scripts/check-token-budget.ts"
   },
   "devDependencies": {
-    "@types/node": "^26.5.1",
+    "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.14",
     "typescript": "^7.0.2",
     "vitest": "^5.0.0"
   },
