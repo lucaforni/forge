@@ -72,8 +72,12 @@ Verification pass against the V2 docs surfaced two defects in the generated conf
       → `installer/platforms/opencode.ts`, `.opencode/templates/opencode.json`, `.opencode/templates/opencode.json.example-customized`
 - [x] T-021 `[M]` `[FR-006]` `[FR-008]` Fix governance loading. V2 accepts but **does not resolve** the `instructions` key, so the constitution and decision log never reached the model. `session-knowledge` now registers a `context` hook that injects `.forge/constitution.md` + recent decision-log entries into every model request (mtime/size-cached). `instructions` stays as a V1-compat key with an accurate comment
       → `.opencode/plugins/session-knowledge/{index,shared}.ts`, `tests/unit/plugins.test.ts`
-- [x] T-022 `[S]` Remediate Dependabot alert #19 (GHSA-8988-4f7v-96qf): `@opentelemetry/core < 2.8.0` reached transitively through `@opencode/plugin` → `@opencode/util`. Upstream still pins core `2.6.1` at `@opencode/util@2.0.15`, so an npm `overrides` entry pins `@opentelemetry/core` to `2.8.0` (the first patched release). `npm audit` clean; installer contract test still green
+- [x] T-022 `[S]` Remediate Dependabot alert #19 (GHSA-8988-4f7v-96qf): `@opentelemetry/core < 2.8.0` reached transitively through `@opencode/plugin` → `@opencode/util`. Upstream still pins core `2.6.1` at `@opencode/util@2.0.15`, so an npm `overrides` entry floors `@opentelemetry/core` at `^2.8.0` (first patched release; caret range so future 2.x patches flow through the normal lock-update path — an exact pin would silently block them). `npm audit` clean; installer contract test still green
       → `.opencode/package.json`, `.opencode/package-lock.json`
+      - Mixed tree (accepted): core resolves 2.8.0 while `resources`/`sdk-trace-base` stay at upstream-pinned 2.6.1 and `otlp-*` at 0.214.0. Upstream never tests this combination; OTel 2.x minors are backward-compatible and the contract test (real `npm install` in the target) passes, so the residual telemetry-breakage risk is low.
+      - **Removal condition:** drop the `overrides` entry when `@opencode/util` no longer pins a vulnerable core (check `npm view @opencode/util dependencies`, then `npm install --package-lock-only` in `.opencode/` and confirm `npm audit` stays clean without the override).
+      - **Existing installs:** the manifests are canonical installer artifacts rewritten on checksum change, so re-running the installer upgrades already-installed projects; projects that never re-run keep the vulnerable 2.6.1.
+      - Regression tests: `tests/unit/contract.test.ts` asserts the override ships in the installed `package.json` and that the template + lockfile resolve core ≥ 2.8.0.
 
 ---
 

@@ -3,6 +3,6 @@
     "@opencode/plugin": "2.0.12"
   },
   "overrides": {
-    "@opentelemetry/core": "2.8.0"
+    "@opentelemetry/core": "^2.8.0"
   }
 }

@@ -160,10 +160,43 @@ describe("installer contract — fresh OpenCode install", () => {
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"))
     expect(pkg.dependencies?.["@opencode/plugin"]).toBeDefined()
     expect(pkg.dependencies?.["@opencode-ai/plugin"]).toBeUndefined()
+    // GHSA-8988-4f7v-96qf: the OTel core override must ship to user projects,
+    // otherwise fresh installs resolve the vulnerable tree again (T-022).
+    expect(pkg.overrides?.["@opentelemetry/core"]).toBeDefined()
   })
 
   it("does not distribute internal frontend documentation", () => {
     expect(existsSync(join(target, ".forge/frontend/DISTRIBUTE.md"))).toBe(false)
+  })
+})
+
+describe("installer contract — @opentelemetry/core pin (GHSA-8988-4f7v-96qf, T-022)", () => {
+  /** Numeric `major.minor.patch` comparison; returns <0 / 0 / >0. */
+  function cmpSemver(a: string, b: string): number {
+    const pa = a.split(".").map(Number)
+    const pb = b.split(".").map(Number)
+    for (let i = 0; i < 3; i++) {
+      if (pa[i] !== pb[i]) return pa[i] - pb[i]
+    }
+    return 0
+  }
+
+  it("the .opencode template pins @opentelemetry/core above the vulnerable range", () => {
+    // Upstream `@opencode/util` still pins core 2.6.1 exactly, so the floor
+    // lives in our `overrides`. A caret range (not an exact pin) lets future
+    // 2.x patches flow through the normal lock-update path.
+    const pkg = JSON.parse(readFileSync(join(REPO_ROOT, ".opencode/package.json"), "utf-8"))
+    const override = pkg.overrides?.["@opentelemetry/core"]
+    expect(override, "overrides['@opentelemetry/core'] missing").toBeDefined()
+    const floor = override.replace(/^[^\d]*/, "")
+    expect(cmpSemver(floor, "2.8.0") >= 0, `override floor ${override} is below 2.8.0`).toBe(true)
+  })
+
+  it("the .opencode lockfile resolves @opentelemetry/core to a patched release", () => {
+    const lock = JSON.parse(readFileSync(join(REPO_ROOT, ".opencode/package-lock.json"), "utf-8"))
+    const resolved = lock.packages?.["node_modules/@opentelemetry/core"]?.version
+    expect(resolved, "lock has no node_modules/@opentelemetry/core entry").toBeDefined()
+    expect(cmpSemver(resolved, "2.8.0") >= 0, `locked core ${resolved} is below 2.8.0`).toBe(true)
   })
 })
 
