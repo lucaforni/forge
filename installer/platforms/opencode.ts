@@ -29,8 +29,15 @@ export const OPENCODE_DESCRIPTOR: PlatformDescriptor = {
 // ---------------------------------------------------------------------------
 
 /**
- * Top-level keys the installer owns. On update these are regenerated; every
- * other key in an existing `opencode.json` is preserved verbatim.
+ * Top-level keys the installer owns, split by update semantics:
+ *
+ * - Regenerated on update: `$schema`, `default_agent`, `instructions`
+ *   (merged, not replaced), `agents`, `mcp`.
+ * - Seeded once: `model`, `subagent_depth` — written only when absent, so an
+ *   explicit user value (including `0` for depth) is never overwritten.
+ *   The list is declarative (no code iterates it); the semantics live in
+ *   `generateOpenCodeConfig` below. Every other key in an existing
+ *   `opencode.json` is preserved verbatim (spec 004 FR-009).
  *
  * Native OpenCode v2 shapes (spec 010): `agents` (was `agent`),
  * `permissions[]` (was `permission`), `mcp.servers` (was flat `mcp`).
@@ -48,6 +55,7 @@ export const FORGE_MANAGED_KEYS = [
   "instructions",
   "agents",
   "mcp",
+  "subagent_depth",
 ] as const
 
 // ---------------------------------------------------------------------------
@@ -90,6 +98,21 @@ export function generateOpenCodeConfig(
   // Model defaults — only set when the user has not chosen their own.
   if (model.defaultModel && existing?.model === undefined) {
     config.model = model.defaultModel
+  }
+
+  // Subagent nesting depth — seeded once, like `model` above (see
+  // DEFAULT_SUBAGENT_DEPTH in ../config.ts for the rationale). An explicit
+  // user value always wins, on install and on update — including 0, which
+  // deliberately locks nesting off. Non-integer or negative model values
+  // are never written; the key is left untouched instead.
+  const depth = model.subagentDepth
+  if (depth !== undefined && (!Number.isInteger(depth) || depth < 0)) {
+    warnings?.push(
+      "opencode.json: ignoring invalid subagentDepth in the FORGE model " +
+        "(must be an integer >= 0) — the existing value, if any, is preserved.",
+    )
+  } else if (depth !== undefined && existing?.subagent_depth === undefined) {
+    config.subagent_depth = depth
   }
 
   // Agent definitions. Native v2 key is `agents` (plural). A legacy v1

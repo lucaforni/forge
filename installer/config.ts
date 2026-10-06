@@ -43,6 +43,17 @@ export function defaultMcpServerConfig(projectRoot: string): McpServerConfig {
  * in `forge.md` without delivering the diversity the rule exists for (#66).
  */
 export const DEFAULT_MODEL = "github-copilot/claude-sonnet-4.6"
+/**
+ * Default OpenCode subagent nesting depth.
+ *
+ * OpenCode itself defaults to 1, which prevents subagents from launching
+ * subagents — that breaks FORGE's fan-out patterns (orchestrator → parallel
+ * workers → delegated subtasks, e.g. dual-model review). 5 levels keeps
+ * Epic/Product workflows routable while bounding recursion cost. The value
+ * is reconfigurable: an explicit user value in `opencode.json` always wins,
+ * on install and on update.
+ */
+export const DEFAULT_SUBAGENT_DEPTH = 5
 const REASONING_MODEL = "github-copilot/claude-opus-4.7"
 const PEER_REVIEW_MODEL = "github-copilot/gpt-5.3-codex"
 
@@ -72,6 +83,7 @@ export function buildDefaultConfig(projectRoot: string): ForgeConfigModel {
     mcpServers: [defaultMcpServerConfig(projectRoot)],
     hooks: [],
     defaultModel: DEFAULT_MODEL,
+    subagentDepth: DEFAULT_SUBAGENT_DEPTH,
   }
 }
 
@@ -224,7 +236,10 @@ function removeTrailingCommas(chars: string[], inStringMask: boolean[]): string 
 /**
  * Merge user-supplied config keys with FORGE defaults.
  * FORGE-managed keys win on conflict; user-only keys preserved.
- * Returns warnings for any conflicts detected.
+ * Scalar defaults (`defaultModel`, `subagentDepth`) pass through from the
+ * FORGE config — this merger only handles agents/MCP lists, never user
+ * file values (those are reconciled in `generateOpenCodeConfig`, where an
+ * explicit user value always wins). Returns warnings for conflicts detected.
  */
 export function mergeConfig(
   forgeConfig: ForgeConfigModel,
@@ -235,6 +250,8 @@ export function mergeConfig(
     agents: [...forgeConfig.agents],
     mcpServers: [...forgeConfig.mcpServers],
     hooks: [...forgeConfig.hooks],
+    defaultModel: forgeConfig.defaultModel,
+    subagentDepth: forgeConfig.subagentDepth,
   }
 
   // Merge agents — FORGE agents win on name conflict
