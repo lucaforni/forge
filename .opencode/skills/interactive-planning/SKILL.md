@@ -61,10 +61,10 @@ Every deferred item: rationale + revisit-when. Every open item: owner + next act
 
 ### Commitment refusal → accepted-risk template
 
-If the user rejects slicing and holds "tutto insieme o niente" despite the trade-off round, do NOT silently comply and do NOT force-slice. Record both explicitly:
+If the user rejects slicing and holds "all-at-once or nothing" despite the trade-off round, do NOT silently comply and do NOT force-slice. Record both explicitly:
 
 ```markdown
-Decision: A (sliced M1/M2/M3, M1 shippable alone) vs B (tutto insieme, single milestone)
+Decision: A (sliced M1/M2/M3, M1 shippable alone) vs B (all-at-once, single milestone)
 - Trade-off: A ships value at ~half time; B risks 0 shippable if the box slips.
 - Recommendation: A, because <one-line reason referencing user's constraint>.
 - User pick: B (recorded) + accepted-risk: <what slips first if the box slips>.
@@ -153,4 +153,4 @@ Interaction Plan (all sections required):
 
 - Technique sources (link, do not copy): `advanced-elicitation` — Pre-mortem Analysis, Constraint Removal, Inversion Analysis.
 - Inputs: `context-chain`. Prior phases: `feature-discovery` (Discovery Brief + FR-candidates as entry).
-- External examples: `dev/.forge/specs/011-interactive-discovery-skills/examples/interactive-planning-transcript.md`.
+- External examples (maintainer repo): `.forge/specs/011-interactive-discovery-skills/examples/interactive-planning-transcript.md`.

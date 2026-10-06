@@ -134,4 +134,4 @@ Rule: every high-impact unvalidated assumption MUST also appear under Open Quest
 
 - Technique source (link, do not copy): `advanced-elicitation` — Inversion Analysis (edge cases), Socratic Questioning, Pre-mortem Analysis.
 - Inputs: `context-chain`. Prior phase: `idea-exploration` (idea canvases as input).
-- External examples: `dev/.forge/specs/011-interactive-discovery-skills/examples/feature-discovery-transcript.md`.
+- External examples (maintainer repo): `.forge/specs/011-interactive-discovery-skills/examples/feature-discovery-transcript.md`.
