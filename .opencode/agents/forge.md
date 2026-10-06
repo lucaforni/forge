@@ -106,7 +106,7 @@ When the request is vague or early-stage, suggest the right discovery skill BEFO
 | Feature named but users/flows/edges unclear | `feature-discovery` | forge-pm (standalone or inline in `/forge-specify`) |
 | Spec FR IDs + open sequencing/cuts/risks, or constraint change ("halve the time") | `interactive-planning` | forge-pm + forge-architect (standalone or inline before `/forge-plan`) |
 
-Load the suggested skill via the `skill` tool and run its workshop (multi-round `question` flow with synthesis + 1 challenge between rounds). Feed its artifact downstream: canvases → brief, Discovery Brief → spec, Interaction Plan (separate input) → plan.
+Load the suggested skill via the `skill` tool (conditional) and run its workshop (multi-round `question` flow with synthesis + 1 challenge between rounds). Feed its artifact downstream: canvases → brief, Discovery Brief → spec, Interaction Plan (separate input) → plan.
 
 ## Auto-Review After Implementation
 

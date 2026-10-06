@@ -26,6 +26,8 @@ Turn one vague idea (or a pile of raw intuitions) into 2-3 scored, challenger-te
 - User explicitly says "skip discovery, just write the spec".
 - Implementation, code, or test generation (belongs to `/forge-implement` / `/forge-test`).
 
+Refusal script (use when asked for code): "This skill produces discovery artifacts only; implementation belongs to `/forge-implement`."
+
 ## Phased Workshop Process
 
 Run phases in order. State the progress indicator at each phase start: `Phase X/4 — <goal> (~<time-box>) · exit gate: <condition>`.
@@ -42,14 +44,14 @@ Rules: collect first, never score or reject in this phase. Reflect every angle b
 ### Phase 2/4 — Probe (Socratic pressure per idea)
 
 Goal: stress-test each promising angle for need, evidence, and alternatives.
-Time-box hint: 4-6 min. Exit gate: every top angle has a why-needed answer + evidence status, or `done`.
+Time-box hint: 4-6 min. Exit gate: every top angle has a why-needed answer + evidence status, or `skip`.
 
 Per angle ask: why-needed, evidence (seen, not opinion), alternatives already solving 80%, what happens if never built. Flag answers without evidence as `[Unvalidated]`.
 
 ### Phase 3/4 — Converge (fixed-rubric scoring, forced cuts)
 
 Goal: rank and cut to top 2-3 with rationale.
-Time-box hint: 2-3 min. Exit gate: scores assigned + cuts justified, or `done`.
+Time-box hint: 2-3 min. Exit gate: scores assigned + cuts justified, or `skip`.
 
 Fixed rubric (no substitutions):
 
@@ -88,6 +90,19 @@ Phrase every challenge as a question referencing the user's own words. Quota: >=
 4. **Inversion:** "What would guarantee this idea fails — users can't figure out what, or what breaks first?"
 5. **Constraint-removal:** "With unlimited time and no tech limits, what would you build for <user> — and what does that reveal about the core?"
 6. **Pre-mortem light:** "It is 6 months later and this idea flopped. What is the most likely reason?"
+
+## Conflict Protocol
+
+When answers contradict (across rounds or vs. upstream docs): never silently resolve. Surface as:
+
+```markdown
+Decision: A (<source/round>) vs B (<source/round>)
+- Trade-off:
+- Recommendation: <option> because <reason>
+- Awaiting: user pick
+```
+
+Block phase exit until the conflict is picked or explicitly deferred with an owner.
 
 ## Entry / Exit / Inputs / Token Budget
 

@@ -56,7 +56,7 @@ Cover performance, scale/volume, security/privacy, accessibility, platforms. Vag
 ### Phase 5/5 — Scope line
 
 Goal: explicit in / out / future + assumption log sign-off.
-Time-box: 3 min. Exit gate: scope line complete + assumption log reviewed, or `done`.
+Time-box: 3 min. Exit gate: scope line complete + assumption log reviewed, or `skip`.
 Force cuts: propose a v1 cut and ask accept/reject. Every deferred item gets a rationale. Every high-impact unvalidated assumption becomes `[NEEDS CLARIFICATION]` with an owner.
 
 ## Interaction Model
@@ -64,7 +64,7 @@ Force cuts: propose a v1 cut and ask accept/reject. Every deferred item gets a r
 1. **Rounds, not dumps.** Minimum 3 `question`-tool rounds: round 1 = users/flows (Phases 1-2), round 2 = edge cases/NFRs (Phases 3-4), round 3 = scope cuts (Phase 5). Maximum 5 questions per round, grouped by theme, one-line context each. Prefer 2-4 choice options + implicit free-text; mark best practice `(Recommended)`.
 2. **Synthesis + 1 challenge between rounds (strict order).** After every round, FIRST write in chat: (a) synthesis <= 5 bullets in the user's words, (b) exactly one Socratic challenge. ONLY THEN invoke the `question` tool for the next round. Never invoke `question` twice without visible synthesis + challenge in between. If you catch yourself skipping this, stop and emit synthesis + challenge before continuing.
 3. **Session controls:** `skip` → next phase; `done` → close with partial Discovery Brief labeled `Partial — stopped by user`; `deeper` → one extra challenge round on the current phase.
-4. **Soft force-converge.** If ~4 rounds pass without convergence, propose best-guess scope line + assumption log and ask accept / reject / adjust.
+4. **Soft force-converge.** If ~4 rounds pass without convergence, propose best-guess scope line + assumption log and ask accept / reject / adjust. Note: the round-3 scope-cut round doubles as the natural converge point — treat any `deeper` past round 3 as the converge trigger rather than opening a new round.
 5. **Thin-answer rule.** One-word answers → one clarifying follow-up per round, then continue with `[Assumed: ...]` flags.
 6. **Progress indicator:** `Phase X/5 — <goal> (~<time-box>) · exit gate: <condition>`.
 7. **Token discipline.** First question within ~30s; no heavy upstream reads before interacting.

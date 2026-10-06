@@ -25,6 +25,8 @@ Turn a scoped spec plus real constraints (time, team, tech) into a committable I
 - The task is architecture decisions or ADRs — that is `/forge-architecture` (this skill flags `→ architect decision`, never invents).
 - Code, tasks breakdown, or test writing (`/forge-tasks`, `/forge-implement`, `/forge-test`).
 
+Refusal script (use when asked for code): "This skill produces discovery artifacts only; implementation belongs to `/forge-implement`."
+
 ## Phased Workshop Process
 
 Progress indicator per phase: `Phase X/4 — <goal> (~<time-box>) · exit gate: <condition>`.
@@ -56,7 +58,7 @@ Plus pre-mortem light: "it is 3 months later and milestones slipped — most lik
 ### Phase 4/4 — Commitment
 
 Goal: signed-off deferred list + owners for open items.
-Time-box: 2-3 min. Exit gate: deferred rationale + `[NEEDS CLARIFICATION]` owners, or `done`.
+Time-box: 2-3 min. Exit gate: deferred rationale + `[NEEDS CLARIFICATION]` owners, or `skip`.
 Every deferred item: rationale + revisit-when. Every open item: owner + next action. End with a one-paragraph commitment statement the user can accept/reject.
 
 ### Commitment refusal → accepted-risk template
@@ -92,6 +94,19 @@ Quota: >= 2 per session, one of which is the trade-off round. Phrase as question
 4. **Inversion:** "What sequencing choice would guarantee integration hell in month two?"
 5. **Pre-mortem light:** "Milestones slipped 4 weeks. Was it an underestimated dependency, a missing skill, or scope creep?"
 6. **Evidence:** "Which effort estimate (S/M/L) is a guess rather than based on prior work — and who can validate it?"
+
+## Conflict Protocol
+
+When answers contradict (across rounds, e.g. trade-off pick vs commitment stance): never silently resolve. Surface as:
+
+```markdown
+Decision: A (<source/round>) vs B (<source/round>)
+- Trade-off:
+- Recommendation: <option> because <reason>
+- Awaiting: user pick
+```
+
+Block phase exit until the conflict is picked or explicitly deferred with an owner (see accepted-risk template below).
 
 ## Architecture Guardrail
 
