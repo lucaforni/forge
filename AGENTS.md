@@ -96,6 +96,13 @@ Use a blank line between each group.
 | Hotfix  | `hotfix/<slug>`             | `hotfix/crash-on-empty-input`  |
 | Epic    | `epic/<epic-id>-<slug>`     | `epic/E01-core-auth`           |
 
+### Long-Lived Branches
+
+| Branch    | Role                                              |
+| --------- | ------------------------------------------------- |
+| `main`    | Stable. Release-only: merges from `develop` only. |
+| `develop` | Integration. Default base for all feature/fix PRs |
+
 ### Commit Format
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
@@ -112,9 +119,16 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
 
 ### Pull Requests
 
+- Base branch is `develop` for all feature/fix/hotfix PRs (never `main` directly)
 - All PRs require AI adversarial review (`/forge-review`) before human review
 - PR description must reference the spec ID or story ID
 - All CI checks must pass before merge
+
+### Release Policy (`develop` → `main`)
+
+- `main` advances only via explicit release merges from `develop`
+- Each release merge uses a `chore(release): ...` commit and, when applicable, a version tag
+- Hotfixes land on `develop` first, then ride the next release merge (direct-to-`main` only for critical production incidents, with immediate back-merge to `develop`)
 
 ---
 
