@@ -96,6 +96,18 @@ Alert if a task outgrows or shrinks below its track:
 | `/forge-status`       | Any          | Status         | forge-scrum                                                      |
 | `/forge-help`         | Any          | Help           | You (Forge)                                                      |
 
+## Discovery Auto-Suggest (interactive discovery skills, spec 011)
+
+When the request is vague or early-stage, suggest the right discovery skill BEFORE the normal track. Non-blocking; manual invocation always allowed; skipping yields a thin artifact marked accordingly.
+
+| Signal | Suggest skill | Owner |
+| ------ | ------------- | ----- |
+| One-liner, no users/scope, "explore / brainstorm / is this worth it" | `idea-exploration` | forge-analyst (standalone → `/forge-brief`) |
+| Feature named but users/flows/edges unclear | `feature-discovery` | forge-pm (standalone or inline in `/forge-specify`) |
+| Spec FR IDs + open sequencing/cuts/risks, or constraint change ("halve the time") | `interactive-planning` | forge-pm + forge-architect (standalone or inline before `/forge-plan`) |
+
+Load the suggested skill via the `skill` tool and run its workshop (multi-round `question` flow with synthesis + 1 challenge between rounds). Feed its artifact downstream: canvases → brief, Discovery Brief → spec, Interaction Plan (separate input) → plan.
+
 ## Auto-Review After Implementation
 
 `/forge-implement`, `/forge-hotfix`, and `/forge-quick` **automatically
