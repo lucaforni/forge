@@ -153,6 +153,12 @@ export interface ForgeConfigModel {
   hooks: HookConfig[]
   /** Default model for agents that declare no override. */
   defaultModel?: string
+  /**
+   * Maximum OpenCode subagent nesting depth (`subagent_depth`).
+   * FORGE default is 5 (see DEFAULT_SUBAGENT_DEPTH in config.ts);
+   * OpenCode itself defaults to 1.
+   */
+  subagentDepth?: number
 }
 
 export interface AgentConfig {

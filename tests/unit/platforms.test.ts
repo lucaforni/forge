@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from "vitest"
 import { buildDefaultConfig } from "../../installer/config"
-import { OPENCODE_DESCRIPTOR, generateOpenCodeConfig } from "../../installer/platforms/opencode"
+import { OPENCODE_DESCRIPTOR, generateOpenCodeConfig, FORGE_MANAGED_KEYS } from "../../installer/platforms/opencode"
 import {
   CLAUDE_CODE_DESCRIPTOR,
   generateClaudeCodeConfig,
@@ -274,6 +274,54 @@ describe("generateOpenCodeConfig (spec 004)", () => {
     const out = generateOpenCodeConfig(model)
     expect(out.endsWith("\n")).toBe(true)
     expect(() => JSON.parse(out)).not.toThrow()
+  })
+})
+
+describe("generateOpenCodeConfig — subagent_depth (spec 012)", () => {
+  const model = buildDefaultConfig("/test")
+  const parse = (s: string) => JSON.parse(s) as Record<string, any>
+
+  it("writes the FORGE default (5) on a fresh install", () => {
+    const cfg = parse(generateOpenCodeConfig(model))
+    expect(cfg.subagent_depth).toBe(5)
+  })
+
+  it("applies the default on update when the key is absent", () => {
+    const cfg = parse(generateOpenCodeConfig(model, { model: "x/y" }))
+    expect(cfg.subagent_depth).toBe(5)
+  })
+
+  it("never overrides an explicit user value, on install or update", () => {
+    expect(parse(generateOpenCodeConfig(model, { subagent_depth: 3 })).subagent_depth).toBe(3)
+    expect(parse(generateOpenCodeConfig(model, { subagent_depth: 10 })).subagent_depth).toBe(10)
+  })
+
+  it("preserves an explicit 0 (deliberate nesting lock-off)", () => {
+    const cfg = parse(generateOpenCodeConfig(model, { subagent_depth: 0 }))
+    expect(cfg.subagent_depth).toBe(0)
+  })
+
+  it("leaves the key untouched for non-integer or negative model values", () => {
+    const bad = { ...model, subagentDepth: 2.5 }
+    expect(parse(generateOpenCodeConfig(bad)).subagent_depth).toBeUndefined()
+    const negative = { ...model, subagentDepth: -1 }
+    expect(parse(generateOpenCodeConfig(negative)).subagent_depth).toBeUndefined()
+  })
+
+  it("honors a custom model value over the default", () => {
+    const custom = { ...model, subagentDepth: 8 }
+    expect(parse(generateOpenCodeConfig(custom)).subagent_depth).toBe(8)
+  })
+
+  it("lists subagent_depth among the FORGE-managed keys", () => {
+    expect(FORGE_MANAGED_KEYS).toContain("subagent_depth")
+  })
+
+  it("warns and writes nothing for an invalid model depth", () => {
+    const warnings: string[] = []
+    const cfg = parse(generateOpenCodeConfig({ ...model, subagentDepth: -2 }, {}, warnings))
+    expect(cfg.subagent_depth).toBeUndefined()
+    expect(warnings.some((w) => w.includes("subagentDepth"))).toBe(true)
   })
 })
 

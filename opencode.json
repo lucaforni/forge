@@ -6,6 +6,14 @@
   // Default model for all agents unless overridden
   "model": "github-copilot/claude-sonnet-4.6",
 
+  // Maximum subagent nesting depth. OpenCode defaults to 1 (subagents
+  // cannot launch subagents); FORGE needs 5 for orchestrator fan-out
+  // (e.g. parallel dual-model review with delegated subtasks).
+  // Cost note: each extra level multiplies token spend and latency —
+  // lower it (even to 0) if runs get expensive. Reconfigurable per
+  // project — the installer never overrides an explicit value.
+  "subagent_depth": 5,
+
   // Default agent - FORGE orchestrator handles all workflow routing
   "default_agent": "forge",
 
