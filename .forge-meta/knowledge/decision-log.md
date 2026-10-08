@@ -112,3 +112,71 @@ Closing audit issues #74 (residuals) and #84 (UX chain).
      falsify the tracking record. A close-out record with per-group verdicts
      plus ADR-002/003 (scoped to the verifiable) is the truthful artifact.
    - **Impact:** Low
+
+## 2026-10-06 | Session: hotfix model IDs (011-model-configure unblocks)
+
+**Status:** `completed`
+**Tags:** `hotfix`, `models`, `github-copilot`, `installer`
+**Spec Refs:** `011-model-configure`
+**Decision ID:** `DEC-2026-HF-001`
+
+### Context
+
+All `forge-*` subagents pinned to `github-copilot/claude-opus-4.7` /
+`claude-sonnet-4.6` started failing: provider reports those IDs unavailable
+(available: `claude-opus-4.8`, `claude-opus-4.8-fast`, `claude-sonnet-5.5`,
+`gpt-5.3-codex`, …). `forge-pm` and clarify subagents crashed, blocking 011.
+
+### Decisions
+
+1. **[COMPLETED]** Hotfix: swap model IDs only, no structural change
+   - **Rationale:** Mechanical ID realignment (`opus-4.7`→`opus-4.8`,
+     `sonnet-4.6`→`sonnet-5.5`, fallback `opus-4.6`→`opus-4.8-fast`;
+     peer `gpt-5.3-codex` unchanged) across `opencode.json`,
+     `.opencode/templates/opencode.json`, `installer/config.ts`,
+     `presets.json` (github-copilot preset only). Other presets, docs
+     examples left for 011 / docs pass. Scope exceeds Hotfix file-count
+     but change is mechanical — recorded here per Spec-Code Traceability.
+   - **Impact:** High (unblocks all subagents)
+   - **Alternatives considered:**
+     - Wait for provider to restore old IDs: rejected — no ETA, framework unusable.
+     - Full 011 first: rejected — 011 itself needs working subagents for plan/review.
+   - **Follow-up:** 011-model-configure makes this class of outage self-service.
+     Explicit 011 docs-pass item (from hotfix review W1): sweep distributed
+     `.opencode/docs/*` (FORGE-CUSTOMIZATION.md tier tables, UPDATING-FORGE.md
+     examples) still advertising dead `opus-4.7`/`opus-4.6`/`sonnet-4.6` IDs.
+     `opencode.json.example-customized` intentionally untouched: it is NOT
+     distributed (EXCLUDED_TEMPLATES) and serves as merge-fixture illustration.
+   - **Review:** primary `forge-reviewer` APPROVE, no CRITICAL (W1 + I1/I2 noted).
+     Peer reviewer unavailable (infra: free-tier routing error, not model-related);
+     human review is the second lens for this hotfix.
+
+## 2026-10-08 | Session: 011-model-configure implement (Phases 1-5)
+
+**Status:** `completed`
+**Tags:** `feature`, `models`, `installer`, `spec-011`
+**Spec Refs:** `011-model-configure`
+**Decision ID:** `DEC-2026-011`
+
+### Context
+
+Full Feature track: discovery, spec (Clarified), plan, analyze
+(CONDITIONAL, B-1/B-2), plan revision, tasks (28), implement Phases 1-5
+in-orchestrator. Hotfix DEC-2026-HF-001 unblocked subagents first.
+
+### Decisions
+
+1. **[COMPLETED]** `/forge-model-configure` + `installer/model-config.ts` + `--reconfigure` alias
+   - **Rationale:** Static policy routing (quality/speed/cheap) over versioned
+     presets; dynamic per-task switching deferred. Dual-target projection
+     (fallback `config` + active create-once `user-template`); two-list key
+     contract with invariant test; fail-closed privacy gate.
+   - **Impact:** High (new command surface, installer behavior)
+   - **Deviations recorded in tasks.md:** (a) presets REMOVED from
+     EXCLUDED_TEMPLATES (plan prose said keep - keeping ships nothing);
+     (b) non-targeted tiers keep agentModels defaults; (c) AbortError removed
+     as unreachable; (d) inline fixtures over fixtures dir.
+   - **Review:** primary NEEDS CHANGES -> 7/7 fixed + tests (analysis.md s6).
+     Peer unavailable (infra). Human review pending as second lens.
+   - **Follow-up:** merge decision (human); remaining W1 docs prose
+     (UPDATING-FORGE.md examples) rides a docs pass.

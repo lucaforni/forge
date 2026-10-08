@@ -1,6 +1,6 @@
 {
   "$schema": "https://forge.opencode.ai/presets.json",
-  "_comment": "FORGE Provider Presets — defines available model providers and their agent assignments.\n\nHOW TO CUSTOMIZE:\n  1. Copy this file to .forge/presets.json in your project\n  2. Edit, add, or remove presets as needed\n  3. The .forge/presets.json takes precedence over this file\n  4. Presets with the same 'id' in .forge/presets.json completely replace FORGE defaults\n\nPRESET STRUCTURE:\n  id           — unique identifier (used with --provider flag)\n  name         — display name shown during selection\n  description  — short description\n  defaultModel — model used when no specific agent override exists\n  providers    — provider configurations with model options\n  agentModels  — model assignments by tier:\n    reasoning  — PM, Architect, Reviewer, UX (deep analysis agents)\n    execution  — Forge, Scrum, QA, Analyst (task execution agents)\n    peer      — Peer reviewer (optional, dual-model review)\n  alternatives — alternative models available for each tier (used in custom mode)",
+  "_comment": "FORGE Provider Presets — defines available model providers and their agent assignments.\n\nFREE-MODEL CONTRACT (011): free-tier models MUST end in `-free`. The `--policy cheap` free-preference and the free-model privacy gate key off this suffix — a free model without it is treated as paid (no notice, no gate). Prefer renaming the model id; use an explicit flag only if the provider forbids it.\n\nHOW TO CUSTOMIZE:\n  1. Copy this file to .forge/presets.json in your project\n  2. Edit, add, or remove presets as needed\n  3. The .forge/presets.json takes precedence over this file\n  4. Presets with the same 'id' in .forge/presets.json completely replace FORGE defaults\n\nPRESET STRUCTURE:\n  id           — unique identifier (used with --provider flag)\n  name         — display name shown during selection\n  description  — short description\n  defaultModel — model used when no specific agent override exists\n  providers    — provider configurations with model options\n  agentModels  — model assignments by tier:\n    reasoning  — PM, Architect, Reviewer, UX (deep analysis agents)\n    execution  — Forge, Scrum, QA, Analyst (task execution agents)\n    peer      — Peer reviewer (optional, dual-model review)\n  alternatives — alternative models available for each tier (used in custom mode)",
 
   "order": ["github-copilot", "opencode-anthropic", "opencode-deepseek", "opencode-free", "openai", "google"],
 
@@ -8,28 +8,24 @@
     "github-copilot": {
       "name": "GitHub Copilot",
       "description": "Anthropic Claude models via GitHub Copilot",
-      "defaultModel": "github-copilot/claude-sonnet-4.6",
+      "defaultModel": "github-copilot/claude-sonnet-5.5",
       "providers": {
         "github-copilot": {
           "models": {
-            "claude-opus-4.7": {},
-            "claude-opus-4.6": {
-              "options": {
-                "thinking": { "budgetTokens": 16000 }
-              }
-            },
-            "claude-sonnet-4.6": {},
+            "claude-opus-4.8": {},
+            "claude-opus-4.8-fast": {},
+            "claude-sonnet-5.5": {},
             "gpt-5.3-codex": {}
           }
         }
       },
       "agentModels": {
         "reasoning": {
-          "model": "github-copilot/claude-opus-4.7",
+          "model": "github-copilot/claude-opus-4.8",
           "agents": ["forge-pm", "forge-architect", "forge-reviewer", "forge-ux"]
         },
         "execution": {
-          "model": "github-copilot/claude-sonnet-4.6",
+          "model": "github-copilot/claude-sonnet-5.5",
           "agents": ["forge", "forge-scrum", "forge-qa", "forge-analyst"]
         },
         "peer": {
@@ -38,8 +34,8 @@
         }
       },
       "alternatives": {
-        "reasoning": ["github-copilot/claude-opus-4.7", "github-copilot/claude-opus-4.6"],
-        "execution": ["github-copilot/claude-sonnet-4.6"],
+        "reasoning": ["github-copilot/claude-opus-4.8", "github-copilot/claude-opus-4.8-fast"],
+        "execution": ["github-copilot/claude-sonnet-5.5"],
         "peer": ["github-copilot/gpt-5.3-codex"]
       }
     },

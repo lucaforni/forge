@@ -1075,18 +1075,53 @@ genuinely diverse (see #66):
 
 | Agent Tier | Model | Agents |
 |---|---|---|
-| Default | `github-copilot/claude-sonnet-4.6` | Forge, Scrum, QA, Analyst |
-| Reasoning | `github-copilot/claude-opus-4.7` | PM, Architect, Reviewer, UX |
+| Default | `github-copilot/claude-sonnet-5.5` | Forge, Scrum, QA, Analyst |
+| Reasoning | `github-copilot/claude-opus-4.8` | PM, Architect, Reviewer, UX |
 | Peer | `github-copilot/gpt-5.3-codex` | Reviewer-Peer |
 
 Change any of them by editing the `agent` block in `opencode.json` (see
 §8.1). Your per-agent overrides survive reinstalls — the installer merges,
 never clobbers.
 
+### 8.5 Reconfiguring Models from Provider Presets
+
+Instead of hand-editing JSON, regenerate the `model` / `providers` /
+`agents` sections from a versioned preset:
+
+```
+/forge-model-configure --list                                    # show presets
+/forge-model-configure --provider=github-copilot --policy=quality
+```
+
+`--policy` is required (no default): `quality` (strongest reasoning),
+`speed` (fastest execution), `cheap` (cheapest — prefers `-free` models,
+and says so when none exists: "cheap resolved to paid"). Only the three
+managed keys are rewritten; everything else is preserved byte-identical,
+with a timestamped `opencode.json.bak.<ts>` backup before any change and
+no-op detection ("unchanged", exit 0).
+
+Presets resolve from `.forge/presets.json` (your tunable live copy,
+created once and never overwritten) over the built-in fallback
+`.forge/templates/presets.json`. CLI alias with the same contract:
+
+```
+npx tsx install-forge.ts . --reconfigure --provider=github-copilot --policy=quality
+```
+
+Free-model privacy gate: selecting a `-free` model always prints a privacy
+notice; on private (or undetectable — treated as private) repositories the
+apply blocks unless you pass `--allow-free-private` (or `--yes`, which also
+confirms paid upgrades; both are required non-interactively in CI).
+
+Exit codes: `0` applied / unchanged / dry-run / list · `1` abort
+(availability miss, gate decline, unconfirmed upgrade — nothing written) ·
+`2` usage (missing or unknown `--provider` / `--policy`).
+
 > **History**: until v2.0, models were chosen through provider presets
 > (`--provider`, `--reconfigure`, `presets.json`). That engine was removed;
-> any documentation still describing it is stale. Model choice is now plain
-> `opencode.json` configuration, merged on every install.
+> spec 011 revived it in its current form (preset files above + this
+> command). Any documentation predating 011 that describes the old engine
+> is stale.
 ## 9. Customizing Plugins
 
 ### 9.1 Modifying Existing Plugins

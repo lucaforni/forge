@@ -17,12 +17,16 @@
  *   --verbose         Detailed logging
  *   --update          Update existing installation
  *   --help            Show this help
+ *
+ * Reconfigure (011): --reconfigure --provider=<id> --policy=<quality|speed|cheap>
+ *   [--list] [--dry-run] [--yes] [--allow-free-private]
  */
 
 import { realpathSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { run, CliOptions, EXIT_USAGE } from "./installer/install"
 import { setVerbose } from "./installer/log"
+import { runReconfigure } from "./installer/model-config"
 import type { Platform } from "./installer/types"
 
 // ---------------------------------------------------------------------------
@@ -33,6 +37,18 @@ export interface ParsedArgs {
   targetRoot?: string
   options: CliOptions
   showHelp: boolean
+  /**
+   * Reconfigure mode (011): set when `--reconfigure` or `--list` is passed.
+   * Handled entirely by `installer/model-config.ts`; the install path in
+   * `run()` never reads this field, so existing flag behaviour is preserved.
+   */
+  reconfigure?: {
+    provider?: string
+    policy?: string
+    list?: boolean
+    yes?: boolean
+    allowFreePrivate?: boolean
+  }
   /** Usage errors. When non-empty the caller must not proceed. */
   errors: string[]
 }
@@ -91,6 +107,36 @@ export function parseArgs(argv: string[]): ParsedArgs {
       case arg === "--update":
         result.options.update = true
         break
+      case arg === "--reconfigure":
+        result.reconfigure = { ...result.reconfigure }
+        break
+      case arg === "--list":
+        result.reconfigure = { ...result.reconfigure, list: true }
+        break
+      case arg === "--yes":
+        result.reconfigure = { ...result.reconfigure, yes: true }
+        break
+      case arg === "--allow-free-private":
+        result.reconfigure = { ...result.reconfigure, allowFreePrivate: true }
+        break
+      case arg.startsWith("--provider="): {
+        const value = arg.slice("--provider=".length).trim()
+        if (value === "") {
+          result.errors.push(`"--provider=" needs a value: --provider=<id>.`)
+        } else {
+          result.reconfigure = { ...result.reconfigure, provider: value }
+        }
+        break
+      }
+      case arg.startsWith("--policy="): {
+        const value = arg.slice("--policy=".length).trim()
+        if (value === "") {
+          result.errors.push(`"--policy=" needs a value: --policy=<quality|speed|cheap>.`)
+        } else {
+          result.reconfigure = { ...result.reconfigure, policy: value }
+        }
+        break
+      }
       case !arg.startsWith("-"):
         // Positional arg: target project path. A second positional is
         // almost certainly a swallowed flag value (e.g. `--provider openai`
@@ -145,6 +191,16 @@ Options:
   --verbose             Detailed logging
   --help                Show this help
 
+  Reconfigure (model presets, 011):
+  --reconfigure         Regenerate model/providers/agents in opencode.json
+                        from a provider preset (requires --provider + --policy)
+  --provider=<id>       Preset id (see --reconfigure --list)
+  --policy=<p>          REQUIRED: quality | speed | cheap (no default)
+  --list                List presets (use with --reconfigure)
+  --yes                 Confirm paid upgrades / free-on-private (for CI)
+  --allow-free-private  Confirm -free models on private repos
+  (Note: --dry-run also previews a reconfigure without writing.)
+
 Exit codes:
   0  success
   1  fatal/internal error (unexpected exception)
@@ -158,6 +214,8 @@ Examples:
   bun install-forge.ts /path/to/project         # Install to specific dir
   bun install-forge.ts --dry-run                # Preview without writing
   bun install-forge.ts --platform=claude-code   # Force Claude Code install
+  bun install-forge.ts . --reconfigure --provider=github-copilot --policy=quality
+  bun install-forge.ts . --reconfigure --list    # Show presets
 `)
 }
 
@@ -181,6 +239,22 @@ async function main(): Promise<void> {
   if (parsed.showHelp) {
     showHelp()
     process.exit(0)
+  }
+
+  // Reconfigure mode (011/ADR-005): thin alias over installer/model-config.ts.
+  // The install path below never runs in this mode.
+  if (parsed.reconfigure) {
+    const result = runReconfigure({
+      projectRoot: parsed.targetRoot ?? process.cwd(),
+      provider: parsed.reconfigure.provider,
+      policy: parsed.reconfigure.policy,
+      list: parsed.reconfigure.list,
+      dryRun: parsed.options.dryRun,
+      yes: parsed.reconfigure.yes,
+      allowFreePrivate: parsed.reconfigure.allowFreePrivate,
+    })
+    console.log(result.output)
+    process.exit(result.exitCode)
   }
 
   if (parsed.options.verbose) {
