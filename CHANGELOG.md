@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `/forge-model-configure`: regenerate `model`/`providers`/`agents` in
+  `opencode.json` from a versioned provider preset with a required
+  `--policy=quality|speed|cheap`, key-scoped merge + timestamped backup +
+  idempotency, per-tier cost hints, and a free-model privacy gate
+  (warn always, confirm on private/undetectable repos). Backed by
+  `installer/model-config.ts`; CLI alias
+  `install-forge.ts --reconfigure --provider=<id> --policy=<p>`
+  (spec `011-model-configure`, ADRs 004–006; closes the #72 preset orphan)
+
 ### Fixed
+
+- GitHub Copilot model IDs realigned to provider-available generations:
+  reasoning `claude-opus-4.7` → `claude-opus-4.8`, execution/default
+  `claude-sonnet-4.6` → `claude-sonnet-5.5`, fallback `claude-opus-4.6` →
+  `claude-opus-4.8-fast` (peer `gpt-5.3-codex` unchanged) across
+  `opencode.json`, templates, `installer/config.ts`, and the
+  `github-copilot` preset — subagents were failing to launch
+  (`DEC-2026-HF-001`)
 
 - `decision-archiver` skill had no YAML frontmatter, so the runtime never
   registered it and `/forge-archive-decisions` was non-functional
