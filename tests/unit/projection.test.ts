@@ -140,6 +140,71 @@ describe("catalogForgeArtifacts", () => {
   })
 })
 
+describe("presets.json dual-target projection (011/ADR-004)", () => {
+  const PRESETS = JSON.stringify({ presets: {} })
+
+  it("catalogs one source as config fallback + create-once user-template", () => {
+    const src = createForgeSource({ "templates/presets.json": PRESETS })
+    const artifacts = catalogForgeArtifacts(src).filter((a) =>
+      a.sourcePath === join(".opencode", "templates", "presets.json"),
+    )
+    expect(artifacts.length).toBe(2)
+
+    const fallback = artifacts.find((a) => a.targetPath === join(".forge", "templates", "presets.json"))
+    expect(fallback).toBeDefined()
+    expect(fallback!.category).toBe("config")
+
+    const active = artifacts.find((a) => a.targetPath === join(".forge", "presets.json"))
+    expect(active).toBeDefined()
+    expect(active!.category).toBe("user-template")
+
+    // One source → identical content and checksum on both targets.
+    expect(active!.content).toBe(fallback!.content)
+    expect(active!.checksum).toBe(fallback!.checksum)
+
+    rmSync(src, { recursive: true, force: true })
+  })
+
+  it("creates both targets on a fresh install", () => {
+    const src = createForgeSource({ "templates/presets.json": PRESETS })
+    const target = mkdtempSync(join(tmpdir(), "forge-presets-target-"))
+    mkdirSync(join(target, ".opencode"), { recursive: true })
+
+    const plan = buildInstallPlan(["opencode"], DESCRIPTORS, src, target)
+    const ops = plan.operations.filter((o) => o.targetPath.endsWith("presets.json"))
+    expect(ops.length).toBe(2)
+    expect(ops.every((o) => o.kind === "create")).toBe(true)
+
+    rmSync(src, { recursive: true, force: true })
+    rmSync(target, { recursive: true, force: true })
+  })
+
+  it("never overwrites a tuned .forge/presets.json while refreshing the fallback", () => {
+    const src = createForgeSource({ "templates/presets.json": PRESETS })
+    const target = mkdtempSync(join(tmpdir(), "forge-presets-tuned-"))
+    mkdirSync(join(target, ".opencode"), { recursive: true })
+    mkdirSync(join(target, ".forge", "templates"), { recursive: true })
+    // User-tuned live file must survive updates.
+    writeFileSync(join(target, ".forge", "presets.json"), JSON.stringify({ tuned: true }), "utf-8")
+    // Stale fallback copy gets refreshed.
+    writeFileSync(join(target, ".forge", "templates", "presets.json"), JSON.stringify({ old: true }), "utf-8")
+
+    const plan = buildInstallPlan(["opencode"], DESCRIPTORS, src, target)
+    const active = plan.operations.find((o) => o.targetPath === join(target, ".forge", "presets.json"))
+    expect(active).toBeDefined()
+    expect(active!.kind).toBe("skip")
+
+    const fallback = plan.operations.find(
+      (o) => o.targetPath === join(target, ".forge", "templates", "presets.json"),
+    )
+    expect(fallback).toBeDefined()
+    expect(fallback!.kind).not.toBe("skip")
+
+    rmSync(src, { recursive: true, force: true })
+    rmSync(target, { recursive: true, force: true })
+  })
+})
+
 describe("buildInstallPlan", () => {
   it("creates operations for detected platform", () => {
     const src = createForgeSource({

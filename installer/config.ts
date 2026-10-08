@@ -8,6 +8,7 @@
 import { readFileSync, existsSync } from "node:fs"
 import { join, resolve } from "node:path"
 import type { ForgeConfigModel, McpServerConfig, AgentConfig } from "./types"
+import { resolvePresets } from "./model-config"
 
 // ---------------------------------------------------------------------------
 // Defaults
@@ -42,7 +43,7 @@ export function defaultMcpServerConfig(projectRoot: string): McpServerConfig {
  * dual-model review structurally redundant — it satisfies the governance rule
  * in `forge.md` without delivering the diversity the rule exists for (#66).
  */
-export const DEFAULT_MODEL = "github-copilot/claude-sonnet-4.6"
+export const DEFAULT_MODEL = "github-copilot/claude-sonnet-5.5"
 /**
  * Default OpenCode subagent nesting depth.
  *
@@ -54,7 +55,7 @@ export const DEFAULT_MODEL = "github-copilot/claude-sonnet-4.6"
  * on install and on update.
  */
 export const DEFAULT_SUBAGENT_DEPTH = 5
-const REASONING_MODEL = "github-copilot/claude-opus-4.7"
+const REASONING_MODEL = "github-copilot/claude-opus-4.8"
 const PEER_REVIEW_MODEL = "github-copilot/gpt-5.3-codex"
 
 /** Default agent configurations for the internal model. */
@@ -76,13 +77,51 @@ export function defaultAgentConfigs(): AgentConfig[] {
 // Config Model Builder
 // ---------------------------------------------------------------------------
 
-/** Build the default FORGE configuration model. */
-export function buildDefaultConfig(projectRoot: string): ForgeConfigModel {
+/** Build the default FORGE configuration model.
+ *
+ * When `opts.provider` names a resolvable preset (011), the default model and
+ * per-agent tier models come from that preset; otherwise — and always when the
+ * preset cannot be resolved — the compiled-in constants apply, so output for
+ * existing installs and tests is unchanged.
+ */
+export function buildDefaultConfig(projectRoot: string, opts?: { provider?: string }): ForgeConfigModel {
+  if (opts?.provider) {
+    const { presets } = resolvePresets(projectRoot)
+    const preset = presets[opts.provider]
+    if (preset) return buildPresetConfig(projectRoot, preset.defaultModel, tierModelMap(preset))
+  }
   return {
     agents: defaultAgentConfigs(),
     mcpServers: [defaultMcpServerConfig(projectRoot)],
     hooks: [],
     defaultModel: DEFAULT_MODEL,
+    subagentDepth: DEFAULT_SUBAGENT_DEPTH,
+  }
+}
+
+/** Agent name → tier model for a preset (011 tier map). */
+function tierModelMap(preset: {
+  agentModels: { reasoning: { model: string; agents: string[] }; execution: { model: string; agents: string[] }; peer?: { model: string; agents: string[] } }
+}): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const a of preset.agentModels.reasoning.agents) map.set(a, preset.agentModels.reasoning.model)
+  for (const a of preset.agentModels.execution.agents) map.set(a, preset.agentModels.execution.model)
+  if (preset.agentModels.peer) {
+    for (const a of preset.agentModels.peer.agents) map.set(a, preset.agentModels.peer.model)
+  }
+  return map
+}
+
+function buildPresetConfig(
+  projectRoot: string,
+  defaultModel: string,
+  models: Map<string, string>,
+): ForgeConfigModel {
+  return {
+    agents: defaultAgentConfigs().map((a) => (models.has(a.name) ? { ...a, model: models.get(a.name) } : { ...a })),
+    mcpServers: [defaultMcpServerConfig(projectRoot)],
+    hooks: [],
+    defaultModel,
     subagentDepth: DEFAULT_SUBAGENT_DEPTH,
   }
 }
