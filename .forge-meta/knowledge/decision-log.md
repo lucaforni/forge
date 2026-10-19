@@ -180,6 +180,7 @@ in-orchestrator. Hotfix DEC-2026-HF-001 unblocked subagents first.
      Peer unavailable (infra). Human review pending as second lens.
    - **Follow-up:** merge decision (human); remaining W1 docs prose
      (UPDATING-FORGE.md examples) rides a docs pass.
+
 ## 2026-10-19 | Session: hotfix CI trigger on `develop`
 
 **Status:** `completed`
