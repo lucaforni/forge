@@ -76,6 +76,13 @@ shellcheck does not flag this at default severity; it was found by running it.
 | CI checks enforcing the constitution | 0 | 4 enforced + 1 partial |
 | Phantom devDependencies | 10 | 0 |
 
+> **Update 2026-10-19.** The 13-day window in which `develop` ran **zero**
+> checks (the workflows still triggered only on `main` after the branch
+> policy moved feature PRs to `develop`) is closed by DEC-2026-HF-002
+> (PR #113). The checks are now also **blocking**: `develop` and `main`
+> both require the 7 CI contexts plus a code-owner approval, with
+> `enforce_admins: true` — see DEC-2026-GOV-001.
+
 ## Review Outcome
 
 The dual-model review returned **NEEDS CHANGES** with 13 findings, 4 of them

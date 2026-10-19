@@ -1,4 +1,9 @@
 # CODEOWNERS — reviewer di default
 # @lucaforni rivede tutto di default; aggiungi righe più specifiche sopra se serve.
+#
+# Due code owner: con `require_code_owner_reviews` attivo, l'autore di un PR
+# non puo' approvare il proprio PR. Senza un secondo owner, nessun PR del
+# maintainer potrebbe essere approvato da un code owner — il gate non
+# sarebbe applicabile. Vedi DEC-2026-GOV-001.
 
-* @lucaforni
+* @lucaforni @forniluca77
