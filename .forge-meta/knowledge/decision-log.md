@@ -137,21 +137,31 @@ actually lands.
    - **Rationale:** The trigger must mirror the branch policy. A check that
      does not run is not an enforced rule — the same standard Art. 4.4
      applies to the article itself.
-   - **Impact:** Medium — every PR now runs the full matrix (test ×3 Node
-     versions, coverage gate, token budgets, shell lint, CodeQL) before it
-     can reach `develop`.
+   - **Impact:** Medium — every PR and every push to `develop` now runs the
+     full matrix (test ×3 Node versions, coverage gate, token budgets, shell
+     lint, CodeQL). **Advisory, not blocking**: with no
+     `required_status_checks` a red run still merges, and a direct push to
+     `develop` is checked after it lands (see Follow-up #114).
    - **Alternatives considered:**
      - Trigger on `pull_request` only: rejected — a direct push to
        `develop` would then run nothing.
      - Move the release merge to `main`-first: rejected — contradicts the
        documented policy and delays integration.
-   - **Follow-up:** `develop` still has no branch protection and no
-     `required_status_checks`; `main` has protection but no required status
-     checks. Both are repository settings, outside the code change, and are
-     tracked as the next governance step.
+   - **Follow-up:** #114 — `develop` has no branch protection and neither
+     branch has `required_status_checks`; the trigger now runs the checks,
+     but nothing blocks a red merge. Also: #115 — Dependabot reads its
+     config from the default branch (`main`), where `target-branch` is still
+     `main`, so the `target-branch: develop` setting is inert and all 6 open
+     Dependabot PRs target the release-only branch.
 
 ### Notes
 
+- **Review:** peer reviewer (`forge-reviewer-peer`) APPROVE WITH COMMENTS,
+  11 findings, no CRITICAL. The primary reviewer could not run — its model
+  pin `github-copilot/claude-opus-4.7` is unavailable (infra, same class as
+  DEC-2026-HF-001; fixed by PR #105). Findings F1 and F2 (overstated
+  enforcement claims in this log and in AGENTS.md) are applied in this
+  commit; F3–F10 are tracked in #114 and #115.
 - Verified locally on `origin/develop`: typecheck, 326 tests, coverage
   87.16% statements / 82.67% branches / 83.01% functions (gate 85/78/80),
   token budgets — all green.

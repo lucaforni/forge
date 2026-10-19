@@ -122,7 +122,7 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
 - Base branch is `develop` for all feature/fix/hotfix PRs (never `main` directly)
 - All PRs require AI adversarial review (`/forge-review`) before human review
 - PR description must reference the spec ID or story ID
-- All CI checks must pass before merge
+- All CI checks must pass before merge *(CI has run on `develop` since DEC-2026-HF-002; **blocking enforcement pending** — `develop` has no branch protection and neither branch has `required_status_checks`, see #114)*
 
 ### Release Policy (`develop` → `main`)
 
