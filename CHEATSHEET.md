@@ -1,4 +1,4 @@
-# FORGE Cheatsheet (v2.0.0)
+# FORGE Cheatsheet (v2.1.0)
 
 Quick reference for FORGE methodology commands, workflows, and conventions.
 Supports **OpenCode**, **Claude Code**, and **Codex CLI** — the installer auto-detects

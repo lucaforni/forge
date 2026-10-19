@@ -17,7 +17,7 @@ import type { InstallManifest, Platform } from "./types"
 // ---------------------------------------------------------------------------
 
 const MANIFEST_RELATIVE_PATH = ".forge/.install-manifest.json"
-const FORGE_VERSION = "2.0.0"
+const FORGE_VERSION = "2.1.0"
 
 // ---------------------------------------------------------------------------
 // Read / Write

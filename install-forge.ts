@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FORGE Installation & Update Script — CLI Shim (v2.0.0)
+ * FORGE Installation & Update Script — CLI Shim (v2.1.0)
  *
  * Thin entry point that parses CLI arguments and delegates to the
  * installer/ modules. All logic lives in installer/.
@@ -169,7 +169,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
 
 function showHelp(): void {
   console.log(`
-FORGE Installer v2.0.0 — Cross-Platform
+FORGE Installer v2.1.0 — Cross-Platform
 
 Usage:
   bun install-forge.ts [target] [options]

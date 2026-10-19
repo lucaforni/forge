@@ -236,3 +236,39 @@ actually lands.
 - `mcp-server/node_modules` is not committed; run `npm ci` in `mcp-server/`
   before the test suite or `tests/unit/mcp-server.test.ts` fails to import
   `@modelcontextprotocol/sdk`.
+
+## 2026-10-19 | Session: release 2.1.0 (first release under the develop policy)
+
+**Status:** `completed`
+**Tags:** `release`, `branching`, `changelog`
+**Spec Refs:** —
+**Decision ID:** `DEC-2026-REL-001`
+
+### Context
+
+`main` had not advanced since 2026-06-18 (`v2.0.0`) — 24 commits sat on
+`develop` with no tag, and the `[Unreleased]` changelog section was missing
+three merged changes (the discovery skills, `subagent_depth`, and the
+`develop`/`main` policy itself).
+
+### Decisions
+
+1. **[COMPLETED]** Release `2.1.0` — minor bump, tag `v2.1.0`
+   - **Rationale:** `2.1.0` because the release adds user-facing surface
+     (`/forge-model-configure`, three discovery skills, `subagent_depth`)
+     without breaking anything. A patch bump would understate the added
+     commands; a major bump would claim a breaking change that does not
+     exist.
+   - **Impact:** Medium — `main` advances 24 commits; the version literal
+     moves in `package.json`, `mcp-server/package.json`,
+     `installer/manifest.ts`, `installer/install.ts`, `mcp-server/index.ts`,
+     `install-forge.ts` (banner + header) and the public docs
+     (`INSTALL.md`, `CHEATSHEET.md`, both presentations).
+   - **Note:** the changelog was completed before tagging, not after. A
+     release note that omits shipped features is the same class of defect as
+     a constitution that asserts falsehoods.
+   - **Follow-up:** the discovery-skills and `subagent_depth` changes were
+     merged without a spec artifact, so they have no `NNN-slug/spec.md` to
+     trace to (AGENTS.md, Spec-Code Traceability). Their commit messages
+     claim "spec 011" and "012" — and `011` is already taken by
+     `011-model-configure`. Tracked as a separate issue.

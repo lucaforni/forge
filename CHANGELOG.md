@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] · 2026-10-19
+
 ### Added
 
 - `/forge-model-configure`: regenerate `model`/`providers`/`agents` in
@@ -18,7 +20,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `install-forge.ts --reconfigure --provider=<id> --policy=<p>`
   (spec `011-model-configure`, ADRs 004–006; closes the #72 preset orphan)
 
+- **Interactive discovery skills** — three guided workshops wired into the
+  orchestrator's discovery auto-suggest: `idea-exploration` (diverge → probe →
+  converge → canvas, with a fixed rubric), `feature-discovery` (users, flows,
+  edges, NFRs and an explicit scope line, with an assumption log), and
+  `interactive-planning` (milestones, a trade-off round, an accepted-risk
+  commitment template and an architect-decision guardrail). The orchestrator
+  suggests the right one when a request is still vague; the suggestion never
+  blocks the workflow
+  ([#101](https://github.com/lucaforni/forge/pull/101))
+
+- `subagent_depth` support: the installer seeds `subagent_depth: 5` into
+  `opencode.json` on fresh install, and on update when the key is absent.
+  OpenCode defaults to 1, which prevents subagents from launching subagents
+  and breaks FORGE's fan-out (orchestrator → parallel workers → delegated
+  subtasks, including dual-model review). An explicit user value always wins,
+  including `0`
+  ([#103](https://github.com/lucaforni/forge/pull/103))
+
 ### Fixed
+
+- **CI and CodeQL now run on `develop`.** The workflows still triggered only
+  on `main` after the branch policy moved feature PRs to `develop`, so every
+  feature PR ran zero checks — "all CI checks must pass before merge" was
+  not enforced on the branch where work lands
+  ([#113](https://github.com/lucaforni/forge/pull/113),
+  `DEC-2026-HF-002`)
 
 - GitHub Copilot model IDs realigned to provider-available generations:
   reasoning `claude-opus-4.7` → `claude-opus-4.8`, execution/default
@@ -40,6 +67,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   runtime dependencies ([#74](https://github.com/lucaforni/forge/issues/74))
 
 ### Changed
+
+- **`develop` is the integration branch and `main` is release-only.** The
+  branch and release policy is now written down in `AGENTS.md`: feature and
+  fix PRs base on `develop`, `main` advances only through an explicit
+  `chore(release): …` merge, and hotfixes land on `develop` first and ride
+  the next release
+  ([#102](https://github.com/lucaforni/forge/pull/102))
 
 - **Documentation now states what the installer actually does.** `INSTALL.md`
   lost 146 lines of duplicated v1 content and an entire provider-preset
@@ -112,7 +146,8 @@ Pre-2.0 releases predate this changelog. See the
 [git history](https://github.com/lucaforni/forge/commits/main) and release
 tags for details.
 
-[Unreleased]: https://github.com/lucaforni/forge/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/lucaforni/forge/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/lucaforni/forge/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/lucaforni/forge/releases/tag/v2.0.0
 [1.4.1]: https://github.com/lucaforni/forge/releases/tag/v1.4.1
 [1.4.0]: https://github.com/lucaforni/forge/releases/tag/v1.4.0
