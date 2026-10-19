@@ -338,6 +338,18 @@ finally target the integration branch.
    - **Trade-off:** the repository is personal, so `restrictions` (who may
      push directly) is unavailable — GitHub allows it only for
      organizations.
+   - **Bootstrap:** this very PR enables `enforce_admins: true`, so it
+     cannot be merged under the rule it introduces — the admin override
+     does not bypass required reviews. `enforce_admins` was therefore set
+     to `false` for the duration of the merge and restored to `true`
+     immediately after. One deliberate bypass, recorded here.
+   - **Linear history:** the setting inherited from the old `main`
+     protection (`required_linear_history: true`) forbids merge commits —
+     but the release policy in AGENTS.md prescribes them ("Each release
+     merge uses a `chore(release): …` commit"), and the whole history is
+     merge commits. It was turned off: a protection that contradicts the
+     documented process is the same class of incoherence this repo
+     exists to remove.
 
 2. **[COMPLETED]** A second code owner, to keep the gate operable
    - **Rationale:** a PR author cannot approve their own PR, and
