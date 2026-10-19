@@ -1,11 +1,14 @@
 # CodeQL — analisi statica sicurezza (JS/TS)
 name: CodeQL
 
+# `develop` is the integration branch and the base of every feature PR
+# (AGENTS.md, 2026-10-06). Security analysis must cover PRs before they
+# land there, not only after the release merge to `main`.
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
   schedule:
     - cron: "0 6 * * 1" # ogni lunedì ore 06:00 UTC
 
