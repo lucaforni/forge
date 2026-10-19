@@ -8,7 +8,7 @@
 [![OpenCode](https://img.shields.io/badge/OpenCode-Compatible-green.svg)](https://opencode.ai)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-purple.svg)](https://claude.ai)
 [![Codex CLI](https://img.shields.io/badge/Codex%20CLI-Compatible-gold.svg)](https://github.com/openai/codex)
-[![Version](https://img.shields.io/badge/version-2.0.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-orange.svg)](CHANGELOG.md)
 
 ---
 

@@ -9,7 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.0] · 2026-10-19
 
+> The `v2.1.0` tag carries **97 commits** since `v2.0.0` — the first release
+> that includes the cross-platform port. The `[2.0.0]` notes below describe
+> only what the `v2.0.0` tag actually contains.
+
 ### Added
+
+- **Cross-platform support** — OpenCode, Claude Code and Codex CLI, from a
+  single canonical source projected per platform (ADR-001)
+  ([#3](https://github.com/lucaforni/forge/pull/3)).
+- Platform-aware auto-detection installer with SHA-256 manifest and drift
+  detection, plus an install-contract test that fails when the installer
+  stops shipping something an artifact references
+  ([#76](https://github.com/lucaforni/forge/pull/76)).
+- Shared MCP server (`mcp-server/`) for cross-platform custom tools
+  ([#3](https://github.com/lucaforni/forge/pull/3)).
+- Frontend pattern library — 17 UI pattern specifications with templates,
+  design tokens and QA checklists (epic `E01`).
+- Native Claude and Codex projection of every artifact
+  ([#88](https://github.com/lucaforni/forge/pull/88)).
+- Quality gates that enforce the constitution rather than describe it:
+  coverage gate, token budgets, shell lint, typecheck and contract test
+  ([#77](https://github.com/lucaforni/forge/pull/77)).
+- Security posture: OpenSSF Scorecard, CodeQL, Dependabot across all three
+  manifests, code-scanning alerts resolved, and no key material in the test
+  harness logs
+  ([#8](https://github.com/lucaforni/forge/pull/8),
+  [#17](https://github.com/lucaforni/forge/pull/17),
+  [#19](https://github.com/lucaforni/forge/pull/19),
+  [#27](https://github.com/lucaforni/forge/pull/27),
+  [#30](https://github.com/lucaforni/forge/pull/30)).
+- Three-level smoke-test harness on NVIDIA NIM and OpenCode Zen
+  ([#28](https://github.com/lucaforni/forge/pull/28)).
 
 - `/forge-model-configure`: regenerate `model`/`providers`/`agents` in
   `opencode.json` from a versioned provider preset with a required
@@ -40,6 +71,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **OpenCode v2 installs were left in a failed state**: the installer now
+  populates the plugin's own dependencies, and the v2 permission order is
+  corrected with governance loaded through the plugin
+  ([#92](https://github.com/lucaforni/forge/pull/92),
+  [#94](https://github.com/lucaforni/forge/pull/94))
+- The installer no longer walks `node_modules` when cataloguing artifacts,
+  which polluted the manifest with the local build's dependencies
+  ([#81](https://github.com/lucaforni/forge/pull/81))
 - **CI and CodeQL now run on `develop`.** The workflows still triggered only
   on `main` after the branch policy moved feature PRs to `develop`, so every
   feature PR ran zero checks — "all CI checks must pass before merge" was
@@ -66,6 +105,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `mcp-server/` was missing from `.github/dependabot.yml` despite declaring
   runtime dependencies ([#74](https://github.com/lucaforni/forge/issues/74))
 
+### Removed
+
+- `.opencode/tools/` — the OpenCode-native copies of the MCP tools, deleted
+  rather than distributed. They duplicated `mcp-server/src/tools/` with
+  divergent algorithms, and shipping both would distribute a known-
+  inconsistent pair; the MCP server is the cross-platform tool surface
+  ([#68](https://github.com/lucaforni/forge/issues/68)).
+
+### Migration (upgrading from 2.0.0)
+
+- **Delete `.opencode/tools/` in your project.** The installer never removes
+  files it no longer ships, so a 2.0.0 project keeps three stale tools
+  (`sprint-status.ts`, `trace-requirements.ts`, `validate-spec.ts`) sitting
+  next to the MCP server that now provides them — the exact duplication
+  they were deleted for:
+  ```bash
+  rm -rf .opencode/tools
+  ```
+- **The `--provider`, `--non-interactive` and `--no-backup` flags documented
+  in `README-INSTALLER.md` and in the distributed `.opencode/docs/` do not
+  exist.** The parser rejects them and exits with code 4. The supported
+  flags are `--interactive`, `--force`, `--verbose`, `--update` and
+  `--reconfigure`. To change the models, use
+  `install-forge.ts --reconfigure --provider=<id> --policy=<quality|speed|cheap>`.
+- Per-file interactive backup prompts are not implemented: a file that
+  already exists is backed up before being overwritten, with no prompt to
+  skip it.
+
 ### Changed
 
 - **`develop` is the integration branch and `main` is release-only.** The
@@ -73,7 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fix PRs base on `develop`, `main` advances only through an explicit
   `chore(release): …` merge, and hotfixes land on `develop` first and ride
   the next release
-  ([#102](https://github.com/lucaforni/forge/pull/102))
+  ([#101](https://github.com/lucaforni/forge/pull/101), commit `4f1b1ba`)
 
 - **Documentation now states what the installer actually does.** `INSTALL.md`
   lost 146 lines of duplicated v1 content and an entire provider-preset
@@ -123,15 +190,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0]
 
+> **Note.** The `v2.0.0` tag (2026-06-18) predates the cross-platform port:
+> it contains the provider-presets engine only. The installer, the MCP
+> server, the frontend pattern library and the cross-platform projection
+> described in the previous changelog draft shipped **after** that tag and
+> are therefore part of **2.1.0**, which is the first release to carry
+> them. The entries below are the ones the tag actually contains.
+
 ### Added
 
-- **Cross-platform support** — OpenCode, Claude Code and Codex CLI, from a
-  single canonical source projected per platform (ADR-001).
-- Platform-aware auto-detection installer with SHA-256 manifest and drift
-  detection.
-- Shared MCP server (`mcp-server/`) for cross-platform custom tools.
-- Frontend pattern library — 17 UI pattern specifications with templates,
-  design tokens and QA checklists (epic `E01`).
+- **Provider presets engine with multi-provider support** and interactive
+  installation.
 - `/forge-ux` and `/forge-wireframe` commands with the `forge-ux` agent.
 - Dual-model adversarial review (`forge-reviewer` + `forge-reviewer-peer`).
 

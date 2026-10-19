@@ -1,4 +1,4 @@
-# FORGE Installer Scripts (v2.0.0)
+# FORGE Installer Scripts (v2.1.0)
 
 This directory contains scripts for installing and updating FORGE in other projects.
 **FORGE 2.0 supports OpenCode, Claude Code, and Codex CLI.**

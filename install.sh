@@ -13,7 +13,7 @@
 
 set -e
 
-VERSION="2.0.0"
+VERSION="2.1.0"
 FORGE_REPO="https://github.com/lucaforni/forge.git"
 TEMP_DIR=$(mktemp -d)
 
