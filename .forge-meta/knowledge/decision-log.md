@@ -236,3 +236,69 @@ actually lands.
 - `mcp-server/node_modules` is not committed; run `npm ci` in `mcp-server/`
   before the test suite or `tests/unit/mcp-server.test.ts` fails to import
   `@modelcontextprotocol/sdk`.
+
+## 2026-10-19 | Session: release 2.1.0 (first release under the develop policy)
+
+**Status:** `completed`
+**Tags:** `release`, `branching`, `changelog`
+**Spec Refs:** —
+**Decision ID:** `DEC-2026-REL-001`
+
+### Context
+
+`main` stood at `1329245` (2026-09-28) — **73 commits past the `v2.0.0`
+tag** (2026-06-18) and untagged since. `develop` was 24 commits ahead of
+`main`, and the `[Unreleased]` changelog section was missing three merged
+changes (the discovery skills, `subagent_depth`, and the `develop`/`main`
+policy itself).
+
+Worse, the `v2.0.0` **tag** contains only the provider-presets engine: the
+installer, the MCP server, the frontend pattern library and the
+cross-platform port all landed *after* it, yet the `## [2.0.0]` changelog
+section credited them to 2.0.0. The release therefore carries **97
+commits** since the tag, and the notes had to say so.
+
+### Decisions
+
+1. **[COMPLETED]** Release `2.1.0` — minor bump, tag `v2.1.0`
+   - **Rationale:** `2.1.0` because the release adds user-facing surface
+     (`/forge-model-configure`, three discovery skills, `subagent_depth`)
+     and the cross-platform port, without a breaking API change.
+   - **Impact:** Medium — `main` advances 24 commits (73 past the `v2.0.0`
+     tag; 97 since the tag). The version literal moves in `package.json`,
+     `mcp-server/package.json`, both lockfiles, `installer/manifest.ts`,
+     `installer/install.ts`, `mcp-server/index.ts`, `install-forge.ts`
+     (banner + header), `install.sh`, `README.md` (badge),
+     `README-INSTALLER.md` and the public docs (`INSTALL.md`,
+     `CHEATSHEET.md`, both presentations).
+   - **Note:** the changelog was completed **before** tagging, and the
+     `## [2.0.0]` section was corrected to describe what the tag actually
+     contains. A release note that omits shipped features — or that
+     credits a predecessor for shipping them — is the same class of defect
+     as a constitution that asserts falsehoods.
+   - **Migration:** the release notes now carry an explicit
+     "upgrading from 2.0.0" section (remove `.opencode/tools/`, the flags
+     that do not exist, the backup-prompt behaviour) — see #119 for the
+     installer-side fix.
+   - **Follow-up:** #117 — the discovery-skills and `subagent_depth`
+     changes were merged without a spec artifact, so they have no
+     `NNN-slug/spec.md` to trace to (AGENTS.md, Spec-Code Traceability),
+     and their commit messages claim "spec 011" / "012" while `011` is
+     already taken by `011-model-configure`. #118 — the distributed docs
+     still advertise non-existent CLI flags and the dead model IDs that
+     `DEC-2026-HF-001` deprecated. #119 — the installer does not prune
+     de-distributed artifacts and mislabels upstream drift as user edits.
+
+### Notes
+
+- **Review:** dual-model `/forge-review` on PR #116 — both lenses ran and
+  both returned NEEDS CHANGES. The peer's finding that the changelog
+  omitted ~73 commits of shipped work (and credited four of the biggest
+  features to a `v2.0.0` tag that does not contain them) was the reason
+  this entry now says 97. The primary's CRITICAL — "the unbumped
+  lockfiles break `npm ci`" — was **verified false**: `npm ci --dry-run`
+  succeeds at the root and in `mcp-server/` with the version mismatch. The
+  lockfiles are bumped anyway, for consistency, not because `npm ci`
+  requires it.
+- Verified locally: typecheck, 378 tests, coverage 87.56% statements /
+  83.45% branches / 83.83% functions (gate 85/78/80), token budgets.

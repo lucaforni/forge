@@ -1,4 +1,4 @@
-# FORGE Installation Guide (v2.0.0)
+# FORGE Installation Guide (v2.1.0)
 
 This guide explains how to install or update FORGE in your project.
 **FORGE 2.0 targets OpenCode, Claude Code, and Codex CLI** — the installer
