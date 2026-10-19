@@ -4,7 +4,7 @@
   // Full project configuration for OpenCode (native v2 shape)
 
   // Default model for all agents unless overridden
-  "model": "github-copilot/claude-sonnet-4.6",
+  "model": "github-copilot/claude-sonnet-5.5",
 
   // Maximum subagent nesting depth. OpenCode defaults to 1 (subagents
   // cannot launch subagents); FORGE needs 5 for orchestrator fan-out
@@ -18,52 +18,48 @@
   "default_agent": "forge",
 
   // Provider configuration with thinking budgets
-  // claude-opus-4.7 is the default for reasoning-heavy agents
-  // claude-opus-4.6 is available on GitHub Copilot Business/Enterprise accounts
+  // claude-opus-4.8 is the default for reasoning-heavy agents
+  // claude-opus-4.8-fast is available as a lower-cost reasoning fallback
   "providers": {
     "github-copilot": {
       "models": {
-        // claude-opus-4.7 is a reasoning-native model (temperature: false).
+        // claude-opus-4.8 is a reasoning-native model (temperature: false).
         // It does NOT accept external thinking parameters — reasoning is built-in.
-        "claude-opus-4.7": {},
-        "claude-opus-4.6": {
-          "settings": {
-            "thinking": { "budgetTokens": 16000 }
-          }
-        },
-        "claude-sonnet-4.6": {}
+        "claude-opus-4.8": {},
+        "claude-opus-4.8-fast": {},
+        "claude-sonnet-5.5": {}
       }
     }
   },
 
   // Agent model overrides — assign specific models to each agent role
-  // Default: claude-opus-4.7 (highest quality reasoning)
-  // Fallback: claude-opus-4.6 (GitHub Copilot Business/Enterprise)
+  // Default: claude-opus-4.8 (highest quality reasoning)
+  // Fallback: claude-opus-4.8-fast (lower-cost reasoning)
   // NOTE: For FORGE meta-development, we override agent paths to use meta versions
   //
-  // GITHUB COPILOT BUSINESS/ENTERPRISE FALLBACK:
-  // If claude-opus-4.7 is not yet available on your account, override agents
-  // to use claude-opus-4.6 (still available on Business/Enterprise accounts):
+  // GITHUB COPILOT FALLBACK:
+  // If claude-opus-4.8 is not yet available on your account, override agents
+  // to use claude-opus-4.8-fast:
   //
-  //   "forge-pm":        { "model": "github-copilot/claude-opus-4.6", "path": "..." }
-  //   "forge-architect": { "model": "github-copilot/claude-opus-4.6", "path": "..." }
-  //   "forge-reviewer":  { "model": "github-copilot/claude-opus-4.6" }
-  //   "forge-ux":        { "model": "github-copilot/claude-opus-4.6" }
+  //   "forge-pm":        { "model": "github-copilot/claude-opus-4.8-fast", "path": "..." }
+  //   "forge-architect": { "model": "github-copilot/claude-opus-4.8-fast", "path": "..." }
+  //   "forge-reviewer":  { "model": "github-copilot/claude-opus-4.8-fast" }
+  //   "forge-ux":        { "model": "github-copilot/claude-opus-4.8-fast" }
   "agents": {
     "forge-pm": {
-      "model": "github-copilot/claude-opus-4.7",
+      "model": "github-copilot/claude-opus-4.8",
       "path": ".opencode-meta/agents/forge-pm-meta.md"
     },
     "forge-architect": {
-      "model": "github-copilot/claude-opus-4.7",
+      "model": "github-copilot/claude-opus-4.8",
       "path": ".opencode-meta/agents/forge-architect-meta.md"
     },
     "forge-scrum": {
-      "model": "github-copilot/claude-sonnet-4.6",
+      "model": "github-copilot/claude-sonnet-5.5",
       "path": ".opencode-meta/agents/forge-scrum-meta.md"
     },
     "forge-reviewer": {
-      "model": "github-copilot/claude-opus-4.7"
+      "model": "github-copilot/claude-opus-4.8"
     }
   },
 

@@ -97,12 +97,15 @@ export const EXCLUDED_DOCS = new Set([
 /**
  * Templates that are NOT distributed:
  * - `opencode.json*` — the installer generates these per platform
- * - `presets.json` — orphaned v1 provider-preset engine (#72)
+ *
+ * NOTE (011/ADR-004): `presets.json` was un-excluded here so the neutral path
+ * ships the `config` fallback to `.forge/templates/presets.json`. The active
+ * file `.forge/presets.json` is projected separately as a create-once
+ * `user-template` via USER_TEMPLATE_FILES below (two targets, one source).
  */
 const EXCLUDED_TEMPLATES = new Set([
   "opencode.json",
   "opencode.json.example-customized",
-  "presets.json",
 ])
 
 /**
@@ -126,6 +129,18 @@ export const SCAFFOLD_FILES: ReadonlyArray<{ template: string; target: string }>
   { template: "constitution.md", target: ".forge/constitution.md" },
   { template: "decision-log.md", target: ".forge/knowledge/decision-log.md" },
   { template: "agents.md", target: "AGENTS.md" },
+]
+
+/**
+ * User-owned copies of templates that must survive updates.
+ *
+ * Unlike SCAFFOLD_FILES (one-shot project scaffolding), entries here mirror a
+ * template that ALSO ships through the neutral `config` path: the neutral copy
+ * is the built-in fallback, this copy is the live file the user may tune.
+ * Projected as `user-template`: created once, never overwritten (011/ADR-004).
+ */
+export const USER_TEMPLATE_FILES: ReadonlyArray<{ template: string; target: string }> = [
+  { template: "presets.json", target: ".forge/presets.json" },
 ]
 
 /** Directories scaffolded empty in `.forge/` so FORGE commands have a home. */
@@ -205,6 +220,7 @@ export function catalogForgeArtifacts(sourceRoot: string): CanonicalArtifact[] {
     ...catalogFrontendArtifacts(sourceRoot),
     ...catalogNeutralArtifacts(sourceRoot),
     ...catalogScaffoldArtifacts(sourceRoot),
+    ...catalogUserTemplateFiles(sourceRoot),
   ]
 }
 
@@ -241,6 +257,36 @@ export function catalogNeutralArtifacts(sourceRoot: string): CanonicalArtifact[]
         checksum: sha256(content),
       })
     }
+  }
+
+  return artifacts
+}
+
+/**
+ * Catalog user-owned template copies (011/ADR-004).
+ *
+ * Mirrors `catalogScaffoldArtifacts` but for templates that also ship through
+ * the neutral path: same source, second target, `user-template` category so
+ * `buildInstallPlan` creates it once and never overwrites user tuning.
+ * Missing source files are skipped silently (same contract as scaffolding).
+ */
+export function catalogUserTemplateFiles(sourceRoot: string): CanonicalArtifact[] {
+  const artifacts: CanonicalArtifact[] = []
+  const templatesDir = join(sourceRoot, ".opencode", "templates")
+
+  for (const { template, target } of USER_TEMPLATE_FILES) {
+    const sourceFile = join(templatesDir, template)
+    if (!existsSync(sourceFile)) continue
+
+    const content = readFileSync(sourceFile, "utf-8")
+
+    artifacts.push({
+      category: "user-template",
+      sourcePath: join(".opencode", "templates", template),
+      targetPath: target,
+      content,
+      checksum: sha256(content),
+    })
   }
 
   return artifacts
