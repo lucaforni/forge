@@ -122,7 +122,7 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
 - Base branch is `develop` for all feature/fix/hotfix PRs (never `main` directly)
 - All PRs require AI adversarial review (`/forge-review`) before human review
 - PR description must reference the spec ID or story ID
-- All CI checks must pass before merge *(CI has run on `develop` since DEC-2026-HF-002; **blocking enforcement pending** — `develop` has no branch protection and neither branch has `required_status_checks`, see #114)*
+- All CI checks must pass before merge — **enforced**: `develop` and `main` both require the 7 CI contexts (`test` ×3 Node versions, `coverage gate`, `token budgets`, `shell lint`, CodeQL), a branch that is up to date with its base, and 1 code-owner approval. Admins are included (`enforce_admins: true`), so a red merge is blocked for everyone. Since a PR author cannot approve their own PR, a **second code owner is required to review the owner's PRs** — see `.github/CODEOWNERS`
 
 ### Release Policy (`develop` → `main`)
 
