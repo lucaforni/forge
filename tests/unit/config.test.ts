@@ -14,6 +14,7 @@ import {
   readExistingJsonConfig,
   stripJsonComments,
   DEFAULT_MODEL,
+  DEFAULT_SUBAGENT_DEPTH,
 } from "../../installer/config"
 
 describe("buildDefaultConfig", () => {
@@ -65,6 +66,12 @@ describe("mergeConfig", () => {
     expect(config.agents.length).toBe(10)
     expect(config.agents.some((a) => a.name === "my-custom-agent")).toBe(true)
   })
+
+  it("carries scalar defaults through the merge (spec 012)", () => {
+    const { config } = mergeConfig(buildDefaultConfig("/test"), {})
+    expect(config.defaultModel).toBe(DEFAULT_MODEL)
+    expect(config.subagentDepth).toBe(DEFAULT_SUBAGENT_DEPTH)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -97,6 +104,11 @@ describe("model assignment (spec 004 FR-011)", () => {
 
   it("provides a default model for agents without an override", () => {
     expect(buildDefaultConfig("/test").defaultModel).toBe(DEFAULT_MODEL)
+  })
+
+  it("defaults subagent nesting depth to 5 (spec 012)", () => {
+    expect(buildDefaultConfig("/test").subagentDepth).toBe(DEFAULT_SUBAGENT_DEPTH)
+    expect(DEFAULT_SUBAGENT_DEPTH).toBe(5)
   })
 })
 

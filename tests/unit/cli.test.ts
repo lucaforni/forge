@@ -46,6 +46,25 @@ describe("parseArgs — happy paths", () => {
     expect(r.showHelp).toBe(true)
     expect(r.errors).toEqual([])
   })
+
+  it("parses reconfigure flags without touching install options (011)", () => {
+    const r = parseArgs(argv("/tmp/x", "--reconfigure", "--provider=github-copilot", "--policy=quality", "--yes"))
+    expect(r.errors).toEqual([])
+    expect(r.targetRoot).toBe("/tmp/x")
+    expect(r.reconfigure).toMatchObject({ provider: "github-copilot", policy: "quality", yes: true })
+    expect(r.options).not.toHaveProperty("reconfigure")
+  })
+
+  it("parses --list and --allow-free-private (011)", () => {
+    const r = parseArgs(argv("--reconfigure", "--list", "--allow-free-private"))
+    expect(r.errors).toEqual([])
+    expect(r.reconfigure).toMatchObject({ list: true, allowFreePrivate: true })
+  })
+
+  it("rejects empty --provider=/--policy= values (011)", () => {
+    expect(parseArgs(argv("--provider=")).errors.join("\n")).toContain("--provider=")
+    expect(parseArgs(argv("--policy=")).errors.join("\n")).toContain("--policy=")
+  })
 })
 
 describe("parseArgs — usage errors (spec 006 #72)", () => {

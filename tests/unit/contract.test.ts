@@ -114,11 +114,22 @@ describe("installer contract — fresh OpenCode install", () => {
     }
   })
 
-  it("does not distribute the installer's own config templates", () => {
-    // The installer generates opencode.json; shipping a template copy would
-    // give users two competing sources of truth.
+  it("does not distribute the installer's own generated configs", () => {
+    // The installer generates opencode.json per platform; shipping a template
+    // copy would give users two competing sources of truth.
     expect(existsSync(join(target, ".forge/templates/opencode.json"))).toBe(false)
-    expect(existsSync(join(target, ".forge/templates/presets.json"))).toBe(false)
+    expect(existsSync(join(target, ".forge/templates/opencode.json.example-customized"))).toBe(false)
+  })
+
+  it("ships presets.json twice: config fallback + create-once active copy (011/ADR-004)", () => {
+    // Neutral path ships the built-in fallback ...
+    expect(existsSync(join(target, ".forge/templates/presets.json"))).toBe(true)
+    // ... while the live file the user may tune is created once ...
+    expect(existsSync(join(target, ".forge/presets.json"))).toBe(true)
+    // ... and both come from the same source.
+    const fallback = readFileSync(join(target, ".forge/templates/presets.json"), "utf-8")
+    const active = readFileSync(join(target, ".forge/presets.json"), "utf-8")
+    expect(active).toBe(fallback)
   })
 
   it("scaffolds the .forge/ working tree", () => {

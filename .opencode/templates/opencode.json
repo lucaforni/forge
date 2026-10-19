@@ -14,61 +14,57 @@
   // normalization, but new files should use this shape.
   //
   // To reconfigure models after install:
-  //   npx tsx install-forge.ts . --reconfigure
+  //   /forge-model-configure --provider=<id> --policy=<quality|speed|cheap>
+  //   (alias: npx tsx install-forge.ts . --reconfigure --provider=<id> --policy=<p>)
   //
   // For manual customization, edit the "model", "providers", and "agents"
   // sections below. See: .opencode/docs/FORGE-CUSTOMIZATION.md
   // ═══════════════════════════════════════════════════════════════════════════
 
   // Default model for all agents unless overridden
-  "model": "github-copilot/claude-sonnet-4.6",
+  "model": "github-copilot/claude-sonnet-5.5",
 
   // Default agent - FORGE orchestrator handles all workflow routing
   "default_agent": "forge",
 
   // Provider configuration with thinking budgets
-  // claude-opus-4.7 is the default for reasoning-heavy agents
-  // claude-opus-4.6 remains available on GitHub Copilot Business/Enterprise accounts
-  // NOTE: Model IDs (e.g., claude-opus-4.7) are provider identifiers — replace
+  // claude-opus-4.8 is the default for reasoning-heavy agents
+  // claude-opus-4.8-fast remains available as a lower-cost reasoning fallback
+  // NOTE: Model IDs (e.g., claude-opus-4.8) are provider identifiers — replace
   // with your preferred models when customizing.
   "providers": {
     "github-copilot": {
       "models": {
-        // claude-opus-4.7 is a reasoning-native model (temperature: false).
+        // claude-opus-4.8 is a reasoning-native model (temperature: false).
         // It does NOT accept external thinking parameters — reasoning is built-in.
-        "claude-opus-4.7": {},
-        "claude-opus-4.6": {
-          "settings": {
-            "thinking": { "budgetTokens": 16000 }
-          }
-        },
-        "claude-sonnet-4.6": {}
+        "claude-opus-4.8": {},
+        "claude-opus-4.8-fast": {},
+        "claude-sonnet-5.5": {}
       }
     }
   },
 
   // Agent model overrides — assign specific models to each agent role
-  // Default: claude-opus-4.7 (highest quality reasoning)
-  // Fallback: claude-opus-4.6 (GitHub Copilot Business/Enterprise)
+  // Default: claude-opus-4.8 (highest quality reasoning)
+  // Fallback: claude-opus-4.8-fast (lower-cost reasoning)
   //
-  // GITHUB COPILOT BUSINESS/ENTERPRISE FALLBACK:
-  // If claude-opus-4.7 is not yet available on your account, uncomment the
-  // section below to override agents to use claude-opus-4.6, which is still
-  // available on Business and Enterprise accounts:
+  // GITHUB COPILOT FALLBACK:
+  // If claude-opus-4.8 is not yet available on your account, uncomment the
+  // section below to override agents to use claude-opus-4.8-fast:
   //
-  // "forge-pm":        { "model": "github-copilot/claude-opus-4.6" },
-  // "forge-architect": { "model": "github-copilot/claude-opus-4.6" },
-  // "forge-reviewer":  { "model": "github-copilot/claude-opus-4.6" },
-  // "forge-ux":        { "model": "github-copilot/claude-opus-4.6" }
+  // "forge-pm":        { "model": "github-copilot/claude-opus-4.8-fast" },
+  // "forge-architect": { "model": "github-copilot/claude-opus-4.8-fast" },
+  // "forge-reviewer":  { "model": "github-copilot/claude-opus-4.8-fast" },
+  // "forge-ux":        { "model": "github-copilot/claude-opus-4.8-fast" }
   "agents": {
     "forge-pm": {
-      "model": "github-copilot/claude-opus-4.7"
+      "model": "github-copilot/claude-opus-4.8"
     },
     "forge-architect": {
-      "model": "github-copilot/claude-opus-4.7"
+      "model": "github-copilot/claude-opus-4.8"
     },
     "forge-reviewer": {
-      "model": "github-copilot/claude-opus-4.7"
+      "model": "github-copilot/claude-opus-4.8"
     }
   },
 

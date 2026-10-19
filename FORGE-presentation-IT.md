@@ -5,7 +5,7 @@ paginate: true
 backgroundColor: #fff
 color: #333
 header: 'FORGE - Framework for Orchestrated Requirements, Governance & Engineering'
-footer: 'Version 2.0.0 | Author: Luca Forni | © 2026'
+footer: 'Version 2.1.0 | Author: Luca Forni | © 2026'
 style: |
   section {
     font-size: 28px;
@@ -1164,4 +1164,4 @@ Framework for Orchestrated Requirements, Governance & Engineering
 🔗 [linkedin.com/in/lucaforni](https://linkedin.com/in/lucaforni)
 🔗 [github.com/lucaforni](https://github.com/lucaforni)
 
-*Version 2.0.0 | MIT License | 2026*
+*Version 2.1.0 | MIT License | 2026*

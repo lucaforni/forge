@@ -129,7 +129,7 @@ export async function run(options: CliOptions = {}): Promise<InstallResult> {
   const isDryRun = options.dryRun ?? false
   const isCheck = options.check ?? false
 
-  log("plan", `FORGE v2.0.0 cross-platform installer`)
+  log("plan", `FORGE v2.1.0 cross-platform installer`)
   log("info", `Target: ${projectRoot}`)
   console.log("")
 

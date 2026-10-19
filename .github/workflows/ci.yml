@@ -1,11 +1,16 @@
 # CI — typecheck, tests, coverage gate, shell lint
 name: CI
 
+# Trigger mirrors the branch policy (AGENTS.md, formalized 2026-10-06):
+# `main` is release-only, `develop` is the integration branch and the base
+# of every feature PR. Triggering only on `main` meant feature PRs ran
+# ZERO checks, so "all CI checks must pass before merge" was not enforced
+# (constitution Art. 4.4 claims these checks are enforced).
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
