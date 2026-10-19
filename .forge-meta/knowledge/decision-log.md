@@ -302,3 +302,66 @@ commits** since the tag, and the notes had to say so.
   requires it.
 - Verified locally: typecheck, 378 tests, coverage 87.56% statements /
   83.45% branches / 83.83% functions (gate 85/78/80), token budgets.
+
+## 2026-10-19 | Session: activate the merge gate (branch protection + required checks)
+
+**Status:** `completed`
+**Tags:** `governance`, `ci`, `branching`
+**Spec Refs:** —
+**Decision ID:** `DEC-2026-GOV-001`
+
+### Context
+
+PR #113 made the checks *run* on `develop`; nothing made them *block*. The
+GitHub API confirmed: `develop` had no protection at all, `main` had
+protection but no `required_status_checks`. The `v2.1.0` release then put
+`target-branch: develop` on the default branch, so Dependabot's own PRs
+finally target the integration branch.
+
+### Decisions
+
+1. **[COMPLETED]** Branch protection with required status checks on both
+   `develop` and `main`
+   - **Settings:** required contexts — `test (Node 20.x|22.x|24.x)`,
+     `coverage gate`, `token budgets`, `shell lint`,
+     `Analyze (javascript-typescript)`; `strict: true` (the branch must be
+     up to date with its base, the only native lever against stale checks
+     after a base advance); 1 code-owner approval with stale reviews
+     dismissed; `enforce_admins: true`; linear history; no force push; no
+     deletions; conversation resolution required.
+   - **Rationale:** a check that does not block is advisory. `enforce_admins`
+     is what makes the guarantee real for a single-maintainer repo, where
+     every merge would otherwise be a deliberate admin bypass.
+   - **Impact:** High — the merge path changes for everyone. `strict: true`
+     means a PR must be rebased onto its base before the required checks
+     count.
+   - **Trade-off:** the repository is personal, so `restrictions` (who may
+     push directly) is unavailable — GitHub allows it only for
+     organizations.
+
+2. **[COMPLETED]** A second code owner, to keep the gate operable
+   - **Rationale:** a PR author cannot approve their own PR, and
+     `require_code_owner_reviews` demands a code owner. With a single code
+     owner, the maintainer could never merge their own PR — the gate would
+     be a lock, not a gate. `@forniluca77` (the other collaborator with
+     write access) is added to `.github/CODEOWNERS`.
+   - **Impact:** Medium — the maintainer's PRs need one approval from the
+     other account. The trade-off is explicit and reversible.
+
+3. **[COMPLETED]** Dependabot now targets `develop` for real
+   - **Rationale:** the `v2.1.0` release merge landed `target-branch:
+     develop` on the default branch, which is the only place Dependabot
+     reads it from. The setting had been inert for 13 days because it
+     existed only on `develop`.
+   - **Impact:** Low — Dependabot re-targeted the open PRs, closed the two
+     it re-issued, and opened fresh ones against `develop`.
+
+### Follow-up
+
+- #114 — the remaining items are not settings: a coherence test that keeps
+  the trigger honest, `codeql.yml` concurrency, and the `cancel-in-progress`
+  interaction with required checks.
+- #118 — CodeQL on a fork PR: `security-events: write` is unavailable for
+  external contributors, so the required `Analyze (javascript-typescript)`
+  context may fail for a first-time external contribution. Needs a
+  one-off fork-PR test before the first one arrives.
