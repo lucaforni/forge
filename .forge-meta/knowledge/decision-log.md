@@ -112,3 +112,59 @@ Closing audit issues #74 (residuals) and #84 (UX chain).
      falsify the tracking record. A close-out record with per-group verdicts
      plus ADR-002/003 (scoped to the verifiable) is the truthful artifact.
    - **Impact:** Low
+
+## 2026-10-19 | Session: hotfix CI trigger on `develop`
+
+**Status:** `completed`
+**Tags:** `hotfix`, `ci`, `branching`, `governance`
+**Spec Refs:** —
+**Decision ID:** `DEC-2026-HF-002`
+
+### Context
+
+The branch policy formalized on 2026-10-06 (commit `4f1b1ba`) moved the base
+of feature PRs from `main` to `develop`, but `ci.yml` and `codeql.yml` still
+triggered only on `push: main` / `pull_request: main`. Consequence: every PR
+targeting `develop` ran **zero** checks — including PR #105 (spec 011) and
+the 18 commits already merged into `develop`. "All CI checks must pass before
+merge" (AGENTS.md) and the "enforced" rows of the constitution's Art. 4.4
+enforcement table were therefore not enforced on the branch where work
+actually lands.
+
+### Decisions
+
+1. **[COMPLETED]** Hotfix: trigger CI and CodeQL on `develop` as well as `main`
+   - **Rationale:** The trigger must mirror the branch policy. A check that
+     does not run is not an enforced rule — the same standard Art. 4.4
+     applies to the article itself.
+   - **Impact:** Medium — every PR and every push to `develop` now runs the
+     full matrix (test ×3 Node versions, coverage gate, token budgets, shell
+     lint, CodeQL). **Advisory, not blocking**: with no
+     `required_status_checks` a red run still merges, and a direct push to
+     `develop` is checked after it lands (see Follow-up #114).
+   - **Alternatives considered:**
+     - Trigger on `pull_request` only: rejected — a direct push to
+       `develop` would then run nothing.
+     - Move the release merge to `main`-first: rejected — contradicts the
+       documented policy and delays integration.
+   - **Follow-up:** #114 — `develop` has no branch protection and neither
+     branch has `required_status_checks`; the trigger now runs the checks,
+     but nothing blocks a red merge. Also: #115 — Dependabot reads its
+     config from the default branch (`main`), where `target-branch` is still
+     `main`, so the `target-branch: develop` setting is inert and all 6 open
+     Dependabot PRs target the release-only branch.
+
+### Notes
+
+- **Review:** peer reviewer (`forge-reviewer-peer`) APPROVE WITH COMMENTS,
+  11 findings, no CRITICAL. The primary reviewer could not run — its model
+  pin `github-copilot/claude-opus-4.7` is unavailable (infra, same class as
+  DEC-2026-HF-001; fixed by PR #105). Findings F1 and F2 (overstated
+  enforcement claims in this log and in AGENTS.md) are applied in this
+  commit; F3–F10 are tracked in #114 and #115.
+- Verified locally on `origin/develop`: typecheck, 326 tests, coverage
+  87.16% statements / 82.67% branches / 83.01% functions (gate 85/78/80),
+  token budgets — all green.
+- `mcp-server/node_modules` is not committed; run `npm ci` in `mcp-server/`
+  before the test suite or `tests/unit/mcp-server.test.ts` fails to import
+  `@modelcontextprotocol/sdk`.
